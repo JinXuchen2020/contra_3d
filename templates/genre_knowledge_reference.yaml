@@ -1,0 +1,1238 @@
+# Shooter Base Knowledge — 射击游戏(run-and-gun 魂斗罗风格 3D 化)通用知识库
+#
+# 所有 shooter 类游戏共享的机制和模式。
+# 位置: templates/genre_knowledge/shooter_base.yaml
+# 由 Boot Phase 0.2 生成 (7 sections, 并行子 agent)
+
+genre: shooter
+
+# ============================================================
+# _shooter_sections/ai_behavior.yaml
+# ============================================================
+# ============================================================
+# genre_knowledge / ai_behavior
+# 领域: 射击游戏（run-and-gun / 魂斗罗风格，3D 化）—— 敌人 AI 行为
+# 用途: 供 AI OS 生成该品类游戏时参考的领域知识（概念 / 权衡 / 参数 / 模式）
+# 单位约定: 距离 m，时间 s，速度 m/s；默认值为 (min+max)/2 或标注的 default
+# ============================================================
+
+section: ai_behavior
+
+# ------------------------------------------------------------
+# 子域 1: AI 类型谱系
+# ------------------------------------------------------------
+archetypes:
+  concept: >
+    run-and-gun 的敌人 AI 以"低个体智能 + 高群体编排"为核心。
+    每类敌人是一个小型状态机，由关卡脚本/刷兵系统负责调度，
+    玩家面对的是可读的威胁组合而非自主决策体。
+  types:
+    patrol:
+      role: 区域看守，制造节奏缓冲
+      state_machine: [patrol, alert, attack, return]
+      params:
+        sight_range_m:    { min: 8,  max: 15, default: 12 }
+        fire_rate_s:      { min: 1.2, max: 2.5, default: 1.8 }
+        move_speed_mps:   { min: 1.0, max: 2.5, default: 1.8 }
+        patrol_route:     { pattern: waypoint_loop | pingpong, waypoint_count: 2-5 }
+    chase:
+      role: 中距离压制，逼迫玩家移动
+      state_machine: [idle, alert, pursue, attack, strafe]
+      params:
+        sight_range_m:    { min: 14, max: 25, default: 18 }
+        fire_rate_s:      { min: 0.6, max: 1.5, default: 1.0 }
+        move_speed_mps:   { min: 2.0, max: 4.0, default: 3.0 }
+        preferred_range_m: { min: 6, max: 12, default: 9 }
+    rusher:
+      role: 近身威胁，惩罚站桩，制造瞬间压力
+      state_machine: [idle, charge_windup, rush, melee, recover]
+      params:
+        trigger_range_m:  { min: 6, max: 12, default: 9 }
+        rush_speed_mps:   { min: 4.5, max: 8.0, default: 6.0 }
+        windup_s:         { min: 0.4, max: 0.8, default: 0.6 }
+        melee_recover_s:  { min: 0.8, max: 1.5, default: 1.0 }
+    sniper:
+      role: 远程固守，控制走位空间（与掩体系统联动）
+      state_machine: [entrenched, aim_lock, fire, cool_down, reposition]
+      params:
+        engage_range_m:   { min: 18, max: 35, default: 25 }
+        aim_time_s:       { min: 0.8, max: 1.8, default: 1.2 }
+        laser_sight_s:    { min: 0.3, max: 0.6, default: 0.4 }   # 前摇可视化
+        fire_rate_s:      { min: 2.0, max: 4.0, default: 3.0 }
+        move_speed_mps:   { min: 0.5, max: 1.5, default: 1.0 }   # 固守型，几乎不移动
+  trade_offs:
+    - "敌人种类越多可读性越差；单屏同时出现的类型建议 ≤ 3"
+    - "chase 移动速度过高会把 run-and-gun 变成追逐战，建议 ≤ 玩家速度的 70%"
+    - "sniper 的激光瞄准线是 3D 化后补偿深度感知不足的关键，不可省略"
+
+# ------------------------------------------------------------
+# 子域 2: 刷兵系统
+# ------------------------------------------------------------
+spawn_system:
+  concept: >
+    敌人来自固定刷兵点（spawn point）或屏幕边缘触发区。
+    刷兵系统而非单体 AI 决定战斗密度；同屏上限是性能与难度的双重保险。
+  spawn_point:
+    activation: [player_proximity(15-30m), scripted_trigger, camera_enter]
+    spawn_interval_s: { min: 1.5, max: 5.0, default: 3.0 }
+    burst_size:       { min: 1, max: 4, default: 2 }
+    max_spawns_per_point: { min: 3, max: 10, default: 5 }   # 防止无限刷
+    despawn_rule: 玩家离开 40-60m 或超出相机视野 2 屏后回收
+  on_screen_cap:
+    range: { min: 8, max: 30, default: 15 }
+    note: >
+      移动端建议 8-12；主机/PC 建议 15-25；
+      超过 30 后弹幕可读性崩溃且命中判定噪声大。
+  pacing_modes:
+    wave:
+      desc: 按波次投放，波间留 3-8s 喘息
+      wave_size: { min: 3, max: 12, default: 6 }
+      inter_wave_delay_s: { min: 3, max: 8, default: 5 }
+    continuous:
+      desc: 持续 trickle 刷兵，维持恒定压力
+      trickle_interval_s: { min: 2, max: 6, default: 4 }
+    hybrid:
+      desc: 波次为主 + trickle 补位，多数关卡的最优解
+  trade_offs:
+    - "波次模式节奏清晰但可预测；持续模式压力大但玩家无法喘息"
+    - "刷兵点必须可被玩家摧毁或绕过，否则形成'强制消耗战'"
+    - "刷兵位置必须在玩家视野内或给出出生提示（3D 化后背后刷兵必须强化提示）"
+
+# ------------------------------------------------------------
+# 子域 3: 行为状态机
+# ------------------------------------------------------------
+behavior_state_machine:
+  concept: >
+    所有敌人共享统一 FSM 骨架，通过参数差异化表达；
+    转换条件用距离/视线/伤害事件驱动，阈值集中配置便于全局调难度。
+  states:
+    idle:    无威胁时待机；转换 → patrol（延时 1-3s）
+    patrol:  沿路线移动；转换 → alert（进入警觉半径）
+    alert:   停止移动、面向玩家、播放警觉演出 0.3-0.8s；转换 → attack（确认视线）
+    attack:  按原型参数开火/冲锋；转换 → retreat（血量低）或 patrol（丢失目标 > 4-8s）
+    retreat: 血量 < 阈值时后撤寻找掩体；转换 → attack（恢复）或 flee
+    flee:    径直逃离；血量型敌人占比建议 < 10%，避免拖节奏
+  thresholds:
+    alert_radius_m:        { min: 10, max: 25, default: 16 }
+    lose_target_timeout_s: { min: 4, max: 8, default: 6 }
+    retreat_hp_pct:        { min: 15, max: 35, default: 25 }
+    fov_deg:               { min: 90, max: 180, default: 120 }
+  design_rules:
+    - "alert 状态是可读性核心：给玩家 0.3-0.8s 的反应窗口（举枪/喊叫/闪烁）"
+    - "丢失目标后回到 patrol 而非永久追击，保证潜行/绕路策略成立"
+    - "群体警觉共享半径 5-10m：一个敌人警觉会唤醒附近同伴"
+
+# ------------------------------------------------------------
+# 子域 4: Boss 设计
+# ------------------------------------------------------------
+boss_design:
+  concept: >
+    Boss 是关卡节奏的锚点，本质是"攻击模式库 + 阶段调度器"。
+    每阶段从模式库中选取 2-3 个招式循环，阶段切换时重置调度。
+  phases:
+    count: { min: 2, max: 4, default: 3 }
+    hp_thresholds_pct: [70, 40, 15]        # 阶段切换血量线
+    per_phase_patterns: { min: 2, max: 3, default: 2 }
+  attack_pattern_library:
+    - aimed_shot_burst:   连发瞄准弹，基础压力来源
+    - spread_volley:      扇形弹幕，限制走位空间
+    - ground_sweep:       地面横扫/冲刺，强制跳跃（run-and-gun 的跳跃价值）
+    - summon_minions:     召唤小兵 2-6 个，打断玩家输出节奏
+    - weak_point_expose:  弱点暴露窗口，输出机会期
+    - phase_transition_roar: 无敌演出 1.5-3s，清场或换武器
+  weak_point:
+    exposure_cycle_s: { min: 4, max: 10, default: 6 }
+    damage_multiplier: { min: 1.5, max: 4.0, default: 2.5 }
+    visual: 发光/开甲/变色，必须在正常攻击姿势下可见
+  trade_offs:
+    - "阶段数 > 4 时战斗拖沓；单阶段 Boss 缺乏记忆点"
+    - "阶段切换无敌时间过长会打断玩家的输出爽感，建议 ≤ 3s"
+    - "弱点机制提高技能上限但惩罚不瞄弱点的玩家，伤害倍率不宜超过 4x"
+
+# ------------------------------------------------------------
+# 子域 5: 魂斗罗特色机制
+# ------------------------------------------------------------
+contra_signatures:
+  fixed_turret:
+    desc: 固定炮台不可移动、血量中等、弹道规律，是关卡空间控制的基本单元
+    hp: { min: 3, max: 8, hits: true }        # 按命中发数计
+    fire_rate_s: { min: 1.0, max: 2.5, default: 1.8 }
+    aim_mode: [fixed_direction, tracking_slow(转速 30-90 deg/s)]
+  ambush_trigger:
+    desc: 埋伏式敌人由玩家触发（经过/靠近/破坏掩体）后瞬间激活
+    trigger_types: [camouflage_reveal, drop_from_above, burst_from_wall]
+    reveal_windup_s: { min: 0.3, max: 0.6, default: 0.4 }   # 破土/破墙前摇
+    placement: 转角、掩体后、天花板，制造"惊喜但不惊吓"
+  one_hit_death_telegraph:
+    concept: >
+      玩家一击死意味着敌人每次攻击都是致命威胁，
+      攻击前摇（telegraph）必须足够长且清晰，把"死因"归还给玩家。
+    attack_windup_s: { min: 0.4, max: 1.2, default: 0.8 }
+    windup_visual: [举枪发光, 变色闪烁, 蓄力音效, 激光瞄准线]
+    rule: >
+      前摇 < 0.4s 仅限 Boss 招式或纯装饰弹；
+      常规敌人所有致命攻击前摇 ≥ 0.4s；
+      屏幕外攻击必须被禁止或给予音频预警。
+  trade_offs:
+    - "一击死 + 短前摇 = 挫败感爆发；前摇过长 = 游戏变成反应慢动作"
+    - "3D 化后玩家纵深感知弱于 2D，埋伏敌人的前摇比 2D 版本多 0.1-0.2s"
+
+# ------------------------------------------------------------
+# 子域 6: 难度曲线
+# ------------------------------------------------------------
+difficulty_curve:
+  concept: >
+    难度随关卡线性推进，敌人密度、血量、攻击频率三轴缩放；
+    缩放基线为第 1 关（level_index 从 0 计），用乘法系数而非加法。
+  scaling_formulas:
+    enemy_density:    value = base * (1 + 0.10 * level_index)     # 每关 +10%
+    enemy_hp:         value = base * (1 + 0.12 * level_index)    # 每关 +12%
+    attack_frequency: value = base * (1 + 0.08 * level_index)    # 每关 +8%（即间隔缩短）
+    aggro_radius:     value = base * (1 + 0.05 * level_index)    # 每关 +5%
+  bounds:
+    max_total_multiplier: 2.5      # 任意系数封顶，防止后期数值失控
+    cap_reached_at_level: ~15
+  player_power_sync:
+    note: 敌人血量增幅需与玩家武器升级曲线交叉验证，确保 Boss 战时长稳定在 2-5 分钟
+    boss_fight_duration_s: { min: 120, max: 300, default: 180 }
+  ramp_mechanics:
+    - 新敌人类型首次出现时必须弱化（血量 -30% 或攻击频率 -20%），让玩家先学习
+    - 每关卡内前 1/3 段难度低于均值，Boss 房前设置存档点/补给
+    - 死亡重试 ≥ 3 次的检查点可启用动态辅助（敌人警觉半径 -15%），静默生效
+
+# ============================================================
+# _shooter_sections/game_feel.yaml
+# ============================================================
+# Game Feel Knowledge — 魂斗罗风格 Run-and-Gun 射击游戏(3D化)的手感设计领域知识
+#
+# 覆盖输入响应预算、移动手感、射击反馈、武器手感差异、视听反馈分层、
+# 可玩性量化指标、帧率与物理步长。手感是 run-and-gun 的第一竞争力。
+# 位置: templates/genre_knowledge/_shooter_sections/game_feel.yaml
+
+genre: shooter_run_and_gun
+section: game_feel
+
+# ============================================================
+# 输入响应 — 手感的物理基础
+# ============================================================
+input_response:
+  overview: "从按键到屏幕反馈的全链路延迟决定手感下限。3D 化后帧渲染变重, 预算管理比 2D 时代更严格。"
+
+  input_latency_budget:
+    total_max_ms: { threshold: 100, ideal: 50 }
+    breakdown_ms:
+      input_polling: { min: 0.5, max: 8, default: 4 }        # 轮询间隔, 避免每帧轮询手柄
+      game_logic: { min: 1, max: 8, default: 4 }             # 逻辑响应同一帧内
+      render_pipeline: { min: 8, max: 40, default: 16 }      # 含 GPU 提交与显示
+      display_latency: { min: 5, max: 25, default: 10 }      # 显示器/电视处理
+    trade_offs:
+      - "逐帧轮询 vs 中断驱动: 逐帧简单但浪费 CPU; 中断驱动低延迟但需处理多输入竞争"
+      - "降低渲染管线延迟(如减少后处理)换画面华丽度 — 射击游戏优先延迟"
+
+  input_buffer:
+    window_ms: { min: 100, max: 200, default: 150 }
+    principle: "落地前/硬直中按下的跳跃与射击指令存入缓冲队列, 动作解锁瞬间执行"
+    trade_offs: "缓冲过长导致'迟到的指令突然生效'的诡异感; 过短则连段判定苛刻, 劝退普通玩家"
+
+  coyote_time:
+    window_ms: { min: 80, max: 150, default: 120 }
+    applies_to: "平台边缘离开后的短暂可跳窗口; run-and-gun 边跳边射的核心容错"
+    trade_offs: "过宽使跳跃判定模糊, 速通玩家反而难以精确贴边; 建议与 input_buffer 共用上限"
+
+# ============================================================
+# 移动手感 — 加减速与空中控制
+# ============================================================
+movement_feel:
+  overview: "魂斗罗式移动 = 瞬时启动 + 可控空中。3D 化保留'指哪打哪'的干脆感, 但需用曲线柔化生硬。"
+
+  acceleration_curve:
+    ground_accel: { min: 20, max: 60, default: 40 }        # m/s²
+    ground_decel: { min: 30, max: 100, default: 60 }       # 减速快于加速 → 停得干脆
+    max_speed: { min: 5, max: 10, default: 7 }             # m/s
+    turn_response: { min: 0, max: 3, default: 1 }          # 反向转向帧数, 0=瞬时
+    trade_offs: "加速度低→有重量感但响应迟钝; 高→灵敏但像'滑行'。减速度通常设为加速的 1.5-2 倍"
+
+  air_control:
+    coefficient: { min: 0.4, max: 0.8, default: 0.6 }      # 空中加速度 = 地面 × 系数
+    trade_offs: "过低→跳跃轨迹僵直, 躲弹幕困难; 过高→空中变向作弊感, Boss 弹幕设计被绕过"
+
+  jump_parameters:
+    height_m: { min: 1.5, max: 3.0, default: 2.2 }
+    airtime_s: { min: 0.6, max: 1.2, default: 0.85 }       # 总滞空(升+降)
+    gravity_scale: { min: 1.5, max: 3.0, default: 2.2 }    # 相对现实的倍率, 快升快降
+    fall_gravity_mult: { min: 1.2, max: 2.0, default: 1.5 } # 下落重力倍率 > 上升 → '干脆的抛物线'
+    variable_jump: "松键提前截断上升速度(截断至 30-50%), 轻点小跳/长按大跳"
+    trade_offs: "高跳跃+长滞空利于观赏与躲弹但拖节奏; 魂斗罗系偏好快速抛物线, 空中暴露时间短"
+
+# ============================================================
+# 射击反馈 — 每一发子弹都要'值回票价'
+# ============================================================
+shooting_feedback:
+  overview: "命中反馈四件套: 视觉(火光/受击闪白)+听觉(音效)+力反馈(屏震)+时间感(hit stop)。"
+
+  muzzle_flash:
+    duration_ms: { min: 30, max: 80, default: 50 }
+    light: "3D 化必须附带点光源脉冲, 照亮枪口周围 1-3m"
+    trade_offs: "过亮/过长在连射时产生频闪不适; 火光遮挡准星则直接伤害瞄准体验"
+
+  screen_shake:
+    intensity: { min: 0.1, max: 0.5, default: 0.25 }       # 归一化单位(相对屏幕高度)
+    duration_ms: { min: 50, max: 150, default: 90 }
+    falloff: "指数衰减; 开火/受击/爆炸分级(开火最弱, 爆炸最强 2-3 倍)"
+    trade_offs: "强屏震=爽快感但导致晕动症与瞄准干扰; 必须提供强度滑杆, 默认 ≤0.3"
+
+  hit_stop:
+    duration_ms: { min: 30, max: 80, default: 50 }         # 命中瞬间全局/局部时间冻结
+    applies_to: "仅重击/击杀触发; 普通命中用 hit flash(敌人闪白 2-4 帧)即可"
+    trade_offs: "连射武器滥用 hit stop 会破坏射速节奏 — 高射速武器改用粒子+音效堆叠"
+
+  hit_marker:
+    visual: "准星处十字/斜杠标记, 命中即显 80-120ms; 击杀换色(白→红/金)+变体音效"
+    audio_pitch: "击杀音效音高较普通命中提升 15-30%, 形成条件反射"
+
+# ============================================================
+# 武器手感差异 — 数值之外的'触摸质感'
+# ============================================================
+weapon_feel_variance:
+  overview: "同 DPS 的武器必须手感不同, 差异由后坐力/扩散/节奏三轴构成。"
+
+  recoil_patterns:
+    types: ["固定向上(激光/狙击)", "随机锥形(散弹)", "节奏型锯齿(机枪: 前5发准后飘)", "无后坐(追踪弹)"]
+    recovery_ms: { min: 100, max: 400, default: 200 }      # 停火后准星回复时间
+    trade_offs: "强后坐力提升武器个性但抬高操作门槛; run-and-gun 主武器应 ≤ 轻度后坐"
+
+  crosshair_spread:
+    dynamic_range_deg: { min: 0, max: 8, default: 4 }      # 静止→连射的扩散区间
+    bloom_rate: "移动扩散 ×1.5-2.0, 跳跃 ×2.5-3.0(空中惩罚), 静止回复 5-10°/s"
+    trade_offs: "扩散惩罚站桩射击但鼓励走位 — 与 run-and-gun 理念协同; 过强则远距输出挫败"
+
+  fire_rate_hidden_costs:
+    principle: "开火节奏影响实际 DPS: 点射间隔 > 理论射速 → 每发 DPS 折损"
+    examples:
+      - "半自动武器: 理论 6 发/s, 实际手速 4-5 发/s → 隐性 -20% DPS"
+      - "激光类新发射取消旧弹道 → 连打反而降 DPS(需在 UI/教学暗示)"
+      - "过热/换弹惩罚: 换弹时间 1.2-2.5s, 期间手感真空 — 用换弹动画+音效填充"
+
+# ============================================================
+# 视听反馈分层 — 预算有限时的优先级
+# ============================================================
+av_feedback_layers:
+  mandatory:   # 缺失即手感硬伤
+    - "命中确认: 火花粒子+音效+hit marker"
+    - "受击方向指示: 屏幕边缘红光/扇形指示器(3D 化必需)"
+    - "死亡反馈: 敌人死亡爆炸/碎裂 + 明确音效; 玩家死亡慢动作 0.3-0.8s"
+    - "拾取/武器切换: 音效+HUD 闪烁"
+  enhanced:    # 锦上添花, 按性能预算裁剪
+    - "脚步声与移动灰尘粒子"
+    - "环境反应: 弹孔、弹壳、布娃娃"
+    - "低血量音画渐变(心跳/暗角)"
+  audio_latency_budget_ms: { threshold: 80, ideal: 50 }    # 从事件到出声; >100ms 明显脱节
+  trade_offs: "增强反馈消耗 GPU/音频通道预算, 帧率波动时代价 > 收益; 移动端优先保 mandatory"
+
+# ============================================================
+# 可玩性阈值 — playtest 量化指标
+# ============================================================
+playability_thresholds:
+  accuracy:
+    range: [0.2, 0.7]
+    default: 0.45
+    note: "命中率过低→射击挫败; 过高(>0.7)→难度不足, 考虑加强弹幕密度"
+  ttk_s:
+    range: [0.5, 3.0]
+    default: 1.2
+    note: "TTK=击杀标准敌人耗时; 杂兵 0.5-1.0s, 精英 1.5-3.0s, Boss 另计(30-120s)"
+  kdr:
+    range: [0.5, 5.0]
+    default: 2.0
+    note: "玩家击杀/死亡比; 单局首次通关目标 1.5-3.0, <0.5 判定难度失控"
+  death_cause_readability:
+    threshold: 0.8
+    note: "死亡后问卷'你知道自己怎么死的吗'命中率应 >80%, 否则反馈链有问题"
+  session_metric: "首局弃游率 <10%, 关卡重试 3 次内通过率 >60%"
+
+# ============================================================
+# 帧率与物理 — 稳定压倒华丽
+# ============================================================
+frame_and_physics:
+  fixed_timestep_hz: { min: 50, max: 60, default: 60 }     # 逻辑帧固定步长
+  interpolation: "渲染帧在两个逻辑帧间插值(物理状态插值), 消除低逻辑帧的抖动"
+  target_fps:
+    baseline: 60
+    acceptable_floor: 30
+    trade_offs: "帧率 <30 时手感崩坏(延迟+拖影), 宁可降分辨率/特效保帧率"
+  max_delta_clamp_s: { default: 0.1 }                      # 卡帧时钳制 dt, 防止穿墙/跳台
+  trade_offs:
+    - "固定步长 vs 可变步长: 固定步长保证物理确定性(速通/回放友好), 可变步长省 CPU 但物理漂移"
+    - "逻辑 60Hz vs 渲染 120Hz+: 拆分模拟与渲染频率, 渲染帧插值即可享受高刷丝滑"
+
+# ============================================================
+# _shooter_sections/health_damage.yaml
+# ============================================================
+# Health & Damage Knowledge — 魂斗罗风格 Run-and-Gun 射击游戏(3D 化)的生命/伤害领域知识
+#
+# 覆盖生命模型选型、生命数量与 Game Over 循环、无敌帧、伤害计算公式、
+# 恢复机制、死亡惩罚与命中判定参数。
+# 位置: templates/genre_knowledge/_shooter_sections/health_damage.yaml
+
+genre: shooter_run_and_gun
+section: health_damage
+
+# --- 子域 1: 生命模型 — 一击死 / 血条制 / 混合制的选型 ---
+health_model:
+  overview: "生命模型决定玩家对威胁的感知方式与挫败感来源。魂斗罗传统是一击死, 3D 化后深度知觉误差增大, 纯一击死的挫败成本急剧上升, 需审慎选型。"
+
+  models:
+    - id: "one_hit_kill"
+      name: "一击死(魂斗罗传统)"
+      hp: { min: 1, max: 1, default: 1 }
+      trade_offs:
+        pros: "弹幕威胁真实, 每发都需躲避, 张力极强; 数值设计极简, 平衡只调弹速/密度/判定; 死亡即重开促成'背版'式硬核通关记忆"
+        cons: "3D 化后距离/深度误判增多, '看不见的子弹'死亡频发; 挫败感来自单次失误而非策略不足, 恢复期长; 对新手极不友好, 留存率显著下降"
+      player_frustration:
+        cause: "挫败感峰值集中在'意外死亡': 弹幕密度超出屏幕可读上限时"
+        mitigation: "必须配合高可见度弹幕 + 无敌帧 + 密集检查点, 三者缺一挫败感失控"
+
+    - id: "hp_bar"
+      name: "血条制"
+      hp: { min: 50, max: 200, default: 100 }
+      trade_offs:
+        pros: "单次受击可承受, 容错高, 适配 3D 视角误判; 血量成为可展示的资源维度; 数值空间大, 可做难度分级"
+        cons: "稀释弹幕威胁感, 玩家倾向硬吃子弹莽进; 需为每种子弹单独标定伤害, 维护成本高; 低血量焦虑本身可作持续压力源"
+      player_frustration:
+        cause: "'看不清从哪来的伤害'造成的持续掉血; 挫败感平缓但累积"
+        mitigation: "受击方向指示器 + 屏幕边缘红光 + 伤害来源高亮"
+
+    - id: "hybrid"
+      name: "混合制(血条 + 一击死段位)"
+      hp: { min: 50, max: 200, default: 100 }
+      trade_offs:
+        pros: "常规杂兵弹扣血, 精英弹/环境危害直接秒杀 — 兼容张力与容错; 血量阈值(如 <30%)可触发 Boss 一击死弹; 现代 run-and-gun 主流方案"
+        cons: "规则复杂, 玩家需学习'哪些弹能吃'的可读性成本; 秒杀段位判定传达不清晰时挫败感反而高于纯血条制"
+      player_frustration:
+        cause: "秒杀弹与普通弹视觉区分不足时的'被骗感'"
+        mitigation: "秒杀弹使用独占配色(如亮红描边)+ 音效前摇, 首次遭遇给安全演示"
+
+  recommendation: "3D 化项目默认选 hybrid; 若追求硬核复古定位且弹幕可读性极强, 可选 one_hit_kill + 更密集检查点补偿。"
+
+# --- 子域 2: 生命数量与 Game Over 循环 ---
+lives_system:
+  overview: "命数是一击死/混合制下的核心经济。命数消耗速率直接决定单局时长与街机式循环的成瘾性。"
+
+  initial_lives: { min: 1, max: 5, default: 3 }   # 传统街机默认 3 条
+  lives_cap: { min: 5, max: 30, default: 9 }      # 拾取 1UP 可超出上限, 超出部分计数
+
+  extra_life_mechanics:
+    - id: "score_threshold"
+      trigger: "累计分数达到阈值"
+      interval: { min: 10000, max: 50000, default: 20000 }  # 每 N 分一条
+      notes: "奖励高水平玩家, 但诱导刷分行为; 建议阈值递增(2 万/5 万/10 万)"
+    - id: "item_1up"
+      trigger: "隐藏道具/稀有掉落"
+      notes: "探索奖励; 3D 化后可放在需要风险跳跃的高处或支线房间"
+    - id: "no_hit_streak"
+      trigger: "连续无伤击杀 N 个敌人"
+      streak: { min: 20, max: 50, default: 30 }
+      notes: "高技巧奖励, 仅硬核难度建议开启"
+
+  game_over_loop:
+    patterns:
+      - id: "arcade_credit"
+        flow: "Game Over → 倒计时投币(续关) → 从检查点复活"
+        continues: { min: 0, max: 5, default: 3 }
+        notes: "家用版可改为'续关次数不限但清空累计分'"
+      - id: "checkpoint_retry"
+        flow: "Game Over → 自动回到最近检查点, 命数重置"
+        notes: "现代主流; Game Over 罚则仅为'重新走一段'"
+      - id: "roguelite_meta"
+        flow: "Game Over → 元货币结算 → 局外成长 → 重开"
+        notes: "延长生命循环的现代变体, 与魂斗罗纯技巧内核冲突, 慎选"
+
+# --- 子域 3: 无敌帧 ---
+invincibility_frames:
+  overview: "无敌帧是受击后防止连续掉血/连环死亡的缓冲设计, 同时承担'重新站位'的节奏暂停功能。3D 化后必须加长, 因为玩家脱困需要更多时间。"
+
+  on_hit:                       # 受击无敌
+    duration_s: { min: 0.5, max: 2.0, default: 1.0 }
+    notes: "血条制偏短(0.5-1.0s, 防止硬吃), 一击死/混合制偏长(1.0-2.0s, 保证脱困)"
+  on_respawn:                   # 复活/检查点重生无敌
+    duration_s: { min: 2.0, max: 5.0, default: 3.0 }
+    notes: "需覆盖'看清战场 + 找到掩体'的最短时间; Boss 房重生应额外加长 1-2s"
+  on_dash_or_special:           # 技能型无敌(翻滚/冲刺帧)
+    duration_s: { min: 0.2, max: 0.6, default: 0.3 }
+    notes: "主动无敌是现代容错阀门, 但会稀释弹幕威胁, 密度需上调 10-20% 补偿"
+
+  visual_feedback:
+    pattern: "闪烁(模型透明度 0.3↔1.0 方波, 8-12 Hz) 是行业通用语言"
+    alternatives:
+      - "轮廓描边高亮(3D 下比闪烁更易读)"
+      - "半透明全息材质 + 屏幕边缘微光"
+    rule: "无敌期间角色保持可交互可操控, 禁止锁输入; 结束前 0.2s 可做'即将结束'提示闪烁"
+
+# --- 子域 4: 伤害计算 ---
+damage_calculation:
+  overview: "伤害公式需支持部位加成与护甲减伤两层修正。基础式简单可调, 复杂度留给修正层。"
+
+  base_formula: "final_damage = base_damage * zone_multiplier * armor_factor * difficulty_factor"
+
+  zone_multiplier:              # 部位加成(玩家对敌 / 敌对玩家均适用)
+    headshot: { min: 1.5, max: 4.0, default: 2.0 }
+    body: { min: 1.0, max: 1.0, default: 1.0 }
+    limb: { min: 0.5, max: 0.9, default: 0.7 }
+    weak_point: { min: 2.0, max: 5.0, default: 3.0 }   # Boss 弱点发光部位, 独立于爆头体系
+    notes: "run-and-gun 中爆头奖励宜克制(1.5-2.0x), 过高会迫使玩家在弹幕中赌命中率"
+
+  armor_reduction:
+    models:
+      - id: "subtractive"
+        formula: "damage = max(1, raw - armor_flat)"
+        trade_offs: "克制高频率低伤弹, 对高伤弹近乎无效; 数值易失控, armor 上限建议 ≤ 8"
+      - id: "multiplicative"
+        formula: "damage = raw * (1 - armor_pct)"
+        armor_pct: { min: 0.1, max: 0.75, default: 0.3 }
+        trade_offs: "线性平滑, 永不归零; 缺点是堆叠收益线性可预期, 缺乏克制关系"
+      - id: "hybrid"
+        formula: "damage = (raw - armor_flat) * (1 - armor_pct)"
+        trade_offs: "两段修正可分别调'重弹/轻弹'生存曲线, 参数最多但表现力最强"
+    recommendation: "敌人护甲用 multiplicative(易读); 玩家护甲道具用 subtractive(装备感强)"
+
+  difficulty_factor:            # 难度分级伤害倍率(作用于玩家受到的伤害)
+    easy: { min: 0.5, max: 0.75, default: 0.6 }
+    normal: { min: 1.0, max: 1.0, default: 1.0 }
+    hard: { min: 1.2, max: 1.5, default: 1.5 }
+    one_hit_mode: { min: 999, max: 999, default: 999 }  # 即切换为一击死规则
+
+# --- 子域 5: 恢复机制 ---
+recovery:
+  overview: "恢复机制决定资源曲线的松紧节奏。血条制/混合制必须配套恢复设计, 一击死制跳过本域。"
+
+  pickup_heal:
+    heal_pct: { min: 25, max: 100, default: 50 }     # 回复最大生命值的百分比
+    drop_rate_pct: { min: 5, max: 20, default: 10 }  # 普通敌人掉落率
+    patterns:
+      - "定点补给箱: 固定位置刷新, 引导路线规划; 回复 50-100%"
+      - "敌人掉落: 低概率, 奖励主动清杂; 回复 25-50%"
+      - "Boss 阶段转换掉落: 强制节奏点满血或半血, 防止阶段断崖"
+
+  regen_vs_item_trade_off:
+    natural_regen:
+      pros: "零维护, 死亡惩罚平滑; 探索专注度不被打断"
+      cons: "彻底消解道具价值与风险回报; 弹幕威胁被时间冲淡, 不符合 run-and-gun 紧凑内核"
+    item_based:
+      pros: "补给点成为路线设计的锚; 低血量状态制造真实的张力曲线"
+      cons: "补给前状态差可能滚雪球, 需保证掉率下限"
+    hybrid_recommended: "段落内缓慢回复(10%/s, 上限 50%) + 段落外道具回复, 兼顾容错与资源感"
+
+# --- 子域 6: 死亡惩罚 ---
+death_penalty:
+  overview: "惩罚过重会把挫败感转化为弃坑, 过轻则消解紧张感。run-and-gun 的传统罚则是'位置回退 + 武器重置'。"
+
+  weapon_reset_on_death: true   # 死亡重置为默认步枪 — 魂斗罗核心传统, 保留度需谨慎评估
+  trade_offs:
+    keep_weapon: "挫败感低, 但'保住 S 枪苟过 Boss'会催生消极打法"
+    reset_weapon: "高风险高回报的张力强, 但 Boss 房前死亡的挫败加倍; 建议 Boss 战死亡不重置"
+
+  checkpoint_granularity:
+    backward_distance: { min: 0, max: 30, default: 10 }   # 回退占关卡进度的百分比
+    patterns:
+      - "固定检查点: 每 60-120s 游戏进度一个, 传统且可预期"
+      - "事件检查点: 精英击杀/机关通过即存档, 回退感最平滑"
+      - "禁止 Boss 房前长回退: 死于 Boss 绝不回退到 Boss 之前的检查点, 这是挫败感红线"
+
+  inventory_drop:
+    enabled: false                # 默认不掉落已获道具
+    variant: "仅掉落最近拾取的武器箱, 30s 内原位可拾回"
+
+# --- 子域 7: 命中判定参数 ---
+hit_detection:
+  overview: "判定手感来自'视觉命中感'与'数值公平性'的匹配。3D 化后 hitbox 不再是像素矩形, 需注意胶囊体与视角误差。"
+
+  player_hitbox_tolerance:
+    hitbox_scale: { min: 0.6, max: 1.0, default: 0.8 }   # 相对角色模型体积
+    notes: "玩家 hitbox 应小于视觉模型(传统弹幕游戏惯例); 3D 下建议 0.7-0.8 并向脚部收窄"
+    hitbox_shape: "胶囊体(站立)/球体(翻滚), 避免盒体旋转穿模误判"
+
+  enemy_hitbox:
+    hitbox_scale: { min: 1.0, max: 1.2, default: 1.1 }   # 敌方 hitbox 可略大于模型, 补偿 3D 瞄准误差
+    weak_point_size: { min: 0.2, max: 0.5, default: 0.3 } # 相对模型体积
+
+  forgiveness_rules:
+    - "子弹擦边判定: 玩家受击判定边缘留 10-15% 容差, '看起来擦过'即不判死"
+    - "攻击判定向外扩: 玩家子弹判定大于弹体模型, '看起来打中了'就必须掉血"
+    - "帧一致性: 判定计算必须与表现帧率解耦(固定逻辑步长), 防止高帧率下更难被击中"
+
+  friendly_fire:
+    default_off_for_coop: true
+    trade_offs:
+      on: "逼真且催生沟通, 但双人配合失误的互相击杀挫败感极高, 仅硬核模式可选"
+      off: "合作爽快感优先 — 魂斗罗系列传统即关闭; 建议默认关闭"
+    variant: "半友伤: 队友伤害只打断/击退不扣血, 折中方案"
+
+# ============================================================
+# _shooter_sections/map_design.yaml
+# ============================================================
+# Shooter Map Design Knowledge — 射击游戏(run-and-gun / 魂斗罗风格 3D 化)关卡地图设计知识库
+#
+# 覆盖关卡结构、横版→3D 转换、掩体系统、检查点、pickup 布点、Boss 竞技场、
+# 出生点/敌人路径数据结构等领域知识。
+# 位置: templates/genre_knowledge/_shooter_sections/map_design.yaml
+
+section: map_design
+
+# ============================================================
+# 关卡结构 — 整体骨架选择
+# ============================================================
+level_structure:
+  patterns:
+    linear:
+      description: "线性推进: 单一路径 + 强制战斗段, 魂斗罗传统"
+      pros: ["节奏可控", "难度曲线精确", "演出/脚本容易排布"]
+      cons: ["重玩价值低", "玩家无探索自由"]
+      suited: "早期关卡 / Boss 前节奏关"
+    arena:
+      description: "竞技场: 单一大空间内波次清敌后开门"
+      pros: ["战斗密度高", "掩体设计集中", "实现简单"]
+      cons: ["长时间无新鲜感", "容易变成蹲掩体模拟器"]
+      suited: "章节高潮 / 波次关 / Boss 关"
+    branch:
+      description: "分支路径: 2-3 条平行路线汇合, 各有差异化敌人/奖励"
+      pros: ["重玩价值高", "武器/路线构建(build)多样性"]
+      cons: ["设计成本 ×2-3", "难度平衡难控"]
+      suited: "中后期关卡 / 高重玩性目标"
+    hybrid:
+      description: "线性主轴 + 局部竞技场 + 1 处可选分支(默认推荐)"
+      default: true
+
+  duration:
+    level_length_seconds: [180, 480]  # 3-8 分钟/关
+    default: 300                      # 5 分钟
+    combat_pacing:
+      fight_burst: [20, 40]           # 每段战斗持续秒数
+      breather_after_fight: [10, 20]  # 战斗间隔(喘息/移动/拾取)
+      fights_per_level: [5, 10]
+
+# ============================================================
+# 横版→3D 转换 — 空间尺度换算
+# ============================================================
+conversion_2d_to_3d:
+  corridor:
+    width_m: [4, 12]      # 主通道宽度
+    default: 6
+    note: "过窄(<4m)掩体无迂回空间, 过宽(>12m)敌人火力网难以覆盖"
+    encounter_zone_width_m: [8, 16]  # 战斗段可扩展至更宽
+
+  verticality:
+    platform_drop_m: [1.5, 4.0]  # 平台落差
+    default: 2.5
+    fall_damage_threshold_m: 4.0  # 超过才结算坠落伤害(run-and-gun 通常免摔伤)
+    climbable_height_m: [1.0, 1.8]  # 可翻越/攀上的台面高度
+    note: "垂直层次提供高处射击优势与撤退路线, 每场战斗至少 2 个高度层"
+
+  camera:
+    options:
+      over_shoulder:
+        description: "第三人称越肩, 镜头贴近角色"
+        pros: ["瞄准精度高", "沉浸感强"]
+        cons: ["视野窄, 背后偷袭难防", "需要更宽的走廊补偿"]
+        offset_m: { right: 0.6, back: 2.5, up: 1.7 }
+      fixed_third_person:
+        description: "固定/半固定第三人称远景, 类魂斗罗 3D 化的经典选择"
+        pros: ["战场信息全", "保留弹幕规避玩法", "操控简单"]
+        cons: ["瞄准精度低 → 武器宜用自动瞄准/大判定"]
+        default: true
+        distance_m: [6, 10]
+    note: "固定视角下瞄准建议: 锁定辅助 + 宽判定弹道, 越肩视角才适合精确 ADS"
+
+# ============================================================
+# 掩体系统
+# ============================================================
+cover_system:
+  height_classes:
+    half_cover:
+      height_m: [0.8, 1.2]
+      effect: "蹲下全防, 站立露出上半身; 可越射(peek fire)"
+    full_cover:
+      height_m: [1.6, 2.4]
+      effect: "站立全防; 需侧移出掩体射击"
+    low_obstacle:
+      height_m: [0.3, 0.7]
+      effect: "仅阻挡低位弹道(滚翻/滑铲可利用), 不算真掩体"
+
+  density:
+    cover_per_distance_m: [10, 15]   # 每 10-15m 至少一处掩体
+    default: 12
+    per_encounter_zone: [3, 6]       # 每个战斗段掩体数
+    distance_between_covers_m: [2, 6]  # 相邻掩体间距(保证可翻滚换位)
+
+  placement_rules:
+    - "掩体置于敌人火力线侧翼而非正中, 鼓励侧向迂回"
+    - "半掩与全掩 2:1 混合, 避免全掩堆叠造成静止龟缩"
+    - "Boss 战与精英战区域掩体独立规划(见 boss_arena)"
+    - "可破坏掩体(3-5 发命中后失效)用于动态施压, 占比 <30%"
+
+# ============================================================
+# 检查点与存档
+# ============================================================
+checkpoints:
+  spacing_seconds: [60, 120]  # 两个检查点间游戏时间
+  default: 90
+  placement_rules:
+    - "置于战斗段之前(而非之后), 重生即开战体验差"
+    - "Boss 战入口必设检查点"
+    - "死亡时保留武器进度与 pickup 收集(魂斗罗传统仅限关卡重开清空)"
+  respawn:
+    lives_per_credit: [3, 5]      # 每关生命数(经典模式)
+    lives_default: 3
+    respawn_delay_s: [2, 4]
+    respawn_invuln_s: [2, 3]      # 重生无敌时间
+    respawn_position: "最近检查点 + 周围 3m 无敌人净空区"
+    game_over: "生命数耗尽 → 关卡重开(检查点清零)或消耗续关(continue)"
+
+# ============================================================
+# Pickup 布点 — 空间节奏
+# ============================================================
+pickups:
+  reward_interval_seconds: [30, 60]  # 每 30-60s 一个奖励点
+  default: 45
+  types:
+    weapon_crate:
+      description: "武器箱(S/散弹/L/激光等字母枪, 魂斗罗传统)"
+      placement: "分支路线尽头 / 隐藏路径 / 精英敌掉落"
+      frequency: "每关 3-5 个"
+    health:
+      description: "补血( Needs 现代化: 3-5 段血制的回血包 )"
+      frequency: "战斗段后必出 1 个; 低血量时保底刷新(动态难度可选)"
+    ammo:
+      description: "弹药补给"
+      frequency: "使用有限弹药的武器时每 40-60s 一处"
+  spatial_rules:
+    - "奖励点放在高风险位(开阔地中央/高处平台), 风险换收益"
+    - "武器箱与补血不重叠布点, 迫使路线选择"
+    - "隐藏 pickup(1UP/分数)置于视觉引导暗示的死角"
+
+# ============================================================
+# Boss 竞技场
+# ============================================================
+boss_arena:
+  diameter_m: [20, 40]  # 竞技场等效直径
+  default: 30
+  shape: "圆形/八边形为主, 避免长方形死角蹲守"
+  cover_tradeoff:
+    no_cover:
+      description: "无掩体纯走位弹幕(魂斗罗原味)"
+      pros: ["考验闪避技巧", "Boss 弹幕设计即核心玩法"]
+      cons: ["容错低, 对新手不友好"]
+      suited: "弹幕型 Boss"
+    limited_cover:
+      description: "4-8 处掩体, 部分 Boss 技能可摧毁掩体"
+      pros: ["呼吸节奏可控", "难度可调"]
+      cons: ["玩家易过度依赖掩体 → Boss 需带范围技能压制"]
+      default: true
+  design_rules:
+    - "Boss 体积占竞技场 1/8-1/5, 保证走位空间"
+    - "攻击循环: 弹幕 8-15s → 破绽窗口 2-4s"
+    - "入场前 10m 净空区 + 检查点, 入场后封锁退路"
+
+# ============================================================
+# 数据结构约定 — 出生点 / 掩体点 / 巡逻路径
+# ============================================================
+data_schema:
+  spawn_points:
+    fields: { id: "string", position: "[x, y, z]", type: "patrol|ambush|trigger|reinforce", trigger: "zone_id|distance|scripted", initial_facing_deg: "float" }
+    rules: "玩家可视范围内不直接刷敌; reinforce 型需在玩家视野外 15m+ 或门后"
+
+  cover_points:
+    fields: { id: "string", position: "[x, y, z]", height_class: "half|full|low", facing_normal: "[nx, ny, nz]", destructible: "bool", occupied_by: "entity_id|null" }
+    rules: "facing_normal 指向威胁方向; AI 寻掩用最近可用点 + 威胁方向夹角 <90°"
+
+  patrol_paths:
+    fields: { id: "string", waypoints: "[{position: [x,y,z], wait_s: float, speed: float}]", loop: "bool", activation: "always|on_trigger" }
+    rules: "waypoint 间直线移动需做视线/碰撞预校验; 战斗触发后 patrol 切换为 combat 行为树"
+
+  encounter_zones:
+    fields: { id: "string", bounds: "aabb|polygon", on_enter: "spawn_set_id", lock: "bool(是否封锁退路)", music_layer: "int" }
+
+# ============================================================
+# 常见反模式
+# ============================================================
+antipatterns:
+  - "走廊内掩体正对来敌方向 → 玩家无脑蹲第一处掩体"
+  - "检查点设在 Boss 房内 → 死亡重进即满状态 Boss 战, 节奏断裂"
+  - "3D 化后沿用 2D 弹幕密度 → 固定远景视角下玩家无法预判, 判定必须放宽"
+  - "pickup 全放在主路径 → 分支路线无奖励, 分支设计白费"
+  - "Boss 竞技场过大(>40m)且无掩体 → 追不上 Boss, 拖入消耗战"
+
+# ============================================================
+# _shooter_sections/multiplayer_design.yaml
+# ============================================================
+# Multiplayer Design Knowledge — 魂斗罗风格 Run-and-Gun 射击游戏(3D化)的多人合作设计领域知识
+#
+# 覆盖合作模式谱系、同屏 2D→3D 镜头方案、难度缩放公式、复活协作、友伤、
+# 资源分配、网络同步模型与单机优先的里程碑策略。
+# 位置: templates/genre_knowledge/_shooter_sections/multiplayer_design.yaml
+
+genre: shooter_run_and_gun
+section: multiplayer_design
+
+# ============================================================
+# 合作模式谱系 — 本地/在线/混合
+# ============================================================
+co_op_modes:
+  overview: "魂斗罗的传统是本地双人同屏。3D 化后需在镜头、UI、网络三方面重新设计, 三种模式各有代价, 可并行支持但 UI/镜头代码需抽象成可切换层。"
+
+  modes:
+    - id: "local_split_screen"
+      desc: "本地分屏, 双人各占一半画面, 无网络依赖, 延迟为零"
+      camera_cost: "每玩家独立镜头, 渲染开销 ×1.8-2.0(可共享静态资产缓解)"
+      ui_cost: "HUD 需左右/上下双份, 提示与菜单必须声明'属于哪位玩家'"
+      pros: ["零延迟手感最好", "断网可玩, 客厅社交场景强"]
+      cons: ["视野减半, 3D 下纵深判断变难", "需要手柄/键位分区 UI"]
+    - id: "online_coop"
+      desc: "在线合作, 单人全屏镜头, 网络同步队友状态"
+      camera_cost: "每人全视野镜头, 但需同步队友位置做幽灵渲染/标记"
+      ui_cost: "队友血条、倒地标记、位置箭头(队友出视野时必须显示)"
+      pros: ["全视野体验最佳", "可跨地域组队"]
+      cons: ["网络代码复杂度高", "手感受延迟影响(见 sync_models)"]
+    - id: "hybrid"
+      desc: "本地双人 + 在线联人(2 本地 + 2 远程等组合)"
+      camera_cost: "本地玩家共用一台机器(仍需分屏), 远程玩家全屏"
+      ui_cost: "最复杂: 输入设备路由 + 双重状态(本地对/远程对)混合渲染"
+      pros: ["覆盖最全的组队场景"]
+      cons: ["工程量约为前两者之和的 1.5 倍, MVP 阶段不建议"]
+
+  default_recommendation: "MVP 先只做本地双人分屏(继承魂斗罗传统、零网络成本), 在线合作作为第二里程碑。"
+
+# ============================================================
+# 同屏 2D→3D 的镜头问题 — 分屏 vs 共享镜头
+# ============================================================
+camera_solutions:
+  overview: "2D 时代固定卷轴天然解决双人同屏; 3D 化后镜头是合作体验的头号设计难题, 二选一或混合。"
+
+  split_screen:
+    desc: "垂直分割(左右)或水平分割(上下), 每人独立镜头"
+    orientation:
+      vertical_split: "适合宽屏(16:9), 每人获得 8:9 窄竖幅, 纵深感知差但水平信息足"
+      horizontal_split: "每人获得 16:4.5 超宽幅, 水平视野极佳, 适合横版推进关卡"
+      recommendation: "横版 run-and-gun 首选水平分割, 俯视角关卡用垂直分割"
+    trade_offs: ["镜头自由, 玩家可分开行动", "渲染成本翻倍", "分屏线两侧信息割裂, 队友状态需 HUD 传达"]
+
+  shared_screen:
+    desc: "单个镜头同时框住所有玩家(经典魂斗罗约束的 3D 等价物)"
+    constraints:
+      player_distance_max_m: { min: 8, max: 15, default: 12 }   # 玩家间最大距离, 超出被强制拉回
+      camera_zoom_range: "镜头动态缩放范围建议 1.0-2.2 倍, 距离越大拉得越远"
+    rubber_band:
+      desc: "橡皮筋机制: 超距玩家被柔性拉回, 而非硬墙阻挡"
+      pull_force: { min: 0.3, max: 0.8, default: 0.5 }   # 相对移速的拉回比例
+      edge_rule: "建议'软拉 + 屏幕边缘提示'而非硬性阻挡, 硬墙会打断跑枪节奏"
+    trade_offs: ["渲染成本不增, 保留了'同屏共斗'的魂斗罗味道", "玩家自由度受限, 强者迁就弱者", "镜头缩放导致远端目标过小, 需搭配准星放大 UI"]
+
+  hybrid_recommendation: "共享镜头 + 软橡皮筋为默认(成本低、传统感强); 关卡设计保证任何时刻双人可并行的通路宽度 ≥2 条时体验最佳。"
+
+# ============================================================
+# 难度缩放 — 敌人血量/数量随人数缩放
+# ============================================================
+difficulty_scaling:
+  overview: "多人时若不做缩放, 合作会因总 DPS 翻倍而使游戏过易; 线性翻倍(×2/人)则因命中率冗余和火力集中而仍偏易, 推荐 ×1.6-1.8/人的次线性缩放。"
+
+  health_per_player_mult: { min: 1.6, max: 1.8, default: 1.7 }   # 敌人血量: base × mult^(player_count - 1)
+  count_per_player_mult: { min: 1.2, max: 1.5, default: 1.3 }    # 同屏敌人数上限: base × mult^(player_count - 1)
+  enemy_aggression_bonus: { min: 0.0, max: 0.15, default: 0.1 }  # 每增加一名玩家, 敌人开火频率提升比例
+  boss_phase_threshold_shift: "Boss 阶段切换按总伤害而非单人伤害判定, 无需额外缩放"
+
+  formula_example: "2 人时敌血 = base × 1.7; 4 人时 = base × 1.7^3 ≈ base × 4.9 (低于线性 8 倍)"
+  rationale: "次线性缩放保留'人多更好打'的正反馈, 又防止杂兵战变成站桩扫射; 数量缩放低于血量缩放, 避免屏幕过载。"
+
+# ============================================================
+# 复活协作 — 队友救援与命体系
+# ============================================================
+revive_system:
+  overview: "3D 化后可用'倒地救援'替代 2D 时代的直接死亡, 这是合作粘性的核心来源。"
+
+  downed_state:
+    bleed_out_window_s: { min: 10, max: 30, default: 20 }   # 倒地后等待救援的流血流计时
+    revive_duration_s: { min: 1.5, max: 4.0, default: 2.5 } # 救援动作时长, 期间双人静止易受攻击
+    revive_hp_pct: { min: 0.3, max: 0.6, default: 0.5 }     # 复活后恢复的的生命比例
+  rescue_risk_trade_off: "救援时长 ≥2s 且救援者无无敌帧, 才能制造'冒死救人'的高光时刻; 过短则沦为无脑互拉。"
+
+  lives_system:
+    shared_lives: "全队共享命数(魂斗罗传统): 一人失误全队买单, 沟通压力最大, 适合硬核"
+    independent_lives: "独立命数: 个人自负, 对新手友好, 但弱者可能拖垮长关"
+    recommendation: "共享命 + 每关可 earn 回命数(击杀奖励), 平衡责任与容错"
+
+# ============================================================
+# 友伤设计 — friendly fire 开关权衡
+# ============================================================
+friendly_fire:
+  overview: "魂斗罗传统中子弹会误伤队友, 这是'走位纪律'的一部分; 3D 化自由瞄准下误伤概率骤增, 需重新权衡。"
+
+  options:
+    - id: "ff_on"
+      desc: "友伤开启(传统派)"
+      pros: ["走位与开火时机成为真实合作技巧", "武器如 S 弹的'背刺喜剧'保留"
+      ]
+      cons: ["3D 自由视角下误伤频率过高, 挫败感压过乐趣", "新手组合劝退率高"]
+    - id: "ff_off"
+      desc: "友伤关闭(现代主流)"
+      pros: ["容错高, 适合大众化定位", "火力网可放心覆盖队友区域"]
+      cons: ["失去一层合作深度", "弹幕压制玩法被弱化"]
+    - id: "ff_partial"
+      desc: "部分友伤(推荐折中): 友伤伤害衰减至 10-25% 且不致死(最低留 1 HP)"
+      pros: ["保留'注意走位'的信号, 又不会真坑死队友"]
+      cons: ["玩家需理解非对称伤害规则, 需 UI 提示"]
+  default: "ff_partial, 伤害系数 0.15, 伤害不低于 1 点且不触发倒地"
+
+# ============================================================
+# 资源分配 — 武器箱与补血的拾取竞争
+# ============================================================
+resource_allocation:
+  overview: "魂斗罗的武器箱是共享刷新、先到先得, 多人下天然产生竞争; 需决定放任竞争还是设计分配机制。"
+
+  weapon_crate:
+    spawn_model: "击落飞行胶囊后落地为可拾取实体, 保留传统"
+    competition_options:
+      - "先到先得(默认): 保留竞争张力, 但强者独占好武器"
+      - "个人化实例: 每人看到的箱子内容独立, 拾取互不影响(推荐 3D 下使用, 消除抢箱挫败)"
+      - "交换机制: 拾取后可按 'give' 键将当前武器抛给队友"
+    recommendation: "个人化实例 + 武器抛送, 既有慷慨协作又无恶意抢夺"
+  health_pickup:
+    full_heal_shared: "补血全队生效(适合共享命体系)"
+    targeted_drop: "掉落者可指定给倒地/低血队友, 建议加'朝队友方向抛投'输入"
+    rule_of_thumb: "低血量玩家拾取收益更高时(如满血拾取无效), 竞争自动转化为让渡"
+
+# ============================================================
+# 掉线与同步 — 网络模型选择
+# ============================================================
+sync_models:
+  overview: "run-and-gun 要求低延迟手感, 网络模型的选择直接决定体验上限。"
+
+  models:
+    - id: "state_sync"
+      desc: "状态同步: 主机/权威服务器模拟, 各客户端只上报输入、广播状态快照"
+      pros: ["防作弊简单", "掉线恢复容易", "逐玩家状态可异步插值"]
+      cons: ["远程玩家看到的队友有 1-2 帧插值延迟", "带宽随实体数增长"]
+      fit: "3D 射击游戏主流选择, 推荐默认"
+    - id: "lockstep"
+      desc: "帧同步: 各端跑同一确定性模拟, 只同步输入"
+      pros: ["带宽极低(只有输入)", "回放/观战天然免费"]
+      cons: ["要求确定性浮点(或定点数)物理, 3D 物理引擎改造代价大", "一人卡顿全员等帧", "掉线重连需追帧或全量快照"]
+      fit: "2D 确定性引擎下可选; 3D 物理场景强烈不推荐"
+
+  reconnect:
+    grace_window_s: { min: 30, max: 120, default: 60 }   # 断线后保留席位与状态的等待窗口
+    snapshot_on_rejoin: "重连时下发全量世界快照而非追帧, 实现成本低"
+    host_migration: "P2P 架构需设计主机迁移(或直接降级为 AI 托管 + 房间解散提示), MVP 建议后者"
+
+# ============================================================
+# 里程碑策略 — 何时单机优先
+# ============================================================
+single_player_first:
+  overview: "多人是体验放大器而非核心乐趣来源: 若单人跑枪本身不好玩, 多人也救不回来。"
+
+  milestone_order:
+    - "M0 原型: 单人移动/射击/镜头手感达标(跑、跳、八向射击的 3D 化操作方案)"
+    - "M1 单机垂直切片: 一关三敌种一 Boss, 弹幕密度与难度曲线成立"
+    - "M2 本地双人: 共享镜头 + 橡皮筋 + 难度缩放(全部为本地逻辑, 无网络代码)"
+    - "M3 在线合作(可选): state_sync + 断线重连, 复用 M2 全部设计参数"
+  rationale: "本地双人(M2)与在线合作(M3)共享 95% 的游戏逻辑, 只差传输层; 先验证'双人好玩'再投入网络工程, 风险最低。"
+  anti_pattern: "一开始就写网络层会导致每次调难度/镜头都要联调两端, 迭代速度下降 3-5 倍。"
+
+# ============================================================
+# _shooter_sections/projectile_physics.yaml
+# ============================================================
+# Projectile Physics Knowledge — 射击游戏(run-and-gun / 魂斗罗风格 3D 化)弹道物理子域
+#
+# 为弹道相关的机制设计提供概念、权衡、参数区间与常见模式。
+# 位置: templates/genre_knowledge/_shooter_sections/projectile_physics.yaml
+
+section: projectile_physics
+
+# ============================================================
+# 弹道模式 — hitscan vs projectile
+# ============================================================
+ballistic_mode:
+  hitscan:
+    concept: "射线检测: 开火瞬间用 Raycast 判定命中, 无可见弹体飞行时间"
+    pros:
+      - "命中判定即时, 手感直接, 网络同步简单(只传射线)"
+      - "性能开销低(单次射线 vs 每帧弹体模拟)"
+    cons:
+      - "无弹道预判玩法, 缺乏闪避空间"
+      - "视觉上需要假弹道(tracer)弥补'瞬移感'"
+    suitable_for:
+      - "精确射击武器: 狙击枪、激光、霰弹(多射线散射)"
+      - "辅助武器 / 敌人远程压制火力的兜底方案"
+  projectile:
+    concept: "实体弹体: 弹体以速度向量飞行, 逐帧移动并检测碰撞"
+    pros:
+      - "有飞行时间和弹道弧线, 支持'读弹'与走位闪避 — 魂斗罗式弹幕核心"
+      - "支持反弹、追踪、抛物线等花式弹道"
+    cons:
+      - "每帧物理开销, 弹量大时需对象池 + 空间分区"
+      - "高速弹易穿透(Tunneling), 需 CCD 或子步进"
+    suitable_for:
+      - "主角主武器、Boss 弹幕、火箭/手雷等战术武器"
+  hybrid_default: "主角武器用 projectile(保留闪避乐趣), 部分精确武器用 hitscan; 默认比例约 70/30"
+
+# ============================================================
+# 弹道参数 — 速度/重力/衰减
+# ============================================================
+ballistics:
+  muzzle_velocity:
+    pistol:    { range: [30, 60],   default: 45,  note: "单位 m/s; 手感偏'可闪避'" }
+    rifle:     { range: [60, 120],  default: 90,  note: "准射速压弹幕" }
+    shotgun:   { range: [40, 80],   default: 60,  note: "多弹丸散射, 单丸伤害低" }
+    rocket:    { range: [15, 30],   default: 22,  note: "慢速高伤, 留闪避窗口" }
+    minigame_note: "3D 化后玩家纵深感知变弱, 弹速建议比 2D 原型上调 20-40%"
+  gravity_scale:
+    none: 0.0            # 激光/能量弹
+    light: 0.1           # 步枪/手枪, 轻微下坠
+    heavy: 1.0           # 手雷/火箭(世界重力)
+    default: 0.1
+  damage_falloff:
+    concept: "射程衰减: 超出有效射程后伤害线性或阶梯下降"
+    effective_range: [20, 60]   # m, 默认 40
+    min_damage_ratio: [0.3, 0.6]  # 最远距离伤害保留比例, 默认 0.5
+    note: "魂斗罗式高机动玩法中衰减宜温和, 鼓励走位而非惩罚距离"
+  lifetime:
+    range: [1.0, 6.0]    # s, 默认 3.0
+    note: "超时自动回收进对象池; Boss 弹幕可延长至 8s"
+
+# ============================================================
+# 碰撞判定 — hitbox / hurtbox / 穿透
+# ============================================================
+collision:
+  hitbox:
+    concept: "攻击方判定体: 弹体自身的碰撞盒"
+  hurtbox:
+    concept: "受击方判定体: 角色可被命中的区域"
+    rule: "hitbox 与 hurtbox 相交即命中, 二者分离管理便于差异化缩放"
+  tolerance:
+    player_friendly_scale: [1.1, 1.5]  # hurtbox 放大系数, 默认 1.2
+    enemy_hurtbox_scale: [0.9, 1.0]    # 敌方判定可略收紧, 增加挑战
+    note: "3D 化后深度方向命中率下降, 放大系数取区间上限(1.3-1.5)更友好"
+  penetration:
+    none: "命中即销毁(默认)"
+    pierce_count: "穿透 N 个目标后销毁, 常见 pierce: 1-3"
+    damage_decay: "每次穿透伤害递减 20-40%, 默认 25%"
+    suitable: "狙击/长矛类敌人与武器; 弹幕中少量使用提升爽快感"
+  layers:
+    - "Player / PlayerProjectile / Enemy / EnemyProjectile / Environment / Pickup"
+    - "己方弹不伤己(魂斗罗传统); 环境层阻挡弹道并可被破坏"
+
+# ============================================================
+# 3D 化适配 — 瞄准辅助
+# ============================================================
+aim_3d:
+  problem: "2D 横版只有平面瞄准; 3D 化后玩家需同时处理水平+俯仰+深度, 难度陡增"
+  aim_assist:
+    concept: "辅助瞄准: 将准星附近 hitbox 向准星吸附或修正弹道"
+    strength:
+      magnetism_angle: [2, 8]     # 度, 吸附锥角, 默认 5
+      bullet_bend_ratio: [0.1, 0.3]  # 弹道向目标弯曲比例, 默认 0.2
+      snap_radius: [0.5, 2.0]     # m, 轻吸附半径, 默认 1.0
+    note: "强度按平台分级: 手柄 > 键鼠; Boss 战可动态下调保挑战性"
+  lock_on_vs_free_aim:
+    lock_on:
+      concept: "锁定模式: 按住/按下锁定最近可视敌人, 弹道直飞目标"
+      pros: "上手门槛低, 适合'移动射击'为主的 run-and-gun 节奏"
+      cons: "丧失瞄准技巧深度; 多敌人时锁定切换易乱"
+      switch_range: [0.3, 0.8]   # s, 锁定切换延迟, 默认 0.5
+    free_aim:
+      concept: "自由瞄准: 准星完全由玩家控制, 可叠加轻度 aim assist"
+      pros: "深度高, 爽快感来自精准操作"
+      cons: "手柄玩家门槛高, 高速移动中命中率骤降"
+    default: "轻度自由瞄准 + 弱 aim assist; 锁定仅用于特殊武器(火箭/追踪)"
+
+# ============================================================
+# 特殊弹道
+# ============================================================
+special_trajectories:
+  grenade:
+    concept: "抛物线手雷: 初速度 + 世界重力, 落地或延时引爆"
+    arc_speed: [10, 20]       # m/s, 默认 15
+    fuse_time: [1.5, 3.0]     # s, 默认 2.0
+    bounce_count: [0, 2]      # 默认 1
+    restitution: [0.2, 0.5]   # 反弹能量保留
+  ricochet:
+    concept: "反弹弹: 命中墙面按反射向量继续飞行"
+    max_bounces: [1, 3]       # 默认 2
+    speed_retention: [0.6, 0.9]  # 每次反弹速度保留比例
+    note: "反射轴需对齐碰撞法线; 反弹弹常带视觉高亮提示危险区"
+  homing:
+    concept: "追踪弹: 每帧向目标方向插值转向"
+    turn_rate: [90, 360]      # 度/s, 默认 180
+    note: "低值(90-150)可读可躲适合弹幕; 高值(300+)仅限终极技/锁定武器"
+    lose_target_behavior: "目标丢失后保持原方向直飞至 lifetime 结束"
+
+# ============================================================
+# 性能预算
+# ============================================================
+performance:
+  max_active_projectiles:
+    range: [100, 500]        # 同屏最大弹体数, 默认 300
+    budget_note: "手机端取下限, PC/主机可取上限; Boss 弹幕阶段预留 60% 配额"
+  object_pool:
+    concept: "对象池: 预分配弹体实例循环复用, 避免 GC 卡顿"
+    pool_size: "max_active × 1.2 向上取整"
+    prewarm: true            # 场景加载时预热
+  optimization_patterns:
+    - "空间分区(八叉树/网格)做碰撞粗筛, 弹体间不互撞"
+    - "弹体用简化碰撞体(球/胶囊)而非网格碰撞"
+    - "同类型弹幕合并渲染(GPU Instancing), 弹道逻辑用定点数或 ECS 批处理"
+    - "超出玩家视距的弹体休眠或提前回收"
+
+# ============================================================
+# _shooter_sections/weapon_balance.yaml
+# ============================================================
+# Weapon Balance Knowledge — 魂斗罗风格 Run-and-Gun 射击游戏的武器平衡领域知识
+#
+# 覆盖武器类型谱系、DPS/TTK 平衡、武器获取与丢失、弹药经济与数值示例。
+# 位置: templates/genre_knowledge/_shooter_sections/weapon_balance.yaml
+
+genre: shooter_run_and_gun
+section: weapon_balance
+
+# ============================================================
+# 武器类型谱系 — 经典魂斗罗字母箱体系
+# ============================================================
+weapon_types:
+  overview: "玩家通过击落飞行胶囊/武器箱获得字母道具, 拾取即切换武器。每种武器有明确的场景定位, 无绝对上位替代。"
+
+  types:
+    - id: "rifle"
+      letter: "默认"
+      role: "基线武器, 全场景可用"
+      damage: { min: 1.0, max: 1.0, default: 1.0 }   # 以默认步枪伤害为 1.0 基准
+      fire_rate: { min: 3.0, max: 4.5, default: 4.0 }  # 发/秒
+      spread_deg: { min: 0, max: 2, default: 0 }
+      range_px: { min: 600, max: 9999, default: 9999 }  # 全屏
+      notes: "半自动点射, 精准但无面杀伤; 是所有强度对比的锚点"
+
+    - id: "spread"
+      letter: "S"
+      role: "近中距面杀伤, 清杂兵之王"
+      damage: { min: 0.6, max: 0.9, default: 0.7 }   # 单发弹丸伤害
+      pellets: { min: 3, max: 5, default: 5 }
+      fire_rate: { min: 2.0, max: 3.0, default: 2.5 }
+      spread_deg: { min: 30, max: 60, default: 45 }
+      range_px: { min: 300, max: 500, default: 400 }
+      notes: "弹丸随距离衰减; 贴脸全中时理论 DPS 最高, 远距急剧衰减"
+
+    - id: "laser"
+      letter: "L"
+      role: "高单体贯穿, Boss 战特化"
+      damage: { min: 4.0, max: 6.0, default: 5.0 }
+      fire_rate: { min: 1.0, max: 1.5, default: 1.2 }
+      spread_deg: { min: 0, max: 0, default: 0 }
+      range_px: { min: 9999, max: 9999, default: 9999 }
+      piercing: true
+      notes: "贯穿所有敌人(每敌人只结算一次); 新发射会取消旧光束, 连打反而降 DPS"
+
+    - id: "flame"
+      letter: "F"
+      role: "短距螺旋弹幕, 攻防一体"
+      damage: { min: 1.5, max: 2.5, default: 2.0 }
+      fire_rate: { min: 1.5, max: 2.5, default: 2.0 }
+      spread_deg: { min: 20, max: 40, default: 30 }  # 螺旋轨迹等效覆盖
+      range_px: { min: 250, max: 400, default: 320 }
+      notes: "螺旋飞行弹道可封锁上方/身后, 覆盖面大但弹速慢, 需预判"
+
+    - id: "homing"
+      letter: "H"
+      role: "自动追踪, 解放瞄准注意力的容错武器"
+      damage: { min: 0.8, max: 1.2, default: 1.0 }
+      fire_rate: { min: 2.5, max: 4.0, default: 3.0 }
+      spread_deg: { min: 0, max: 0, default: 0 }  # 发射后自动转向
+      range_px: { min: 800, max: 1200, default: 1000 }
+      notes: "单发强度最低, 价值在零瞄准成本; 转向角速度 180-360 deg/s"
+
+    - id: "machinegun"
+      letter: "M"
+      role: "全自动高射速, 持续输出稳健"
+      damage: { min: 0.8, max: 1.0, default: 0.9 }
+      fire_rate: { min: 8.0, max: 12.0, default: 10.0 }
+      spread_deg: { min: 2, max: 6, default: 4 }
+      range_px: { min: 700, max: 9999, default: 900 }
+      notes: "可 8 方向连射, 弹幕压制力强; 单发弱但操作上限最高"
+
+# ============================================================
+# 武器强度平衡 — DPS 与 TTK
+# ============================================================
+balance:
+  dps_formula: "DPS = damage × pellets × fire_rate × hit_rate_multiplier"
+  hit_rate_multiplier:
+    spread: 0.4   # 面杀伤实际命中率折算
+    homing: 0.9   # 追踪弹接近必中
+    default: 0.7
+  balance_rule: "所有武器的理论 DPS × 命中折算应落在基准步枪 DPS 的 0.8-1.5 倍内; 超出者用射速/弹速/射程补偿性削弱"
+
+  ttk_targets:
+    minion_small: { min: 0.3, max: 0.5, unit: "s" }   # 小杂兵
+    minion_elite: { min: 0.6, max: 1.0, unit: "s" }   # 精英杂兵
+    boss: { min: 8, max: 20, unit: "s" }
+    note: "TTK = 敌人 HP / 玩家实际 DPS; Boss TTK 按 S 级武器贴脸输出上限校准"
+
+  enemy_hp_anchor:
+    minion_small: { hp: 1-2, reference: "基准步枪 1 发即死" }
+    minion_elite: { hp: 3-6, reference: "基准步枪 3-5 发" }
+    boss_phase: { hp: 60-150, reference: "每阶段独立血条" }
+
+  relative_strength_constraints:
+    - "S 弹贴脸 DPS 可达基准 1.5x, 但射程惩罚要求明显(≤500px)"
+    - "L 弹对 Boss 应为最优解之一, 但对密集杂兵弱于 S(贯穿结算限制)"
+    - "H 弹 DPS 允许最低(0.8x), 换取全屏索敌与操作减负"
+    - "M 弹应无短板但无长板: 各项参数不高于同类最优值的 90%"
+    - "禁止出现'拾取后任意场景严格优于原武器'的纯上位武器"
+
+# ============================================================
+# 武器获取与丢失
+# ============================================================
+acquisition_and_loss:
+  weapon_box:
+    spawn_rate: { min: 0.15, max: 0.3, default: 0.2 }  # 击破胶囊载具的掉率
+    letter_pool: "按关卡加权随机: 本关优势武器权重 2x, 弱势武器权重 0.5x"
+    pity_system: "连续 3 箱未出 S/L 时, 提升高级武器权重"  # 可选现代改良
+
+  death_loss:
+    classic: "死亡即重置为默认步枪 — 挫败感强, 拉长关卡, 是魂斗罗高难度的核心来源之一"
+    modern_keep: "死亡保留武器 — 降低挫败, 但削弱'守住强势武器'的紧张感"
+    trade_offs:
+      classic:
+        pros: ["死亡代价真实", "武器获取即正反馈", "难度曲线陡峭经典"]
+        cons: ["Boss 战连续翻车时挫败堆积", "对新手不友好"]
+      keep:
+        pros: ["现代玩家友好", "鼓励激进尝试武器组合"]
+        cons: ["拾取动力衰减", "难度曲线变平"]
+      hybrid_recommended: "死亡降级不重置(如 S→M→默认), 或 checkpoint 重生时保底发一个武器箱"
+
+# ============================================================
+# 弹药经济
+# ============================================================
+ammo_economy:
+  infinite:
+    design: "经典魂斗罗模式: 所有武器无限弹药, 平衡完全由参数与获取节奏承担"
+    pros: ["零管理成本, 专注走位与射击", "武器差异纯粹体现在手感与场景适配"]
+    cons: ["无法用资源杠杆调节强度", "强势武器一旦到手无约束"]
+  limited:
+    design: "特殊武器(如火箭筒/手雷)限量, 拾取补充; 主武器无限"
+    pros: ["爆发武器可做得远超基准而不破坏长期平衡", "增加'何时用'的决策深度"]
+    cons: ["囤积/浪费焦虑", "需要 HUD 弹药指示与补给节奏设计"]
+  recommended: "主武器线无限弹药; 仅屏幕清空类大招(炸弹)限量 1-3 个"
+
+# ============================================================
+# 数值示例 — 6 把示例武器完整参数表
+# ============================================================
+example_loadout:
+  reference_note: "基准: rifle damage=1.0, 玩家实际 DPS 基准≈4.0; 敌方小杂兵 HP=1, 精英 HP=4, Boss 阶段 HP=100"
+  weapons:
+    - { id: "rifle_default", letter: "-", damage: 1.0, fire_rate: 4.0, pellets: 1, spread_deg: 0, bullet_speed: 900, range_px: 9999, effective_dps: 2.8, ttk_boss: 35.7 }
+    - { id: "spread_shot", letter: "S", damage: 0.7, fire_rate: 2.5, pellets: 5, spread_deg: 45, bullet_speed: 700, range_px: 400, effective_dps: 5.0, ttk_boss: 20.0 }
+    - { id: "laser_beam", letter: "L", damage: 5.0, fire_rate: 1.2, pellets: 1, spread_deg: 0, bullet_speed: 3000, range_px: 9999, effective_dps: 4.2, ttk_boss: 23.8 }
+    - { id: "flame_round", letter: "F", damage: 2.0, fire_rate: 2.0, pellets: 1, spread_deg: 30, bullet_speed: 450, range_px: 320, effective_dps: 3.6, ttk_boss: 27.8 }
+    - { id: "homing_missile", letter: "H", damage: 1.0, fire_rate: 3.0, pellets: 1, spread_deg: 0, bullet_speed: 600, range_px: 1000, effective_dps: 2.7, ttk_boss: 37.0 }
+    - { id: "machinegun", letter: "M", damage: 0.9, fire_rate: 10.0, pellets: 1, spread_deg: 4, bullet_speed: 850, range_px: 900, effective_dps: 5.0, ttk_boss: 20.0 }
+  calibration_notes:
+    - "effective_dps 已含命中折算; S/M 并列最高但场景互补(近距面 vs 全向压制)"
+    - "ttk_boss 以单体命中、无走位失误的理想输出计算, 实际乘 1.3-1.6 宽限系数"
+    - "H 弹最弱是刻意设计: 玩家用注意力换输出, 属于合理 trade-off 而非失衡"
+

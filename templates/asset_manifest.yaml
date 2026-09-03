@@ -1,0 +1,95 @@
+# Shooter Contra 模板 - MVP 资产清单骨架
+# priority 说明: H0=人工制作, L1=AI生成, L2=程序化生成, L3=占位资产
+
+assets:
+  # ---- characters ----
+  - asset_id: chr_player_commando
+    category: characters
+    priority: H0
+    status: "todo"
+  - asset_id: chr_enemy_grunt
+    category: characters
+    priority: L1
+    status: "todo"
+  - asset_id: chr_enemy_turret_walker
+    category: characters
+    priority: L1
+    status: "todo"
+  - asset_id: chr_boss_fortress_core
+    category: characters
+    priority: H0
+    status: "todo"
+
+  # ---- environments ----
+  - asset_id: env_jungle_battlefield_tileset
+    category: environments
+    priority: L1
+    status: "todo"
+  - asset_id: env_enemy_base_interior_tileset
+    category: environments
+    priority: L1
+    status: "todo"
+  - asset_id: env_boss_arena_platform
+    category: environments
+    priority: L2
+    status: "todo"
+  - asset_id: env_skybox_sci_fi_warzone
+    category: environments
+    priority: L2
+    status: "todo"
+
+  # ---- props ----
+  - asset_id: prop_weapon_pickup_pod
+    category: props
+    priority: H0
+    status: "todo"
+  - asset_id: prop_checkpoint_beacon
+    category: props
+    priority: L2
+    status: "todo"
+  - asset_id: prop_sandbag_cover
+    category: props
+    priority: L3
+    status: "todo"
+
+  # ---- fx ----
+  - asset_id: fx_muzzle_flash
+    category: fx
+    priority: L2
+    status: "todo"
+  - asset_id: fx_bullet_trail_set
+    category: fx
+    priority: L2
+    status: "todo"
+  - asset_id: fx_explosion_shockwave
+    category: fx
+    priority: L1
+    status: "todo"
+  - asset_id: fx_boss_phase_transition
+    category: fx
+    priority: L1
+    status: "todo"
+
+  # ---- audio ----
+  - asset_id: aud_bgm_battle_theme
+    category: audio
+    priority: L1
+    status: "todo"
+  - asset_id: aud_sfx_weapon_fire_set
+    category: audio
+    priority: L1
+    status: "todo"
+  - asset_id: aud_sfx_explosion_set
+    category: audio
+    priority: L1
+    status: "todo"
+
+  # ---- ui ----
+  - asset_id: ui_hud_health_weapon_bar
+    category: ui
+    priority: H0
+    status: "todo"
+  - asset_id: ui_title_screen_art
+    category: ui
+    priority: L1
+    status: "todo"

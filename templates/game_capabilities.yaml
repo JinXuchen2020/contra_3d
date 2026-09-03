@@ -1,0 +1,17 @@
+# Shooter Template — game_capabilities
+# Factory Gate 与内容种子阈值 (来自 shooter_scaffold.yaml defaults)
+
+factory_gate:
+  - {system: "rendering", check: "3D场景可渲染+准星UI"}
+  - {system: "player_movement", check: "WASD移动+鼠标旋转+跳跃"}
+  - {system: "weapon_system", check: "武器切换+射击+弹道计算"}
+  - {system: "enemy_ai", check: "敌人可生成+寻路+攻击"}
+  - {system: "health_damage", check: "命中判定+伤害计算+死亡"}
+  - {system: "simulation", check: "simulation feature 已实现"}
+
+content_min_threshold: 10
+
+seed_round:
+  round_1: {weapons: 5, enemies: 5, maps: 2}
+  round_2: {weapons: 3, enemies: 3, pickups: 8}
+  round_3: {maps: 2, bosses: 2}

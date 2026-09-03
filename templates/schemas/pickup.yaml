@@ -1,0 +1,7 @@
+# Pickup Schema — 可拾取物定义
+# 来源: shooter_scaffold.yaml defaults
+fields:
+  pickup_id: string        # 唯一标识 (p_health, p_ammo, p_weapon_s, ...)
+  type: enum               # health | ammo | armor | weapon | powerup
+  value: number            # 数值 (回血量/弹药量/武器id等)
+  respawn_time: number     # 重生时间 (秒; 0=不重生)

@@ -1,0 +1,39 @@
+# OS 运行时目录（不纳入版本控制）
+_os_state/
+_os_memory/
+.omo/
+
+# Unity 生成目录与产物
+[Ll]ibrary/
+[Tt]emp/
+[Oo]bj/
+[Bb]uild/
+[Bb]uilds/
+[Ll]ogs/
+[Uu]serSettings/
+MemoryCaptures/
+*.csproj
+*.sln
+*.user
+*.pidb
+*.booproj
+*.suo
+*.tmp
+*.unityproj
+
+# 构建产物（通用）
+build/
+dist/
+
+# Python 缓存
+__pycache__/
+*.pyc
+
+# 外部资产（人工导入，不纳入版本控制）
+assets_external/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo

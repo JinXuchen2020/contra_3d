@@ -1,0 +1,11 @@
+# Weapon Schema — 武器定义
+# 来源: shooter_scaffold.yaml defaults
+fields:
+  weapon_id: string        # 唯一标识 (w_rifle, w_shotgun, ...)
+  name: string             # 显示名
+  type: enum               # hitscan | projectile | melee
+  damage: number           # 单发伤害
+  fire_rate: number        # 每秒发射数 (rounds/s)
+  magazine_size: number    # 弹匣容量 (0=无限)
+  reload_time: number      #换弹时间 (秒; 0=无换弹)
+  spread: number           # 散布角度 (度; 0=精准)

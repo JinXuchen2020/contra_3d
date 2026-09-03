@@ -1,0 +1,9 @@
+# Map Schema — 关卡地图定义
+# 来源: shooter_scaffold.yaml defaults
+fields:
+  map_id: string           # 唯一标识 (m_stage01, ...)
+  name: string             # 显示名
+  spawn_points: list       # 出生点 [{x,y,z,team}]
+  cover_points: list       # 掩体点 [{x,y,z}]
+  pickup_locations: list   # 道具点 [{x,y,z,type}]
+  navmesh: string          # 导航网格数据路径 (可选)

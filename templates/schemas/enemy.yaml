@@ -1,0 +1,10 @@
+# Enemy Schema — 敌人定义
+# 来源: shooter_scaffold.yaml defaults
+fields:
+  enemy_id: string         # 唯一标识 (e_grunt, e_sniper, ...)
+  name: string             # 显示名
+  health: number           # 生命值
+  speed: number            # 移动速度 (m/s)
+  ai_type: enum            # patrol | chase | sniper | rusher
+  weapons: list[string]    # 持有武器 (weapon_id 列表)
+  drop_table: list         # 掉落表 [{pickup_id, chance}]

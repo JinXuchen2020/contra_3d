@@ -1,0 +1,12 @@
+# Pickups Seed Data — 可拾取物种子数据 (8 个, 对应 seed_round.round_2.pickups: 8)
+# schema: schemas/pickup.yaml (fields: pickup_id/type{health,ammo,armor,weapon,powerup}/value/respawn_time)
+
+pickups:
+  - {pickup_id: p_health_small, type: health, value: 25, respawn_time: 30}
+  - {pickup_id: p_health_large, type: health, value: 100, respawn_time: 60}
+  - {pickup_id: p_ammo_rifle, type: ammo, value: 60, respawn_time: 20}
+  - {pickup_id: p_ammo_shotgun, type: ammo, value: 24, respawn_time: 25}
+  - {pickup_id: p_armor_light, type: armor, value: 50, respawn_time: 45}
+  - {pickup_id: p_weapon_shotgun, type: weapon, value: "w_shotgun", respawn_time: 0}
+  - {pickup_id: p_weapon_laser, type: weapon, value: "w_laser", respawn_time: 0}
+  - {pickup_id: p_powerup_barrier, type: powerup, value: 5, respawn_time: 90}

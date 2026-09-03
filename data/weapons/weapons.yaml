@@ -1,0 +1,55 @@
+# weapons.yaml — 魂斗罗风格 run-and-gun 武器种子数据
+# 平衡意图说明：
+#   - 默认步枪是基准线（DPS 中等、无限备用弹药、命中稳定），所有特殊武器围绕它上下浮动
+#   - 散弹枪(S)近战压制强但射程/精度差，弹丸多、单发伤害低
+#   - 激光(L)hitscan 即发即中，DPS 最高但弹匣小、装填慢，奖励精准走位
+#   - 追踪弹(H)自动锁定，单发伤害低、射速慢，适合新手与对空
+#   - 重机枪(M)持续火力之王，弹匣巨大、散布随连射增大，代价是移动速度感与精度
+# type 取值: hitscan / projectile / melee
+# fire_rate: 每秒发射次数; spread: 度(deg), 0 为完全精准
+
+weapons:
+  - weapon_id: rifle_default
+    name: 默认突击步枪
+    type: hitscan
+    damage: 12            # 基准伤害：3~4 发清理普通小兵
+    fire_rate: 7          # 中速连发，鼓励点射
+    magazine_size: 30
+    reload_time: 1.5
+    spread: 1.5           # 轻微散布，站立精准、跑动略飘
+
+  - weapon_id: spread_shot
+    name: 散弹枪 (S)
+    type: projectile      # 每次发射 5 颗短程弹丸（由引擎按 pellets 解释）
+    damage: 6             # 单弹丸伤害低，5 颗全中可达 30，贴脸爆发
+    fire_rate: 2          # 泵动式，射速慢
+    magazine_size: 8
+    reload_time: 2.2
+    spread: 12.0          # 大扇形覆盖，中远距离衰减明显
+
+  - weapon_id: laser_beam
+    name: 激光 (L)
+    type: hitscan
+    damage: 35            # 高伤即中，2~3 发秒杀精英以下敌人
+    fire_rate: 3          # 射速受限以平衡高单发
+    magazine_size: 12
+    reload_time: 2.5      # 长装填，逼玩家把握节奏
+    spread: 0.0           # 完全精准，纯技术武器
+
+  - weapon_id: homing_missile
+    name: 追踪弹 (H)
+    type: projectile
+    damage: 15            # 单发中等，靠自动命中保证实际输出
+    fire_rate: 4
+    magazine_size: 20
+    reload_time: 1.8
+    spread: 3.0           # 出膛散布小，飞行段由追踪逻辑修正
+
+  - weapon_id: heavy_machinegun
+    name: 重机枪 (M)
+    type: hitscan
+    damage: 9             # 单发低于步枪，靠射速堆 DPS（≈54/s）
+    fire_rate: 12         # 高射速持续压制
+    magazine_size: 100    # 大弹匣支持长时间扫射
+    reload_time: 3.0      # 惩罚性装填，需规划换弹时机
+    spread: 4.0           # 基础散布较大，连射时进一步扩大（腰射感）
