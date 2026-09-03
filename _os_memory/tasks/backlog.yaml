@@ -1,105 +1,118 @@
-# Backlog — contra_3d
-# 由 Boot Phase 3.5 从 project.yaml game.core_systems 生成 (8 tasks, 4 P0)
-# Milestone 分组: M1 核心循环(P0) / M2 战斗完整(P1) / M3 表现层(P2)
-# 依赖拓扑序: rendering → player_movement → weapon_system → projectile_system → enemy_ai/health_damage → map_loading → ui_hud
-
 tasks:
-  - id: T-SYS-001
-    title: "渲染系统 rendering: Unity 工程结构 + 3D 场景可渲染 + 准星 UI"
-    milestone: M1
-    priority: P0
-    status: completed
-    depends_on: []
-    estimated_effort: "L"
-    acceptance_criteria:
-      - "Unity 工程结构生成 (ProjectSettings/Assets/Scripts 镜像 src/)"
-      - "3D 场景可渲染 (URP, 测试几何体)"
-      - "准星 UI 可见"
-    notes: "首个任务需含 Unity 工程自举(bootstrap); Editor 缺失时纯结构+dotnet可验证部分先行"
-
-  - id: T-SYS-001-V
-    title: "Editor 内视觉验收: Boot 场景可渲染 + 准星UI可见 (BLK-001 解除后)"
-    milestone: M1
-    priority: P1
-    status: pending
-    depends_on: [T-SYS-001]
-    estimated_effort: "S"
-    acceptance_criteria:
-      - "Unity Editor 打开工程无报错, Boot 场景 3D 渲染非空"
-      - "准星 UI 在 Game 视图可见"
-    notes: "结构部分由 T-SYS-001 完成(0err/0warn, a8704f7); 视觉验收被 BLK-001 (Unity Editor 未安装) 阻塞"
-  - id: T-SYS-002
-    title: "玩家移动 player_movement: WASD + 鼠标视角 + 跳跃"
-    milestone: M1
-    priority: P0
-    status: in_progress
-    depends_on: [T-SYS-001]
-    estimated_effort: "M"
-    acceptance_criteria:
-      - "WASD 移动 + 鼠标旋转 (Input System)"
-      - "跳跃 (coyote time 80-150ms, 输入缓冲 100-200ms)"
-
-  - id: T-SYS-003
-    title: "武器系统 weapon_system: 武器切换 + 射击 + 弹道计算"
-    milestone: M1
-    priority: P0
-    status: pending
-    depends_on: [T-SYS-002]
-    estimated_effort: "M"
-    acceptance_criteria:
-      - "武器切换 (5 把种子武器 data/weapons/weapons.yaml)"
-      - "射击触发 + hitscan/projectile 弹道分派"
-
-  - id: T-SYS-004
-    title: "弹体系统 projectile_system: 弹体生命周期 + 碰撞判定"
-    milestone: M1
-    priority: P0
-    status: pending
-    depends_on: [T-SYS-003]
-    estimated_effort: "M"
-    acceptance_criteria:
-      - "对象池弹体 (同屏 100-500 预算)"
-      - "命中判定 + hurtbox 容差 (1.1-1.5 友好放大)"
-
-  - id: T-SYS-005
-    title: "敌人 AI enemy_ai: 4 类状态机 + 刷兵系统"
-    milestone: M2
-    priority: P1
-    status: pending
-    depends_on: [T-SYS-004]
-    estimated_effort: "L"
-    acceptance_criteria:
-      - "patrol/chase/sniper/rusher 状态机"
-      - "spawn point 刷兵 + 同屏上限"
-
-  - id: T-SYS-006
-    title: "生命伤害 health_damage: 命中判定 + 伤害计算 + 死亡"
-    milestone: M2
-    priority: P1
-    status: pending
-    depends_on: [T-SYS-004]
-    estimated_effort: "M"
-    acceptance_criteria:
-      - "伤害管线 (部位加成/护甲)"
-      - "死亡处理 + 无敌帧"
-
-  - id: T-SYS-007
-    title: "地图加载 map_loading: YAML 数据驱动关卡加载"
-    milestone: M2
-    priority: P1
-    status: pending
-    depends_on: [T-SYS-001]
-    estimated_effort: "M"
-    acceptance_criteria:
-      - "data/maps/maps.yaml 驱动场景生成"
-      - "spawn/cover/pickup 点位落地"
-
-  - id: T-SYS-008
-    title: "UI/HUD ui_hud: 血条/命数/武器/得分 HUD"
-    milestone: M3
-    priority: P2
-    status: pending
-    depends_on: [T-SYS-006]
-    estimated_effort: "S"
-    acceptance_criteria:
-      - "uGUI HUD: 血条/命数/当前武器/得分"
+- id: T-SYS-001
+  title: '渲染系统 rendering: Unity 工程结构 + 3D 场景可渲染 + 准星 UI'
+  milestone: M1
+  priority: P0
+  status: completed
+  depends_on: []
+  estimated_effort: L
+- id: T-SYS-001-V
+  title: Editor 内视觉验收 (BLK-001 解除后)
+  milestone: M1
+  priority: P1
+  status: pending
+  depends_on:
+  - T-SYS-001
+  estimated_effort: S
+- id: T-SYS-002
+  title: '玩家移动 player_movement: WASD + 鼠标视角 + 跳跃'
+  milestone: M1
+  priority: P0
+  status: completed
+  depends_on:
+  - T-SYS-001
+  estimated_effort: M
+- id: T-SYS-003
+  title: '武器系统 weapon_system: 武器切换 + 射击 + 弹道计算'
+  milestone: M1
+  priority: P0
+  status: completed
+  depends_on:
+  - T-SYS-002
+  estimated_effort: M
+  completed_at: '2026-09-04T01:45:00+08:00'
+  result: Core WeaponSystem+WeaponTypes+WeaponLoader 完成, 10 测试全绿(24/24总), commit 9583514
+- id: T-SYS-004
+  title: '弹体系统 projectile_system: 弹体生命周期 + 碰撞判定'
+  milestone: M1
+  priority: P0
+  status: completed
+  depends_on:
+  - T-SYS-003
+  estimated_effort: M
+  completed_at: '2026-09-04T02:00:00+08:00'
+  result: Core ProjectileSystem+ProjectileTypes 完成, 10 测试全绿(34/34总), commit f6c1aeb
+- id: T-SYS-005
+  title: '敌人 AI enemy_ai: 4 类状态机 + 刷兵系统'
+  milestone: M2
+  priority: P1
+  status: completed
+  depends_on:
+  - T-SYS-004
+  estimated_effort: L
+  completed_at: '2026-09-04T02:15:00+08:00'
+  result: Core AiSystem 完成, 7 测试全绿(42/42总), commit 9931935
+- id: T-SYS-006
+  title: '生命伤害 health_damage: 命中判定 + 伤害计算 + 死亡'
+  milestone: M2
+  priority: P1
+  status: pending
+  depends_on:
+  - T-SYS-004
+  estimated_effort: M
+- id: T-SYS-007
+  title: '地图加载 map_loading: YAML 数据驱动关卡加载'
+  milestone: M2
+  priority: P1
+  status: pending
+  depends_on:
+  - T-SYS-001
+  estimated_effort: M
+- id: T-SYS-008
+  title: 'UI/HUD ui_hud: 血条/命数/武器/得分 HUD'
+  milestone: M3
+  priority: P2
+  status: pending
+  depends_on:
+  - T-SYS-006
+  estimated_effort: S
+- id: T-BDD-REG-d2b858
+  title: 'registry_entry: combat'
+  priority: P0
+  status: completed
+  type: bdd_registry_entry
+  depends_on: []
+  estimated_effort: 0.5-1 hour
+  completed_at: '2026-09-04T01:30:00+08:00'
+- id: T-BDD-REG-fa3ccd
+  title: 'registry_entry: enemy_ai'
+  priority: P0
+  status: completed
+  type: bdd_registry_entry
+  depends_on: []
+  estimated_effort: 0.5-1 hour
+  completed_at: '2026-09-04T01:30:00+08:00'
+- id: T-BDD-REG-74de19
+  title: 'registry_entry: save_load'
+  priority: P0
+  status: completed
+  type: bdd_registry_entry
+  depends_on: []
+  estimated_effort: 0.5-1 hour
+  completed_at: '2026-09-04T01:30:00+08:00'
+- id: T-BDD-REG-6d12b6
+  title: 'registry_entry: ui_system'
+  priority: P0
+  status: completed
+  type: bdd_registry_entry
+  depends_on: []
+  estimated_effort: 0.5-1 hour
+  completed_at: '2026-09-04T01:30:00+08:00'
+- id: T-BDD-REG-62e89f
+  title: 'registry_entry: weapon_system'
+  priority: P0
+  status: completed
+  type: bdd_registry_entry
+  depends_on: []
+  estimated_effort: 0.5-1 hour
+  completed_at: '2026-09-04T01:30:00+08:00'

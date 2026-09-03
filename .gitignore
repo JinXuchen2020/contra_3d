@@ -1,6 +1,13 @@
-# OS 运行时目录（不纳入版本控制）
-_os_state/
-_os_memory/
+# OS 运行时目录（不纳入版本控制；仅例外文件入库）
+_os_state/*
+!_os_state/session.json
+!_os_state/qa_review.yaml
+!_os_state/architect_review.yaml
+!_os_state/design_contracts/
+_os_memory/*
+!_os_memory/tasks/
+_os_memory/tasks/*
+!_os_memory/tasks/backlog.yaml
 .omo/
 
 # Unity 生成目录与产物
