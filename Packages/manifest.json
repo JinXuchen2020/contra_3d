@@ -1,0 +1,9 @@
+{
+  "_comment": "contra_3d 最小依赖集 (T-SYS-001, rendering.yaml dependencies)。Unity 6000.0 兼容版本；Editor 安装后由 Unity 解析锁定至 Packages/packages-lock.json。禁止增多余包 (最小集约束)。",
+  "dependencies": {
+    "com.unity.inputsystem": "1.11.2",
+    "com.unity.render-pipelines.universal": "17.0.3",
+    "com.unity.test-framework": "1.4.5",
+    "com.unity.ugui": "2.0.0"
+  }
+}

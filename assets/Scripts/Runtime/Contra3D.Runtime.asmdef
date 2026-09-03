@@ -1,0 +1,16 @@
+{
+    "name": "Contra3D.Runtime",
+    "rootNamespace": "Contra3D.Runtime",
+    "references": [
+        "Contra3D.Core"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

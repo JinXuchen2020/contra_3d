@@ -1,0 +1,5 @@
+m_EditorVersion: 6000.0.0f1
+# NOTE: Unity Editor 当前未安装（OS 降级验证模式：仅 dotnet build Core 纯逻辑层）。
+# 此版本号为占位目标值；Unity Hub 安装 6000.0 LTS Editor 后首次打开工程时，
+# Unity 会自动重写为精确补丁号（如 6000.0.xxf1），届时需人工核对 diff。
+# 版本锁定策略: strict (framework.version_lock)，变更需过架构审查。

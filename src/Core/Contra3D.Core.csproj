@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    T-SYS-001 — Contra3D.Core 纯逻辑层构建配置 (OS 侧 dotnet 独立编译验证)。
+    对齐 rendering.yaml invariants: Core 编译单元内零 UnityEngine 引用。
+    Unity 未安装期降级路径: dotnet build src/Core/Contra3D.Core.csproj (project.yaml commands.check)。
+    注: .gitignore 含 *.csproj 规则, 本文件入库需 git add -f。
+  -->
+  <PropertyGroup>
+    <TargetFramework>netstandard2.1</TargetFramework>
+    <LangVersion>9.0</LangVersion>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <Nullable>disable</Nullable>
+    <RootNamespace>Contra3D.Core</RootNamespace>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- 下游系统占位骨架 (Boot Phase 1.6 生成, 本任务保留原样) -->
+    <Compile Include="../Combat/CombatSystem.cs" />
+    <Compile Include="../AI/AISystem.cs" />
+  </ItemGroup>
+
+</Project>
