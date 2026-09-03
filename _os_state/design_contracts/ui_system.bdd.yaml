@@ -1,0 +1,81 @@
+# ui_system.bdd.yaml — HUD/菜单/准星 UI 行为契约 (contra_3d)
+# 供 Universal_AI_OS BDD 协议消费 (behavior_contract_protocol.md 格式)
+# 系统级参考: shooter_base.yaml#shooting_feedback (命中反馈) / #weapon_feel_variance (准星扩散)
+#             / #lives_system (命数/得分) / multiplayer_design (菜单归属)
+# 依赖系统: combat / weapon_system / save_load / health_damage
+
+system: ui_system
+source: templates/genre_knowledge/shooter_base.yaml#shooting_feedback
+scenarios:
+  - id: crosshair_dynamic_spread_visual
+    name: 准星动态扩散与回复
+    given:
+      - 玩家持 rifle_default, 准星处于静止默认状态
+      - crosshair_spread dynamic_range_deg [0,8], default 4
+    when:
+      - 玩家移动/跳跃后开火, 随后静止站立
+    then:
+      - 移动时扩散 ×1.5-2.0, 跳跃 ×2.5-3.0 (空中惩罚)
+      - 静止回复速率 5-10°/s, 回复过程平滑无跳变
+      - 枪口火光 (30-80ms) 不遮挡准星, 不产生频闪不适
+    source: templates/genre_knowledge/shooter_base.yaml#weapon_feel_variance.crosshair_spread
+    e2e: false
+
+  - id: hit_marker_on_hit_and_kill
+    name: 命中/击杀 hit marker 反馈 (端到端)
+    given:
+      - 玩家开火且弹道命中敌人 hurtbox
+      - hit marker 规则: 命中即显 80-120ms
+    when:
+      - 一发子弹命中敌人躯干并最终将其击杀
+    then:
+      - 准星处十字/斜杠标记即时显示, 持续 80-120ms
+      - 击杀时标记换色 (白→红/金) 并播放变体音效
+      - 击杀音效音高较普通命中提升 15-30%
+      - 视听延迟 ≤ 80ms (audio_latency_budget threshold), 无脱节感
+    source: templates/genre_knowledge/shooter_base.yaml#shooting_feedback.hit_marker
+    e2e: true
+
+  - id: hud_health_lives_low_health_cue
+    name: 血条与命数 HUD 常驻显示及低血量提示
+    given:
+      - 生命模型为混合制 (hybrid: 血条 + 一击死段位)
+      - 命数 initial_lives=3, lives_cap 区间 [5,30] default 9
+    when:
+      - 玩家受击掉血 / 命数因死亡消耗或拾取 1UP 变化
+    then:
+      - 血条与命数 HUD 实时刷新, 数值只来自 health_damage/lives 结算 (无旁路写入)
+      - 低血量触发音画渐变 (心跳音/屏幕暗角), 恢复后消退
+      - 受击时屏幕边缘红光/扇形方向指示器正确指向伤害来源 (3D 化必需)
+      - 命中/拾取等 HUD 闪烁与音效同步 (拾取/武器切换: 音效+HUD 闪烁)
+    source: templates/genre_knowledge/shooter_base.yaml#lives_system
+    e2e: true
+
+  - id: pause_menu_freeze_and_settings
+    name: 菜单暂停与设置生效
+    given:
+      - 游戏运行中 (单人或本地双人), 玩家打开暂停菜单
+    when:
+      - 玩家按暂停键呼出/关闭菜单, 并调整屏震强度滑杆
+    then:
+      - 暂停期间模拟完全冻结 (敌人/弹体/计时均不动), 关闭后无状态错乱
+      - 屏震强度滑杆可调, 默认 ≤0.3 (归一化, 相对屏幕高度)
+      - 双人同屏时提示与菜单必须声明"属于哪位玩家"
+      - 暂停界面可查看当前检查点/积分/武器状态, 退出即回到暂停前画面
+    source: templates/genre_knowledge/shooter_base.yaml#shooting_feedback.screen_shake
+    e2e: false
+
+  - id: score_display_and_1up_award
+    name: 得分显示与分数阈值 1UP 奖励 (端到端)
+    given:
+      - score_threshold 1UP 机制开启, 阈值递增 (2万/5万/10万)
+      - 击杀得分经死亡事件计入积分系统
+    when:
+      - 玩家击杀敌人使累计分数跨越 1UP 阈值
+    then:
+      - 得分 HUD 即时刷新并伴随拾取音效+HUD 闪烁
+      - 跨阈值瞬间命数 +1, HUD 命数位同步更新
+      - 使用续关 (continue) 的家用版变体下, 累计分清空时得分 HUD 归零
+      - 得分数据与 save_load 存档快照一致
+    source: templates/genre_knowledge/shooter_base.yaml#lives_system.extra_life_mechanics
+    e2e: true

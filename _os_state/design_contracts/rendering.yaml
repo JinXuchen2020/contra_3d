@@ -1,0 +1,143 @@
+# rendering.yaml — 渲染系统设计契约 (contra_3d, T-SYS-001)
+# 供代码生成管线 Phase 1 读取。对齐 templates/system_design/rendering_system.md。
+# 权威结构来源: Unity 6000.0 工程自举 + 双层 asmdef (Contra3D.Core 纯逻辑 / Contra3D.Runtime MonoBehaviour 层)。
+# 语言: C# (Unity 6 LTS)。Core 禁止任何 UnityEngine 依赖, 保证 dotnet 独立编译验证。
+
+module:
+  name: "rendering"
+  version: 1
+  status: "design"
+  backlog_id: "T-SYS-001"
+  target_system: "rendering"
+  source_dir: "src/Core/ + src/Runtime/ (镜像 Assets/Scripts/)"
+
+module_boundary:
+  inside:
+    - "Unity 6000.0 工程自举 (ProjectSettings/ProjectVersion.txt=6000.0, Packages/manifest.json 最小依赖)"
+    - "asmdef 划分: Contra3D.Core (纯逻辑, autoReferenced=false) / Contra3D.Runtime (引用 Core)"
+    - "Boot 场景: 主相机(60° FOV) + URP 方向光 + 测试几何体(地面 Plane + 3-5 Cubes, URP/Lit 默认资源)"
+    - "准星 UI: Screen Space Canvas 十字线, 世界坐标由 Core 求解, Runtime 仅驱动 RectTransform"
+    - "表现同步: Runtime 每帧读 Core 模拟状态并同步 GameObject (ProjectileView/EnemyView/CameraFollow)"
+  outside:
+    - "武器逻辑/弹道计算/AI 状态机/伤害数值 — 分属 weapon/combat/ai 系统, Core 侧由对应系统模块提供"
+    - "渲染层只做表现与输入转发, 不含游戏规则"
+
+# ============================================================
+# 公共接口 (类型 + 签名; Core 为纯 C#, Runtime 为 MonoBehaviour)
+# ============================================================
+provides:
+  core_types:   # Contra3D.Core — 零 UnityEngine 依赖, dotnet 独立编译
+    - name: "RenderConfig"
+      kind: "data"
+      fields:
+        - {name: "TargetWidth", type: "int", default: "1920"}
+        - {name: "TargetHeight", type: "int", default: "1080"}
+        - {name: "TargetFps", type: "int", default: "60"}
+        - {name: "MouseSensitivityDeg", type: "float", default: "0.1", note: "鼠标 1 count → yaw/pitch 度数"}
+        - {name: "CameraDampingSec", type: "float", default: "0.15", note: "相机跟随阻尼, ≤0.15s"}
+      description: "渲染/输入相关可调参数集中配置, 禁止散落硬编码"
+    - name: "CrosshairSolver"
+      kind: "static class"
+      methods:
+        - {name: "WorldToScreenPoint", signature: "static Vector2 WorldToScreenPoint(Vector3 worldPos, CameraParams cam)"}
+        - {name: "GetCrosshairScreenPos", signature: "static Vector2 GetCrosshairScreenPos(Vector3 aimDir, CameraParams cam)", note: "准星屏幕坐标求解, EditMode 可测"}
+      description: "准星世界→屏幕坐标纯函数; Vector2 为 Core 内自绘结构 (非 UnityEngine.Vector2)"
+    - name: "CameraParams"
+      kind: "data"
+      fields:
+        - {name: "Position", type: "Vector3"}
+        - {name: "Yaw", type: "float"}
+        - {name: "Pitch", type: "float"}
+        - {name: "FovDeg", type: "float", default: "60.0"}
+      description: "相机参数纯数据, 供 Core 求解与 Runtime 同步"
+    - name: "ViewSnapshot"
+      kind: "data"
+      fields:
+        - {name: "Projectiles", type: "IReadOnlyList<ProjectileViewData>", note: "{Id, Position, Velocity, IsActive}"}
+        - {name: "Enemies", type: "IReadOnlyList<EnemyViewData>", note: "{Id, Position, YawDeg, StateName, IsActive}"}
+      description: "Core→Runtime 的每帧表现快照; Runtime 据此同步 GameObject, 反向不可写"
+  runtime_types:  # Contra3D.Runtime — 引用 Core + UnityEngine
+    - name: "GameSimulationRunner"
+      kind: "MonoBehaviour"
+      methods:
+        - {name: "Tick", signature: "void FixedUpdate() → GameSimulation.Tick(Time.fixedDeltaTime, _inputFrame)"}
+      description: "驱动 Core 模拟推进的唯一入口; 输入由 Runtime 捕获组装 InputFrame"
+    - name: "CameraFollow"
+      kind: "MonoBehaviour"
+      methods:
+        - {name: "Apply", signature: "void Apply(CameraParams p)", note: "阻尼 ≤0.15s"}
+    - name: "CrosshairUI"
+      kind: "MonoBehaviour"
+      methods:
+        - {name: "SetScreenPos", signature: "void SetScreenPos(Vector2 screenPos)"}
+      description: "Screen Space Canvas 十字线; 坐标来自 CrosshairSolver"
+    - name: "ViewSyncSystem"
+      kind: "static class"
+      methods:
+        - {name: "Sync", signature: "static void Sync(ViewSnapshot snap, GameObjectPool pool)"}
+      description: "快照→GameObject 同步 + 弹体/敌人对象池回收; 同屏弹体池容量 200"
+
+# ============================================================
+# 依赖
+# ============================================================
+dependencies:
+  - "Contra3D.Core → 无外部程序集依赖 (纯 .NET Standard 2.1, 无 UnityEngine)"
+  - "Contra3D.Runtime → Contra3D.Core (单向, 禁止回边; 对齐 architecture_review.forbid_back_edge_in_dependency)"
+  - "Packages/manifest.json: com.unity.render-pipelines.universal (URP) / com.unity.inputsystem / com.unity.test-framework (最小集, 禁增多余包)"
+  - "Unity 未安装期降级: 仅 dotnet build Core csproj (对齐 project.yaml commands.check 注释)"
+  - "下游系统 (weapon/combat/ai) 的 Core 逻辑将并入 Contra3D.Core, 由各自 design contract 定义; rendering 只消费其输出快照"
+
+# ============================================================
+# 数值约束
+# ============================================================
+numeric_constraints:
+  limits:
+    target_resolution: "1920x1080"
+    target_fps: 60
+    stress_min_fps_ratio: 0.90          # 同屏 200 弹体压力下 ≥ 目标帧率的 90%
+    projectile_pool_cap: 200            # 对齐 combat_system.md 同屏弹体上限
+    mouse_sensitivity_deg: 0.1
+    camera_damping_max_sec: 0.15
+    crosshair_fov_deg: 60.0
+  structure:
+    max_file_lines: 500                 # 对齐 project.yaml architecture_review
+    max_pub_types_per_non_api_module: 5
+
+# ============================================================
+# 不变量
+# ============================================================
+invariants:
+  - "Contra3D.Core 编译单元内零 UnityEngine 引用 (含传递引用), dotnet build 独立通过"
+  - "依赖方向恒为 Runtime→Core, 禁止回边; Core 不感知 GameObject/Transform/MonoBehaviour"
+  - "游戏规则全部在 Core (纯函数/显式状态输入输出, 同输入同输出); Runtime 仅绑定与转发"
+  - "ProjectVersion.txt 锁定 6000.0 (framework.version_lock=strict), 变更需过架构审查"
+  - "Boot 场景为唯一入口场景, 仅使用 URP/Lit 默认资源, 不依赖外部资产"
+  - "Assets/Scripts/ 与 src/ 镜像一致; OS 工具扫描 src/, Unity 编译 Assets/"
+  - "ViewSnapshot 只读下发, Runtime 不可反向写入 Core 状态"
+  - "同屏弹体 ≤200, 池满优先回收最旧 (与 combat 契约一致)"
+
+# ============================================================
+# 测试策略 (EditMode 优先)
+# ============================================================
+testing:
+  editmode:
+    - "core_dotnet_build: dotnet build Contra3D.Core.csproj 无 UnityEngine 依赖通过"
+    - "crosshair_solver: WorldToScreenPoint/GetCrosshairScreenPos 纯函数断言 (给定相机参数/瞄准方向)"
+    - "render_config_defaults: 目标分辨率/帧率/灵敏度/阻尼默认值"
+    - "view_snapshot_readonly: 快照下发后 Core 状态不被 Runtime 污染"
+  playmode_min:
+    - "boot_scene_smoke: 相机/方向光/测试几何体/准星 Canvas 存在性断言"
+  coverage:
+    - "EditMode 覆盖率 ≥ 80% (qa.test_coverage.min_percentage); PlayMode 冒烟不计入门槛"
+
+# ============================================================
+# 验收标准 (对应 factory_gate rendering 检查项: "3D场景可渲染+准星UI")
+# ============================================================
+acceptance:
+  factory_gate_rendering:
+    - "Unity 6000.0 工程创建成功, ProjectSettings/ProjectVersion.txt = 6000.0"
+    - "Boot 场景打开后 3D 场景可渲染 (相机+光照+测试几何体可见)"
+    - "准星 UI 显示且随相机朝向正确对应屏幕中心/世界目标点"
+    - "dotnet build 独立编译 Contra3D.Core 通过"
+    - "asmdef 无回边 (Core↛Runtime/Unity)"
+    - "Assets/Scripts/ 与 src/ 镜像同步且有校验手段"

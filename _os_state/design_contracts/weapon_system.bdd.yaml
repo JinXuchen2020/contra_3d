@@ -1,0 +1,104 @@
+# weapon_system.bdd.yaml — 武器系统行为契约 (contra_3d)
+# 供 Universal_AI_OS BDD 协议消费 (behavior_contract_protocol.md 格式)
+# 系统级参考: templates/system_design/combat_system.md#子系统职责划分 (不替代 scenario 级锚点)
+# 数据来源: data/weapons/weapons.yaml (5 种武器种子) / templates/genre_knowledge_reference.yaml#weapon_balance
+
+system: weapon_system
+source: templates/system_design/combat_system.md
+scenarios:
+  - id: weapon_box_pickup_and_switch
+    name: 武器箱拾取与主副槽切换 (端到端)
+    given:
+      - 玩家主武器为 rifle_default
+      - 击破胶囊载具掉落 weapon_box (spread_shot)
+      - 掉率落在 genre weapon_balance.spawn_rate 0.15–0.3 区间
+    when:
+      - 玩家拾取字母道具 S, 随后在主/副武器槽间切换
+    then:
+      - 拾取即切换为 spread_shot, 原武器保留在另一槽位
+      - 切换动画/冷却期间射击请求被拒绝
+      - 切换完成后新武器按 weapons.yaml 参数生效 (damage=6, fire_rate=2, magazine_size=8)
+    source: templates/system_design/combat_system.md#子系统职责划分
+    e2e: true
+
+  - id: rifle_baseline_stats_conformance
+    name: 默认步枪基准参数符合性
+    given:
+      - 武器定义来自 data/weapons/weapons.yaml#rifle_default
+    when:
+      - weapon_system 加载并实例化 rifle_default
+    then:
+      - damage=12, fire_rate=7, magazine_size=30, reload_time=1.5, spread=1.5
+      - type=hitscan, 作为所有强度对比的基准锚点
+    source: data/weapons/weapons.yaml#weapons.rifle_default
+    e2e: false
+
+  - id: spread_shot_close_range_burst
+    name: 散弹枪近中距面杀伤表现
+    given:
+      - 玩家持 spread_shot (单弹丸伤害6, 每次发射5弹丸, spread=12°)
+      - 目标杂兵 (health=24) 在贴脸距离
+    when:
+      - 玩家对准目标开火一次
+    then:
+      - 一次射击产出 5 颗短程弹丸 (type=projectile)
+      - 贴脸全中时单次伤害可达 30, 一发击杀 health≤30 的杂兵
+      - 中远距离弹丸随距离衰减, 覆盖明显收敛
+    source: data/weapons/weapons.yaml#weapons.spread_shot
+    e2e: false
+
+  - id: laser_hitscan_high_burst_low_mag
+    name: 激光高伤即中与小弹匣长装填
+    given:
+      - 玩家持 laser_beam (damage=35, fire_rate=3, magazine_size=12, reload_time=2.5, spread=0)
+    when:
+      - 玩家对精英以下敌人 (health≤30) 连续射击
+    then:
+      - hitscan 即发即中, 2~3 发内击杀
+      - 弹匣耗尽后进入 2.5s 装填, 装填期间无法射击
+      - spread=0 完全精准, 无散布偏差
+    source: data/weapons/weapons.yaml#weapons.laser_beam
+    e2e: false
+
+  - id: magazine_reload_cycle
+    name: 弹匣耗尽与换弹循环
+    given:
+      - 玩家持 rifle_default, 弹匣剩余 0 发
+    when:
+      - 玩家尝试开火并触发换弹
+    then:
+      - 弹匣为空时射击请求被拒绝
+      - 经过 reload_time (1.5s) 后弹匣回满, 可恢复射击
+      - 换弹期间 weapon_switch/射击校验均按冷却处理
+    source: templates/system_design/combat_system.md#子系统职责划分
+    e2e: false
+
+  - id: dps_balance_envelope_across_arsenal
+    name: 全武器 DPS 平衡包络校验 (端到端)
+    given:
+      - 全部 5 种武器已加载 (rifle/spread/laser/homing/machinegun)
+      - genre weapon_balance 命中折算: spread=0.4, homing=0.9, 默认=0.7
+    when:
+      - 对每种武器计算理论 DPS × 命中折算
+    then:
+      - 每种武器折算 DPS 落在基准步枪 (rifle_default) 的 0.8–1.5 倍内
+      - S 弹贴脸可达约 1.5x 但射程 ≤500px 有明显惩罚
+      - H 弹允许最低 (约 0.8x), 换取全屏索敌
+      - M 弹各项参数不高于同类最优值的 90%, 无短板亦无长板
+      - 不存在拾取后任意场景严格优于原武器的纯上位武器
+    source: templates/genre_knowledge_reference.yaml#weapon_balance.balance
+    e2e: true
+
+  - id: death_resets_to_default_rifle
+    name: 死亡重置为默认步枪 (经典规则, 端到端)
+    given:
+      - 玩家当前持有 laser_beam (经武器箱获得)
+      - 采用 classic 死亡丢失规则
+    when:
+      - 玩家被敌人击杀并重生
+    then:
+      - 武器重置为 rifle_default, 特殊武器槽清空
+      - 弹匣/换弹状态按 rifle_default 初始值恢复
+      - 重生后可再次通过武器箱重新获取特殊武器
+    source: templates/genre_knowledge_reference.yaml#weapon_balance.acquisition_and_loss
+    e2e: true

@@ -1,0 +1,93 @@
+# save_load.bdd.yaml — 存档/检查点系统行为契约 (contra_3d)
+# 供 Universal_AI_OS BDD 协议消费 (behavior_contract_protocol.md 格式)
+# 系统级参考: shooter_base.yaml#checkpoints (检查点与存档) / #lives_system (Game Over 循环)
+# 依赖系统: combat / enemy_ai / ui_system / health_damage
+
+system: save_load
+source: templates/genre_knowledge/shooter_base.yaml#checkpoints
+scenarios:
+  - id: checkpoint_autosave_trigger
+    name: 检查点触发自动存档 (端到端)
+    given:
+      - 玩家通过一个战斗段 (encounter_zone on_enter 已完成)
+      - 距上一个检查点游戏时间 ≥ 60s (spacing_seconds [60,120], default 90)
+    when:
+      - 玩家越过检查点触发线
+    then:
+      - 自动写入当前检查点存档 (含武器进度/pickup 收集/积分/命数)
+      - 存档点置于战斗段之前 (重生即开战体验差为红线)
+      - 死亡时保留武器进度与 pickup 收集 (魂斗罗传统仅限关卡重开清空)
+      - 单次写入不阻塞游戏循环 (无可见卡顿)
+    source: templates/genre_knowledge/shooter_base.yaml#checkpoints.placement_rules
+    e2e: true
+
+  - id: boss_entrance_checkpoint_no_regression
+    name: Boss 战入口检查点与回退红线
+    given:
+      - Boss 竞技场入口前 10m 净空区已布置
+      - 入场前最后一个检查点已激活
+    when:
+      - 玩家死于 Boss 战后重生
+    then:
+      - Boss 战入口必设检查点, 重生后直接重进 Boss 战 (满状态)
+      - 死于 Boss 绝不回退到 Boss 之前的检查点 (挫败感红线)
+      - 检查点不设在 Boss 房内部 (死亡重进即满状态 Boss 战为反模式)
+      - Boss 房重生无敌时间额外加长 1-2s
+    source: templates/genre_knowledge/shooter_base.yaml#checkpoints.placement_rules
+    e2e: false
+
+  - id: death_respawn_from_checkpoint
+    name: 死亡后从最近检查点恢复 (端到端)
+    given:
+      - 玩家命数耗尽 (lives_default=3)
+      - Game Over 循环采用 checkpoint_retry 模式
+    when:
+      - 玩家触发 Game Over 并确认重试
+    then:
+      - 自动回到最近检查点, 命数重置
+      - 重生位置 = 最近检查点 + 周围 3m 无敌人净空区
+      - 重生无敌 respawn_invuln_s 落在 [2,3]s, respawn_delay_s 落在 [2,4]s
+      - 恢复数据与存档快照一致 (武器/积分/pickup 逐项核对)
+    source: templates/genre_knowledge/shooter_base.yaml#checkpoints.respawn
+    e2e: true
+
+  - id: game_over_continue_flow
+    name: 街机式续关 (continue) 流程
+    given:
+      - Game Over 循环配置为 arcade_credit 模式
+      - continues 上限 3 (区间 [0,5])
+    when:
+      - 玩家在倒计时内消耗一次续关
+    then:
+      - 从检查点复活, 命数按 lives_per_credit [3,5] 重置
+      - 家用版变体: 续关次数不限但清空累计分
+      - 续关耗尽后进入关卡重开 (检查点清零)
+    source: templates/genre_knowledge/shooter_base.yaml#lives_system.game_over_loop
+    e2e: true
+
+  - id: save_slot_select_and_overwrite
+    name: 存档槽选择与覆盖写入
+    given:
+      - 提供 3 个存档槽, 每槽记录关卡进度/检查点/积分/武器/命数快照
+    when:
+      - 玩家选择已有进度的槽位写入
+    then:
+      - 覆盖前展示该槽摘要 (关卡/检查点/积分/游玩时长) 供确认
+      - 写入采用"先写临时文件再原子替换", 中途断电不破坏原档
+      - 槽位间互不影响, 读取任一槽恢复到其检查点状态
+    source: templates/genre_knowledge/shooter_base.yaml#checkpoints
+    e2e: false
+
+  - id: corrupted_save_graceful_degrade
+    name: 损坏存档降级处理
+    given:
+      - 存档文件存在但校验失败 (版本号不符/数据截断/hash 不匹配)
+    when:
+      - 玩家在标题界面选择"继续游戏"
+    then:
+      - 拒绝载入损坏档并提示, 不崩溃不闪退
+      - 自动回退到该槽的最近完好备份 (若有), 否则将该槽标记为不可用
+      - 其余槽位与新开档流程不受影响
+      - 版本号不符的旧档走迁移提示而非直接丢弃
+    source: templates/genre_knowledge/shooter_base.yaml#checkpoints
+    e2e: false

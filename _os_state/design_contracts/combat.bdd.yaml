@@ -1,0 +1,103 @@
+# combat.bdd.yaml — 战斗系统行为契约 (contra_3d)
+# 供 Universal_AI_OS BDD 协议消费 (behavior_contract_protocol.md 格式)
+# 系统级参考: templates/system_design/combat_system.md (不替代 scenario 级锚点)
+# 依赖系统: weapon_system / projectile_system / health_damage / hit_detection
+
+system: combat
+source: templates/system_design/combat_system.md
+scenarios:
+  - id: shoot_pipeline_full_chain
+    name: 单次射击全链路 (输入→武器→弹体→命中→伤害→死亡)
+    given:
+      - 玩家持有 rifle_default (伤害12, 射速7/s)
+      - 敌人 grunt_soldier (health=24) 在视线内无遮挡
+      - 武器冷却与弹药均满足
+    when:
+      - 玩家开火 2 发且全部命中敌人躯干
+    then:
+      - weapon_system 校验通过并产出射击事件 (起点/方向/武器参数)
+      - projectile_system 生成弹体并按弹道推进
+      - hit_detection 报告命中事件并携带伤害参数
+      - health_damage 将敌人生命从 24 结算至 0
+      - 广播死亡事件, 掉落表/积分/刷兵计数均联动
+      - 生命值变更只发生在 health_damage (无旁路写入)
+    source: templates/system_design/combat_system.md#数据流（单次射击）
+    e2e: true
+
+  - id: ttk_standard_minion_full_encounter
+    name: 标准武器击杀标准杂兵 TTK 落区间 (端到端)
+    given:
+      - 测试关已加载, 玩家持 rifle_default
+      - 一名标准杂兵 (grunt_soldier, health=24) 进入交战
+    when:
+      - 玩家持续瞄准射击直至敌人死亡
+    then:
+      - 实际击杀耗时 TTK 落在 0.5–3.0 秒区间
+      - 不出现一击必杀普通杂兵的情况 (Boss 除外)
+      - 死亡后掉落/积分/刷兵计数正确联动
+    source: templates/system_design/combat_system.md#验收标准清单
+    e2e: true
+
+  - id: damage_formula_deterministic
+    name: 伤害计算公式与确定性
+    given:
+      - 命中事件携带基础伤害/距离/部位/护甲信息
+    when:
+      - health_damage 执行同一命中输入两次 (同状态)
+    then:
+      - 伤害 = 基础伤害 × 距离衰减 × 部位倍率, 再做护甲减免
+      - 两次结果完全一致 (同输入同状态产出同结果)
+    source: templates/system_design/combat_system.md#伤害计算
+    e2e: false
+
+  - id: high_speed_projectile_no_tunneling
+    name: 高速弹体容差扫掠防穿透
+    given:
+      - 弹体速度 ≥ 30 m/s
+      - 受击体位于弹体单帧位移路径上
+    when:
+      - 弹体逐帧推进并做相交检测
+    then:
+      - 命中判定按弹体单帧位移的 1.0–1.5 倍做扫掠扩径
+      - 无可见穿透 (高速弹不穿过受击体)
+    source: templates/system_design/combat_system.md#关键数值约束
+    e2e: false
+
+  - id: fire_rate_floor_enforced
+    name: 射速下限防事件风暴
+    given:
+      - 玩家以超过武器射速的频率连点开火键
+    when:
+      - weapon_system 处理连续射击请求
+    then:
+      - 同一武器两次射击实际间隔 ≥ 0.08s
+      - 冷却窗口内的射击请求被拒绝, 不产出多余射击事件
+    source: templates/system_design/combat_system.md#关键数值约束
+    e2e: false
+
+  - id: projectile_cap_recycle_oldest
+    name: 同屏弹体上限回收
+    given:
+      - 同屏弹体数已达到 200 上限
+    when:
+      - weapon_system 再产出新的射击事件
+    then:
+      - 优先回收最旧弹体后再生新弹体
+      - 同屏弹体数始终 ≤ 200
+    source: templates/system_design/combat_system.md#关键数值约束
+    e2e: false
+
+  - id: death_event_downstream联动
+    name: 死亡事件驱动下游结算 (端到端)
+    given:
+      - 敌人携带 drop_table (enemies.yaml grunt_soldier)
+      - 刷兵系统与积分系统已订阅死亡事件
+    when:
+      - 敌人生命归零, health_damage 广播死亡事件
+    then:
+      - 按掉落概率表结算掉落 (health_pack_small/weapon_box/none)
+      - 积分系统计入击杀分
+      - 刷兵配额计数递减并释放
+      - 实体被销毁/回收, 战斗系统不感知下游细节
+    source: templates/system_design/combat_system.md#系统间依赖
+    e2e: true

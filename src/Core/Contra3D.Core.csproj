@@ -17,9 +17,10 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <!-- 下游系统占位骨架 (Boot Phase 1.6 生成, 本任务保留原样) -->
+    <!-- T-SYS-001 骨架 (Boot Phase 1.6 生成) -->
     <Compile Include="../Combat/CombatSystem.cs" />
     <Compile Include="../AI/AISystem.cs" />
+    <!-- T-SYS-002 player_movement: MotorTypes.cs / PlayerMotor.cs 由 SDK 默认 glob 收录 -->
   </ItemGroup>
 
 </Project>

@@ -1,0 +1,109 @@
+# enemy_ai.bdd.yaml — 敌人 AI 行为契约 (contra_3d)
+# 供 Universal_AI_OS BDD 协议消费 (behavior_contract_protocol.md 格式)
+# 系统级参考: templates/system_design/ai_system.md (不替代 scenario 级锚点)
+# 数据来源: data/enemies/enemies.yaml (5 种敌人种子) / templates/genre_knowledge_reference.yaml#ai_behavior
+
+system: enemy_ai
+source: templates/system_design/ai_system.md
+scenarios:
+  - id: patrol_alert_combat_full_encounter
+    name: 巡逻兵完整交战链路 (端到端)
+    given:
+      - grunt_soldier (ai_type=patrol, health=24, speed=2.0) 沿路径巡逻
+      - 视距 15m, 朝向扇形 90°–120°, 警觉值 0–100
+    when:
+      - 玩家进入视距且在扇形内 (警觉值 +20/s 累计至 ≥60, 再达 100)
+      - 玩家随后将其击杀
+    then:
+      - 警觉值 ≥60 进入 Alert, =100 确认目标进入 Combat
+      - Combat 中按 weapons (rifle_default) 低频开火
+      - 玩家死亡或脱离追击范围且警觉值归零后回 Patrol
+      - 被击杀时广播死亡事件, 刷兵配额释放并按 drop_table 结算
+      - 视线被障碍阻断时不累计视觉警觉值
+    source: templates/system_design/ai_system.md#感知系统
+    e2e: true
+
+  - id: rusher_contact_explode_chain
+    name: 冲锋体直冲接触自爆链路 (端到端)
+    given:
+      - charger_mutant (ai_type=rusher, health=36, speed=4.5) 生成
+      - 视距 12m, 接近全向感知
+    when:
+      - 玩家进入感知范围, rusher 感知到玩家方向并直冲
+      - 进入接触判定半径
+    then:
+      - 状态机走 Spawn → Rush → Explode/Strike → Death
+      - 接触判定对玩家造成伤害 (经 health_damage 结算)
+      - rusher 自身进入 Death, 死亡事件驱动掉落与配额回收
+      - 同屏 rusher 数量 ≤ 4
+    source: templates/system_design/ai_system.md#状态机定义
+    e2e: true
+
+  - id: sniper_laser_warning_then_fire
+    name: 狙击哨兵激光预警后开火
+    given:
+      - turret_sniper (ai_type=sniper, speed=0.0, 视距 35m) 固守点位
+      - 武器 laser_beam (高伤单发)
+    when:
+      - 玩家进入视距且瞄准线清晰
+    then:
+      - 状态机 Hold → Aim (带激光预警线, 前摇可视化 0.3–0.6s) → Fire
+      - 激光瞄准线在开火前可见, 给玩家预警窗口
+      - 玩家接近至安全距离内触发 Reposition/后撤换位
+    source: templates/system_design/ai_system.md#状态机定义
+    e2e: false
+
+  - id: spawn_cap_and_queue
+    name: 同屏敌人上限与刷兵排队
+    given:
+      - 多个 spawn point 携带 ai_type 权重与触发方式
+      - 同屏普通敌人已达 12 上限
+    when:
+      - 新的刷兵请求到达
+    then:
+      - 请求进入队列且不丢失
+      - 敌人死亡后计数递减, 队列中的请求按序释放
+      - 同屏 rusher ≤ 4 的配额独立生效
+    source: templates/system_design/ai_system.md#刷兵系统
+    e2e: false
+
+  - id: anti_door_camping_spawn_guard
+    name: 防堵门刷兵保护
+    given:
+      - 玩家停留在某 spawn point 5m 半径内
+      - 该点位近期连续阵亡 3 次
+    when:
+      - 刷兵系统评估该点位
+    then:
+      - 玩家 5m 半径内不刷兵 (不原地刷出敌人)
+      - 连续阵亡 3 次的点位临时降低权重
+    source: templates/system_design/ai_system.md#刷兵系统
+    e2e: false
+
+  - id: stagger_interrupt_and_recover
+    name: 受击硬直中断与恢复
+    given:
+      - 敌人 (chase/sniper 任一) 处于 Combat/Aim 状态
+    when:
+      - 敌人被玩家武器命中
+    then:
+      - 状态机转入 Staggered (受击硬直)
+      - 硬直结束后回到原状态, 不重置警觉值
+      - 被命中时警觉值直接拉满
+    source: templates/system_design/ai_system.md#状态机定义
+    e2e: false
+
+  - id: boss_phase_one_way_progression
+    name: Boss 多阶段单向推进 (端到端)
+    given:
+      - Boss 按血量百分比划分 3 阶段 (100–70% / 70–35% / 35–0%)
+      - 每阶段配置招式池与权重, 招式带前后摇与弱点窗口
+    when:
+      - 玩家持续输出使 Boss 血量穿越阶段阈值
+    then:
+      - 阶段切换单向推进, 血量回升不回退阶段
+      - 转阶段清空当前招式, 播放转阶段表现, 无敌期 1.5–2.5s
+      - 无敌期间免疫伤害与硬直, 期满后进入新阶段招式循环
+      - 每阶段独立血条口径与 genre weapon_balance.ttk_targets.boss (8–20s) 校准
+    source: templates/system_design/ai_system.md#Boss 多阶段模式框架
+    e2e: true

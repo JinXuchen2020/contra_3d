@@ -23,7 +23,11 @@ MemoryCaptures/
 
 # 构建产物（通用）
 build/
+bin/
 dist/
+
+# 例外：手写源级 csproj（OS 侧 dotnet 独立编译验证用，非 Unity 生成物）
+!src/Core/Contra3D.Core.csproj
 
 # Python 缓存
 __pycache__/

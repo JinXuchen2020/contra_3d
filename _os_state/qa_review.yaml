@@ -1,0 +1,99 @@
+# qa_review.yaml — T-SYS-001 验证报告 (contra_3d, commit a8704f7)
+# QA Agent 独立沙箱执行时间: 2026-09-03
+# 环境事实: Unity Editor 未安装 → 编译验证仅限 dotnet 纯逻辑层
+
+task_id: T-SYS-001
+commit: a8704f7ba9cbed5f7fecac6de311ee79e9208e43
+project_root: F:\AI_Projects\projects\contra_3d
+passed: true
+fix_rounds: []
+
+dimensions:
+  compile:            # 维度1 编译
+    result: PASS
+    evidence: "dotnet build src/Core/Contra3D.Core.csproj -v q --nologo → '已成功生成。 0 个警告 0 个错误' EXIT=0 (用时 3.29s)"
+
+  warnings_hardcode:  # 维度2 警告 + 硬编码
+    result: PASS
+    evidence: >-
+      TreatWarningsAsErrors=true (src/Core/Contra3D.Core.csproj:14) + build 0 警告;
+      check_hardcoded.py --src-dir src/ → scanned=0 (工具仅匹配 .rs 扩展名, 对 .cs 不生效);
+      补充手动 grep TODO/FIXME/HACK src/Core/*.cs assets/Scripts/Core/*.cs → 0 命中
+    note: "工具适用性缺陷见 issues[0] (P2)"
+
+  contract_consistency:  # 维度5 契约一致性
+    result: PASS
+    evidence: >-
+      rendering.yaml provides.core_types (RenderConfig/CrosshairSolver/CameraParams/ViewSnapshot)
+      与 runtime_types (GameSimulationRunner/CameraFollow/ViewSyncSystem) 均未提前实现 → 未越界;
+      CrosshairUI 已按契约实现于 Runtime 层, 文件头标注 "CrosshairSolver 后续任务并入"
+      (assets/Scripts/Runtime/CrosshairUI.cs:4);
+      WeaponData/DamageCalculator/CombatState 对应 weapon_system.bdd.yaml / combat.bdd.yaml
+      (行为级契约, 未定义 C# 类型签名, 无签名冲突);
+      module_boundary.outside 明确武器/伤害逻辑分属 weapon/combat 系统, 本 commit 仅落地其纯数据/纯函数基础层, 合格
+
+  event_chain:        # 维度6 事件链路
+    result: PASS
+    evidence: "_os_state/event_registry.yaml → total: 0, orphan_producer: 0, orphan_consumer: 0, passed: true (新项目空 registry)"
+
+  cross_module_refs:  # 维度7 跨模块引用
+    result: PASS
+    evidence: >-
+      grep -rn "UnityEngine|Unity." src/Core/*.cs → 仅命中 2 行注释性文字
+      (src/Core/CombatState.cs:29, src/Core/WeaponData.cs:2, 均为"零 UnityEngine 依赖"声明), 代码零引用;
+      Contra3D.Core.asmdef noEngineReferences=true, autoReferenced=false;
+      Contra3D.Runtime.asmdef 引用 Contra3D.Core 单向 (无回边)
+
+  scope_check:        # 范围核验
+    result: PASS
+    evidence: >-
+      git show --stat a8704f7 → 15 files, 665 insertions(+), 0 deletions(-);
+      全部属于 T-SYS-001 范围: Unity 工程自举 (Packages/manifest.json, ProjectSettings/ProjectVersion.txt),
+      Core 逻辑 (src/Core + assets/Scripts/Core 镜像), Scenes README (assets/Scenes/README.md),
+      Runtime 引导层 (GameBootstrap/CameraRigBootstrap/CrosshairUI + asmdef); 无无关文件混入
+
+  tests:              # 维度3 测试
+    result: PASS
+    evidence: >-
+      test_count=0, 新项目首次执行豁免;
+      测试纪律已声明: TreatWarningsAsErrors=true 已核验 (csproj:14);
+      EditMode 测试策略存在于设计契约 (rendering.yaml testing.editmode 5 条, 含 core_dotnet_build/crosshair_solver/render_config_defaults/view_snapshot_readonly)
+
+  style_docs:         # 维度9/10 风格/文档
+    result: PASS
+    evidence: >-
+      src/Core/*.cs (WeaponData.cs 111 行 / DamageCalculator.cs 49 行 / CombatState.cs 73 行)
+      全部 public 类型与成员含 XML 文档注释 (<summary>/<param>/<returns>/<exception>);
+      无 TODO/FIXME/HACK 混入纯逻辑层;
+      CombatSystem.cs / AISystem.cs 的 TODO 为 Boot Phase 1.6 骨架占位 (按规则豁免);
+      文件均 < 500 行 (numeric_constraints.structure.max_file_lines 合规)
+
+  structure:          # 结构核验
+    result: PASS
+    evidence: >-
+      ProjectSettings/ProjectVersion.txt → m_EditorVersion: 6000.0.0f1 (含降级模式注释, Unity 安装后自动重写核对);
+      Packages/manifest.json → python json.load 校验通过;
+      两个 asmdef 均存在: assets/Scripts/Core/Contra3D.Core.asmdef (noEngineReferences=true) +
+      assets/Scripts/Runtime/Contra3D.Runtime.asmdef (references=[Contra3D.Core]);
+      镜像一致性: diff -r src/Core assets/Scripts/Core → .cs 文件内容零差异
+      (差异仅 src 侧 csproj/bin/obj 与 assets 侧 asmdef, 属两侧职责专属文件, 合理)
+
+issues:
+  - id: QA-001
+    file: F:\AI_Projects\Universal_AI_OS\src\adapter\tools\check_hardcoded.py
+    line: 0
+    severity: P2
+    desc: 硬编码扫描工具仅扫描 .rs (Rust) 文件, 对本项目 C# (.cs) 返回 Total files scanned: 0, 硬编码维度实际依赖手动 grep 兜底
+    suggestion: 扩展 check_hardcoded.py 支持 .cs 扩展名 (const/readonly 声明行、C# 字符串插值), 或为 C# 项目提供专用扫描器
+  - id: QA-002
+    file: ProjectSettings\ProjectVersion.txt
+    line: 1
+    severity: P2
+    desc: m_EditorVersion=6000.0.0f1 为占位值 (Unity Editor 未安装), 与 framework.version_lock=strict 存在暂时性偏差; 文件内已注释声明安装后核对流程
+    suggestion: Unity Hub 安装 6000.0 LTS 后首次打开工程时人工核对 diff (已在文件注释中声明, 仅跟踪不阻塞)
+
+verdict: >-
+  T-SYS-001 通过。编译 0 error 0 warning; 契约未越界 (rendering 类型留待后续任务,
+  文件头已标注); 空 event registry; Core 零 UnityEngine 引用; commit 范围干净;
+  测试豁免成立且 EditMode 策略已声明; XML 文档注释齐全; 工程结构自举合规。
+  2 个 P2 跟踪项均不阻塞 (QA-001 工具适用性 / QA-002 版本号占位)。
