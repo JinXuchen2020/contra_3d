@@ -324,13 +324,32 @@ namespace Contra3D.Core.Tests
         {
             // given: player fires and bullet hits but enemy survives
             var updater = new HUDUpdater(InitialState);
-
             // when: bullet hits without killing (IsDead=false)
             updater.Process(new HealthChangeEvent("enemy", 30f, 70f, false));
-
             // then: HitMarker remains inactive
             Assert.False(updater.State.HitMarker);
             Assert.Equal(0f, updater.State.HitMarkerDuration);
+        }
+
+        // ─── BDD: score_display_and_1up_award ──────────────────────────────────
+
+        [Fact]
+        public void HUD_ScoreThresholdTriggersExtraLife()
+        {
+            // given: score_threshold 1UP mechanism enabled, thresholds递增 (2k/5k/10k)
+            var initialState = HUDState.FromInitialState(InitialHealth, InitialLives, 1900);
+            var updater = new HUDUpdater(initialState);
+            Assert.Equal(3, updater.State.Lives);
+            Assert.Equal(1900, updater.State.Score);
+
+            // when: player kills enemy and score crosses 2000 threshold
+            updater.Process(new ScoreIncrementEvent(200, 2100));
+
+            // then: score HUD refreshes, lives +1, ExtraLifeEvent generated
+            Assert.Equal(2100, updater.State.Score);
+            Assert.Equal(4, updater.State.Lives);
+            Assert.Single(updater.GeneratedExtraLifeEvents);
+            Assert.Equal(4, updater.GeneratedExtraLifeEvents[0].NewLifeCount);
         }
     }
 }
