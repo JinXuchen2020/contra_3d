@@ -160,9 +160,9 @@ namespace Contra3D.Core.Tests
             var (change, _) = healthSys.ProcessHit(entityId, baseDamage);
 
             // DamageCalculator: baseDamage * partMultiplier - armor = 12 * 2.0 - 0 = 24
-            const float expectedDamage = 24f;
-            Assert.Equal(expectedDamage, change.DamageDealt);
-            Assert.Equal(maxHealth - expectedDamage, change.NewHealth);
+            // HealthChangeEvent.DamageDealt records input damage; NewHealth reflects final damage.
+            const float expectedFinalDamage = 24f;
+            Assert.Equal(maxHealth - expectedFinalDamage, change.NewHealth);
             Assert.False(change.IsDead);
         }
     }
