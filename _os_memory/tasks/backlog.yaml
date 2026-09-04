@@ -1379,7 +1379,7 @@ tasks:
 - task_id: T-PLAYTEST-001
   title: 实现 Playtest 协议
   priority: P1
-  status: todo
+  status: completed
   type: playtest
   depends_on:
   - T-RUNTIME-001
@@ -1387,6 +1387,8 @@ tasks:
   estimated_effort: L
   source: protocol_adoption_scan
   description: 实现 playtest 协议覆盖 stage_traversal 和 combat_balanced 系统
+  completed_at: 2026-09-04T08:55:00+08:00
+  result: HeadlessPlaytestAgent + PlaytestSession + PlaytestMetrics framework committed (fa6f4ee), 159 tests pass
 - task_id: T-DATA-001
   title: 生成地图数据
   priority: P1
