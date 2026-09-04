@@ -17,6 +17,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <InternalsVisibleTo Include="Contra3D.Core.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
     <!-- T-SYS-001 骨架 (Boot Phase 1.6 生成) -->
     <Compile Include="../Combat/CombatSystem.cs" />
     <Compile Include="../AI/AISystem.cs" />

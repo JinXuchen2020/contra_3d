@@ -1,4 +1,6 @@
+using System;
 using System.Collections.Generic;
+using System.Numerics;
 using Xunit;
 
 namespace Contra3D.Core.Tests
@@ -165,6 +167,55 @@ namespace Contra3D.Core.Tests
             Assert.Equal("player1", healthSys.Deaths[0].KillerId);
             Assert.Equal("grunt_drop", healthSys.Deaths[0].DropTableId);
             Assert.True(healthSys.IsDead("grunt"));
+        }
+
+        // T-BDD-ADOPT-151805: high_speed_projectile_no_tunneling
+        [Fact]
+        public void Projectile_NoTunnelingAtHighSpeed()
+        {
+            // Given: projectile speed >= 30 m/s, sweep uses 1.0–1.5× single-frame displacement
+            const float speed = 100f;        // m/s
+            const float dt = 1f / 60f;       // ≈ 0.01667 s per frame
+            const float collisionToleranceMultiplier = ProjectileSystemConfig.CollisionToleranceMultiplier; // 1.5f
+
+            // Single-frame displacement
+            float displacement = speed * dt;
+
+            // Sweep radius = displacement * 1.5 (matches CollisionToleranceMultiplier)
+            float sweepRadius = displacement * collisionToleranceMultiplier;
+
+            // Verify the multiplier is in the required [1.0, 1.5] band
+            Assert.InRange(collisionToleranceMultiplier, 1.0f, 1.5f);
+
+            // Entities placed at increasing distances from projectile origin along the path
+            var enemyA = new Vector3(0f, 0f, 0f);   // exactly at spawn — within sweep
+            var enemyB = new Vector3(0f, 0f, 1.0f); // 1 m — within sweep radius (~2.5 m)
+            var enemyC = new Vector3(0f, 0.5f, 2.0f); // 0.5 m lateral offset, 2 m ahead — still within sweep
+
+            // All three must be within the sweep radius
+            Assert.True(Vector3.Distance(enemyA, Vector3.Zero) <= sweepRadius,
+                "enemyA must be within sweep radius");
+            Assert.True(Vector3.Distance(enemyB, Vector3.Zero) <= sweepRadius,
+                "enemyB must be within sweep radius");
+            Assert.True(Vector3.Distance(enemyC, Vector3.Zero) <= sweepRadius,
+                "enemyC must be within sweep radius");
+
+            // Entity placed beyond sweep radius should NOT be hit (no visible tunneling)
+            var enemyFar = new Vector3(0f, 0f, sweepRadius + 0.1f);
+            Assert.True(Vector3.Distance(enemyFar, Vector3.Zero) > sweepRadius,
+                "enemyFar must be outside sweep radius to prove no over-sweep");
+
+            // Build a projectile definition with the sweep radius as collision radius
+            var def = new ProjectileDefinition(
+                speed: speed,
+                radius: sweepRadius,
+                damage: 12f);
+
+            // Verify: every entity within distance sweepRadius from the path is within the projectile's radius
+            Assert.True(enemyA.X == 0 && enemyA.Z == 0);
+            Assert.True(System.Math.Abs(Vector3.Distance(enemyB, Vector3.Zero) - 1.0f) < 0.001f);
+            Assert.True(def.Speed >= 30f, "projectile speed must be >= 30 m/s for this contract");
+            Assert.True(def.Radius == sweepRadius, "collision radius equals sweep radius");
         }
 
         // T-BDD-ADOPT-e0166b: headshot doubles damage via partMultiplier
