@@ -187,6 +187,16 @@ namespace Contra3D.Combat
             Kills = 0;
         }
 
+        /// <summary>
+        /// 获取所有已注册目标的 ID 列表（供 HeadlessPlaytest 等测试框架使用）。
+        /// </summary>
+        public IReadOnlyList<string> GetTargetIds()
+        {
+            var ids = new string[_targetRegistry.Count];
+            _targetRegistry.Keys.CopyTo(ids, 0);
+            return ids;
+        }
+
         // ──────────────────────────────────────────────────────────────────────
         // 内部实现
         // ──────────────────────────────────────────────────────────────────────
