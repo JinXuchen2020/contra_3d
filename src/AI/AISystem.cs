@@ -278,5 +278,15 @@ namespace Contra3D.AI
 
         /// <summary>获取所有存活敌人状态。</summary>
         public static IReadOnlyDictionary<string, EnemyAIState> GetStates() => _states;
+
+        /// <summary>仅供单元测试使用：重置所有静态状态。</summary>
+        internal static void TestReset()
+        {
+            _definitions.Clear();
+            _states.Clear();
+            _spawnQueue.Clear();
+            _activeCount = 0;
+            _rusherCount = 0;
+        }
     }
 }
