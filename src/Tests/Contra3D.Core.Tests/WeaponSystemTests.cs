@@ -265,5 +265,40 @@ namespace Contra3D.Core.Tests
             Assert.False(evt.IsHitscan);
             Assert.Equal(7, ws.PrimaryAmmo);
         }
+
+        [Fact]
+        public void LaserBeam_HitscanInstantKill()
+        {
+            var weapons = new Dictionary<string, WeaponDefinition>();
+            weapons["laser_beam"] = new WeaponDefinition(
+                "laser_beam",
+                "Laser Beam",
+                WeaponType.Hitscan,
+                35f,
+                3f,
+                12,
+                2.5f,
+                0f);
+
+            var ws = new WeaponSystem(weapons, "laser_beam");
+            var healthSys = new HealthDamageSystem();
+            healthSys.RegisterEntity("elite_enemy", 30f);
+
+            Assert.Equal(12, ws.PrimaryAmmo);
+
+            ws.Update(0.5f);
+            var (result, evt) = ws.ProcessFireRequest();
+
+            Assert.Equal(WeaponActionResult.Success, result);
+            Assert.True(evt.IsHitscan);
+            Assert.Equal(35f, evt.Damage);
+            Assert.Equal(11, ws.PrimaryAmmo);
+
+            var (change, death) = healthSys.ProcessHit("elite_enemy", evt.Damage);
+            Assert.Equal(0f, change.NewHealth);
+            Assert.True(change.IsDead);
+            Assert.True(death.HasValue);
+            Assert.Equal("elite_enemy", death.Value.EntityId);
+        }
     }
 }
