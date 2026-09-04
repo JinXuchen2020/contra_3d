@@ -346,5 +346,35 @@ namespace Contra3D.Core.Tests
             Assert.InRange(homingDps, lower, upper);
             Assert.InRange(mgDps, lower, upper);
         }
+
+        [Fact]
+        public void Death_ResetsToDefaultRifle()
+        {
+            var weapons = new Dictionary<string, WeaponDefinition>();
+            weapons["rifle_default"] = new WeaponDefinition(
+                "rifle_default", "默认突击步枪", WeaponType.Hitscan, 12f, 7f, 30, 1.5f, 1.5f);
+            weapons["laser_beam"] = new WeaponDefinition(
+                "laser_beam", "Laser Beam", WeaponType.Hitscan, 35f, 3f, 12, 2.5f, 0f);
+
+            var ws = new WeaponSystem(weapons, "laser_beam");
+            Assert.Equal("laser_beam", ws.PrimaryId);
+
+            // Fire some shots to change ammo from initial magazine size
+            ws.Update(0.5f);
+            ws.ProcessFireRequest();
+            ws.Update(0.5f);
+            ws.ProcessFireRequest();
+            ws.Update(0.5f);
+            ws.ProcessFireRequest();
+            Assert.Equal(9, ws.PrimaryAmmo); // started at 12, fired 3 shots
+
+            // Simulate death: respawn loses special weapons
+            ws.OnDeathReset();
+
+            var rifleDef = weapons["rifle_default"];
+            Assert.Equal("rifle_default", ws.PrimaryId);
+            Assert.Null(ws.SecondaryId);
+            Assert.Equal(rifleDef.MagazineSize, ws.PrimaryAmmo);
+        }
     }
 }
