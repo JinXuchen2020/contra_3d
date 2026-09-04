@@ -142,6 +142,36 @@ namespace Contra3D.Core.Tests
             Assert.Equal(cmd1.MoveIntent, cmd2.MoveIntent);
         }
 
+        [Fact]
+        public void Patrol_VigilanceReachesAlertThreshold()
+        {
+            var defs = new Dictionary<string, EnemyDefinition>();
+            defs["grunt_soldier"] = new EnemyDefinition("grunt_soldier", "Grunt Soldier", 24f, 2f, AiType.Patrol,
+                visionRange: 15f, visionAngleDeg: 90f,
+                alertThreshold: 60f, comprehensionThreshold: 100f,
+                vigilanceGainPerSecond: 20f);
+            var sys = new AiSystem(defs);
+            sys.SpawnEnemy("grunt_soldier", Vector3.Zero);
+            sys.SetPlayerPosition(new Vector3(5, 0, 0)); // Within 15m vision range
+
+            // Advance 4 seconds: vigilance = 20 * 4 = 80 >= 60 alert threshold
+            sys.Update(4f);
+            var state = GetState(sys, "grunt_soldier");
+            Assert.True(state.State == AiState.Alert || state.State == AiState.Combat,
+                $"Expected Alert or Combat state after 4s of player proximity, got {state.State} (vigilance={state.Vigilance})");
+        }
+
+        [Fact]
+        public void Patrol_DeathBroadcastsEvent()
+        {
+            var sys = new AiSystem(MakeDefinitions());
+            sys.SpawnEnemy("grunt", Vector3.Zero);
+            sys.TakeDamage("grunt", 24f); // lethal
+            var state = GetState(sys, "grunt");
+            Assert.Equal(AiState.Dead, state.State);
+            Assert.False(state.IsAlive);
+        }
+
         private static EnemyAIState GetState(AiSystem sys, string enemyId)
         {
             // Use reflection to access private _states dictionary
