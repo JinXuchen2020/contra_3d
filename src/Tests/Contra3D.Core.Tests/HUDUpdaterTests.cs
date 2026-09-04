@@ -280,7 +280,7 @@ namespace Contra3D.Core.Tests
             Assert.Empty(updater.GeneratedExtraLifeEvents);
         }
 
-        // ─── 重置 ───────────────────────────────────────────────────────────────
+        // ─── Reset ──────────────────────────────────────────────────────────────
 
         [Fact]
         public void Reset_CleansAllState()
@@ -300,6 +300,37 @@ namespace Contra3D.Core.Tests
             Assert.False(updater.State.LowHealth);
             Assert.Empty(updater.GeneratedExtraLifeEvents);
             Assert.Empty(updater.GeneratedLowHealthEvents);
+        }
+
+        // ─── BDD: hit_marker_on_hit_and_kill ────────────────────────────────────
+
+        [Fact]
+        public void HUD_HitMarkerOnKill_SetsHitMarkerWhenIsDead()
+        {
+            // given: player fires and bullet hits enemy hurtbox
+            var updater = new HUDUpdater(InitialState);
+            Assert.False(updater.State.HitMarker);
+
+            // when: bullet hits then kills (IsDead=true)
+            updater.Process(new HealthChangeEvent("enemy", 50f, 0f, true));
+
+            // then: HitMarker flag is set with ~100ms duration (80-120ms window)
+            Assert.True(updater.State.HitMarker);
+            Assert.InRange(updater.State.HitMarkerDuration, 80f, 120f);
+        }
+
+        [Fact]
+        public void HUD_HitMarkerOnHit_NotSetWhenNotDead()
+        {
+            // given: player fires and bullet hits but enemy survives
+            var updater = new HUDUpdater(InitialState);
+
+            // when: bullet hits without killing (IsDead=false)
+            updater.Process(new HealthChangeEvent("enemy", 30f, 70f, false));
+
+            // then: HitMarker remains inactive
+            Assert.False(updater.State.HitMarker);
+            Assert.Equal(0f, updater.State.HitMarkerDuration);
         }
     }
 }

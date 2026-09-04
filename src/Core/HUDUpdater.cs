@@ -52,6 +52,12 @@ namespace Contra3D.Core
             {
                 _lowHealthFired = false;
             }
+
+            // 命中标记：玩家死亡时激活（80-120ms，取中值100ms）
+            if (@event.IsDead)
+            {
+                _state = _state.WithHitMarker(100f);
+            }
         }
 
         /// <summary>处理死亡事件。命数减一；归零时重置为初始状态（Respawn）。</summary>

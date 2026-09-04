@@ -32,7 +32,13 @@ namespace Contra3D.Core
         /// <summary>游戏是否已暂停。</summary>
         public bool IsPaused { get; }
 
-        public HUDState(float health, float maxHealth, int lives, int score, string currentWeaponId, float crosshairSpread = 4.0f, bool isPaused = false)
+        /// <summary>命中标记是否激活（击杀时触发，持续 duration_ms 毫秒）。</summary>
+        public bool HitMarker { get; }
+
+        /// <summary>命中标记剩余持续时间（毫秒），0 表示未激活。</summary>
+        public float HitMarkerDuration { get; }
+
+        public HUDState(float health, float maxHealth, int lives, int score, string currentWeaponId, float crosshairSpread = 4.0f, bool isPaused = false, bool hitMarker = false, float hitMarkerDuration = 0f)
         {
             if (maxHealth <= 0f) throw new ArgumentException($"MaxHealth must be > 0, got {maxHealth}.", nameof(maxHealth));
             if (health < 0f || health > maxHealth)
@@ -40,6 +46,7 @@ namespace Contra3D.Core
             if (lives < 0) throw new ArgumentException("Lives must be >= 0.", nameof(lives));
             if (score < 0) throw new ArgumentException("Score must be >= 0.", nameof(score));
             if (crosshairSpread < 0f) throw new ArgumentException("CrosshairSpread must be >= 0.", nameof(crosshairSpread));
+            if (hitMarkerDuration < 0f) throw new ArgumentException("HitMarkerDuration must be >= 0.", nameof(hitMarkerDuration));
 
             Health = health;
             MaxHealth = maxHealth;
@@ -48,6 +55,8 @@ namespace Contra3D.Core
             CurrentWeaponId = currentWeaponId;
             CrosshairSpread = crosshairSpread;
             IsPaused = isPaused;
+            HitMarker = hitMarker;
+            HitMarkerDuration = hitMarkerDuration;
         }
 
         /// <summary>
@@ -109,7 +118,15 @@ namespace Contra3D.Core
             return new HUDState(Health, MaxHealth, Lives, Score, CurrentWeaponId, CrosshairSpread, isPaused);
         }
 
+        /// <summary>
+        /// 返回命中标记激活后的新 HUDState（不可变），持续 duration 毫秒。
+        /// </summary>
+        public HUDState WithHitMarker(float duration)
+        {
+            return new HUDState(Health, MaxHealth, Lives, Score, CurrentWeaponId, CrosshairSpread, IsPaused, true, duration);
+        }
+
         public override string ToString() =>
-            $"HUDState(health={Health}, maxHealth={MaxHealth}, lives={Lives}, score={Score}, weapon={CurrentWeaponId}, lowHealth={LowHealth}, crosshairSpread={CrosshairSpread}, isPaused={IsPaused})";
+            $"HUDState(health={Health}, maxHealth={MaxHealth}, lives={Lives}, score={Score}, weapon={CurrentWeaponId}, lowHealth={LowHealth}, crosshairSpread={CrosshairSpread}, isPaused={IsPaused}, hitMarker={HitMarker})";
     }
 }
