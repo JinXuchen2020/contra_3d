@@ -120,5 +120,50 @@ namespace Contra3D.Core.Tests
             Assert.Equal(WeaponActionResult.Success, result);
             Assert.True(change.NewHealth > 0, "NewHealth after first hit should be greater than zero");
         }
+
+        // T-BDD-ADOPT-e0166b: damage_formula_deterministic
+        [Fact]
+        public void DamageFormula_Deterministic()
+        {
+            const float baseDamage = 12f;
+            const float partMultiplier = 1.0f;
+            const float armor = 2f;
+            const float maxHealth = 100f;
+            const string entityId = "testEntity";
+
+            var sysA = new HealthDamageSystem();
+            sysA.RegisterEntity(entityId, maxHealth, armor, partMultiplier);
+
+            var sysB = new HealthDamageSystem();
+            sysB.RegisterEntity(entityId, maxHealth, armor, partMultiplier);
+
+            var (changeA, _) = sysA.ProcessHit(entityId, baseDamage);
+            var (changeB, _) = sysB.ProcessHit(entityId, baseDamage);
+
+            Assert.Equal(changeA.NewHealth, changeB.NewHealth);
+            Assert.Equal(changeA.DamageDealt, changeB.DamageDealt);
+            Assert.Equal(changeA.IsDead, changeB.IsDead);
+        }
+
+        // T-BDD-ADOPT-e0166b: headshot doubles damage via partMultiplier
+        [Fact]
+        public void DamageFormula_HeadshotBonus()
+        {
+            const float maxHealth = 100f;
+            const float baseDamage = 12f;
+            const float partMultiplier = 2.0f; // headshot
+            const string entityId = "headshotTarget";
+
+            var healthSys = new HealthDamageSystem();
+            healthSys.RegisterEntity(entityId, maxHealth, armor: 0f, partMultiplier: partMultiplier);
+
+            var (change, _) = healthSys.ProcessHit(entityId, baseDamage);
+
+            // DamageCalculator: baseDamage * partMultiplier - armor = 12 * 2.0 - 0 = 24
+            const float expectedDamage = 24f;
+            Assert.Equal(expectedDamage, change.DamageDealt);
+            Assert.Equal(maxHealth - expectedDamage, change.NewHealth);
+            Assert.False(change.IsDead);
+        }
     }
 }
