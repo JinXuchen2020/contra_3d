@@ -76,5 +76,49 @@ namespace Contra3D.Core.Tests
 
             Assert.Equal(r1, r2);
         }
+
+        // BDD: TTK within expected range for minion encounter
+        [Fact]
+        public void ShootPipeline_TTKWithinRange()
+        {
+            var weapons = new Dictionary<string, WeaponDefinition>();
+            weapons["rifle_default"] = new WeaponDefinition("rifle_default", "Rifle Default", WeaponType.Hitscan, 12f, 7f, 30, 1.5f, 1.5f);
+            var ws = new WeaponSystem(weapons, "rifle_default");
+
+            var healthSys = new HealthDamageSystem();
+            healthSys.RegisterEntity("grunt_soldier", 24f);
+
+            const float dt = 1f / 60f;
+            float simulatedTime = 0f;
+            while (!healthSys.IsDead("grunt_soldier"))
+            {
+                ws.Update(dt);
+                simulatedTime += dt;
+                var (result, fireEvent) = ws.ProcessFireRequest();
+                if (result == WeaponActionResult.Success && fireEvent.WeaponId != null)
+                    healthSys.ProcessHit("grunt_soldier", fireEvent.Damage);
+            }
+
+            Assert.InRange(simulatedTime, 0.1f, 1.0f);
+        }
+
+        // BDD: 12-damage rifle must not one-shot a 24HP minion
+        [Fact]
+        public void ShootPipeline_NoOneshotKillOnMinion()
+        {
+            var weapons = new Dictionary<string, WeaponDefinition>();
+            weapons["rifle_default"] = new WeaponDefinition("rifle_default", "Rifle Default", WeaponType.Hitscan, 12f, 7f, 30, 1.5f, 1.5f);
+            var ws = new WeaponSystem(weapons, "rifle_default");
+
+            var healthSys = new HealthDamageSystem();
+            healthSys.RegisterEntity("grunt_soldier", 24f);
+
+            ws.Update(1f);
+            var (result, fireEvent) = ws.ProcessFireRequest();
+            var (change, _) = healthSys.ProcessHit("grunt_soldier", fireEvent.Damage);
+
+            Assert.Equal(WeaponActionResult.Success, result);
+            Assert.True(change.NewHealth > 0, "NewHealth after first hit should be greater than zero");
+        }
     }
 }
