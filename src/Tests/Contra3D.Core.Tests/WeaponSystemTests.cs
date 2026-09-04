@@ -145,5 +145,35 @@ namespace Contra3D.Core.Tests
             Assert.Equal(WeaponSystemConfig.DefaultWeaponId, ws.PrimaryId);
             Assert.Null(ws.SecondaryId);
         }
+
+        [Fact]
+        public void RifleBaseline_StatsConformance()
+        {
+            var weapons = new Dictionary<string, WeaponDefinition>();
+            weapons["rifle_default"] = new WeaponDefinition(
+                "rifle_default",
+                "默认突击步枪",
+                WeaponType.Hitscan,
+                12f,
+                7f,
+                30,
+                1.5f,
+                1.5f);
+
+            var ws = new WeaponSystem(weapons, "rifle_default");
+
+            Assert.Equal(WeaponType.Hitscan, weapons["rifle_default"].Type);
+            Assert.Equal(12f, weapons["rifle_default"].Damage);
+            Assert.Equal(7f, weapons["rifle_default"].FireRate);
+            Assert.Equal(30, weapons["rifle_default"].MagazineSize);
+            Assert.Equal(1.5f, weapons["rifle_default"].ReloadTime);
+            Assert.Equal(1.5f, weapons["rifle_default"].Spread);
+
+            ws.Update(0.5f);
+            var (result, evt) = ws.ProcessFireRequest();
+
+            Assert.Equal(WeaponActionResult.Success, result);
+            Assert.Equal("rifle_default", evt.WeaponId);
+        }
     }
 }
