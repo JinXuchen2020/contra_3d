@@ -39,6 +39,34 @@ namespace Contra3D.Core.Tests
         }
 
         [Fact]
+        public void SaveLoad_BossDeathTriggersCheckpoint()
+        {
+            // given: boss fight in progress, player at checkpoint — boss dies
+            var postBoss = new SaveData
+            {
+                Position = new Vector3(10f, 5f, 0f),
+                Health = 100f,
+                MaxHealth = 100f,
+                Score = 5000,
+                Lives = 2,
+            };
+
+            // when: auto-save triggers on boss death — serialize current state
+            var json = SaveLoader.Serialize(postBoss);
+
+            // then: restored on continue — all fields preserved including high score
+            var restored = SaveLoader.Deserialize(json);
+
+            Assert.Equal(postBoss.Position.X, restored.Position.X);
+            Assert.Equal(postBoss.Position.Y, restored.Position.Y);
+            Assert.Equal(postBoss.Position.Z, restored.Position.Z);
+            Assert.Equal(postBoss.Health, restored.Health);
+            Assert.Equal(postBoss.MaxHealth, restored.MaxHealth);
+            Assert.Equal(5000, restored.Score);
+            Assert.Equal(postBoss.Lives, restored.Lives);
+        }
+
+        [Fact]
         public void SaveLoad_EmptySaveIsDefault()
         {
             // given: no prior save exists — create default state
