@@ -145,6 +145,28 @@ namespace Contra3D.Core.Tests
             Assert.Equal(changeA.IsDead, changeB.IsDead);
         }
 
+        // T-BDD-ADOPT-8856a7: death_event_downstream_cascade
+        [Fact]
+        public void DeathEvent_DownstreamCascade()
+        {
+            var healthSys = new HealthDamageSystem();
+            healthSys.RegisterEntity("grunt", 24f);
+
+            var (change, death) = healthSys.ProcessHit("grunt", 24f, killerId: "player1", dropTableId: "grunt_drop");
+
+            Assert.True(change.IsDead);
+            Assert.NotNull(death);
+            Assert.Equal("grunt", death.Value.EntityId);
+            Assert.Equal("player1", death.Value.KillerId);
+            Assert.Equal("grunt_drop", death.Value.DropTableId);
+
+            Assert.Single(healthSys.Deaths);
+            Assert.Equal("grunt", healthSys.Deaths[0].EntityId);
+            Assert.Equal("player1", healthSys.Deaths[0].KillerId);
+            Assert.Equal("grunt_drop", healthSys.Deaths[0].DropTableId);
+            Assert.True(healthSys.IsDead("grunt"));
+        }
+
         // T-BDD-ADOPT-e0166b: headshot doubles damage via partMultiplier
         [Fact]
         public void DamageFormula_HeadshotBonus()
