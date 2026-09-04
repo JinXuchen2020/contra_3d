@@ -26,19 +26,24 @@ namespace Contra3D.Core
         /// <summary>是否处于低血量状态（Health / MaxHealth &lt; 0.25）。</summary>
         public bool LowHealth => MaxHealth > 0f && (Health / MaxHealth) < 0.25f;
 
-        public HUDState(float health, float maxHealth, int lives, int score, string currentWeaponId)
+        /// <summary>当前准星扩散角度（度），默认 4.0f。</summary>
+        public float CrosshairSpread { get; }
+
+        public HUDState(float health, float maxHealth, int lives, int score, string currentWeaponId, float crosshairSpread = 4.0f)
         {
             if (maxHealth <= 0f) throw new ArgumentException($"MaxHealth must be > 0, got {maxHealth}.", nameof(maxHealth));
             if (health < 0f || health > maxHealth)
                 throw new ArgumentException($"Health must be in [0, MaxHealth], got {health}.", nameof(health));
             if (lives < 0) throw new ArgumentException("Lives must be >= 0.", nameof(lives));
             if (score < 0) throw new ArgumentException("Score must be >= 0.", nameof(score));
+            if (crosshairSpread < 0f) throw new ArgumentException("CrosshairSpread must be >= 0.", nameof(crosshairSpread));
 
             Health = health;
             MaxHealth = maxHealth;
             Lives = lives;
             Score = score;
             CurrentWeaponId = currentWeaponId;
+            CrosshairSpread = crosshairSpread;
         }
 
         /// <summary>
@@ -76,6 +81,15 @@ namespace Contra3D.Core
         }
 
         /// <summary>
+        /// 返回准星扩散角度更新后的新 HUDState（不可变）。
+        /// </summary>
+        public HUDState WithCrosshairSpread(float newSpread)
+        {
+            if (newSpread < 0f) newSpread = 0f;
+            return new HUDState(Health, MaxHealth, Lives, Score, CurrentWeaponId, newSpread);
+        }
+
+        /// <summary>
         /// 返回武器 ID 更新后的新 HUDState（不可变）。
         /// </summary>
         public HUDState WithWeapon(string newWeaponId)
@@ -84,6 +98,6 @@ namespace Contra3D.Core
         }
 
         public override string ToString() =>
-            $"HUDState(health={Health}, maxHealth={MaxHealth}, lives={Lives}, score={Score}, weapon={CurrentWeaponId}, lowHealth={LowHealth})";
+            $"HUDState(health={Health}, maxHealth={MaxHealth}, lives={Lives}, score={Score}, weapon={CurrentWeaponId}, lowHealth={LowHealth}, crosshairSpread={CrosshairSpread})";
     }
 }

@@ -230,6 +230,25 @@ namespace Contra3D.Core.Tests
             Assert.False(updater.State.LowHealth);
         }
 
+        // ─── 准星扩散 ──────────────────────────────────────────────────────────
+
+        [Fact]
+        public void HUD_CrosshairSpreadTracksMovement()
+        {
+            // given: player has rifle_default, crosshair at default 4°
+            var initialState = HUDState.FromInitialState(InitialHealth, InitialLives, InitialScore, "rifle_default");
+            Assert.Equal(4.0f, initialState.CrosshairSpread);
+
+            var updater = new HUDUpdater(initialState);
+
+            // when: player moves/jumps → spread increases to 8.0f
+            var movedState = updater.State.WithCrosshairSpread(8.0f);
+            updater.Reset(movedState);
+
+            // then: State.CrosshairSpread == 8.0f after update
+            Assert.Equal(8.0f, updater.State.CrosshairSpread);
+        }
+
         // ─── 重置 ───────────────────────────────────────────────────────────────
 
         [Fact]
