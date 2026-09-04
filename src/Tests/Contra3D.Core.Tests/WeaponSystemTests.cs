@@ -175,5 +175,66 @@ namespace Contra3D.Core.Tests
             Assert.Equal(WeaponActionResult.Success, result);
             Assert.Equal("rifle_default", evt.WeaponId);
         }
+
+        [Fact]
+        public void Magazine_EmptyMagazineRejectsFire()
+        {
+            var weapons = new Dictionary<string, WeaponDefinition>();
+            weapons["rifle_default"] = new WeaponDefinition(
+                "rifle_default",
+                "默认突击步枪",
+                WeaponType.Hitscan,
+                12f,
+                7f,
+                30,
+                1.5f,
+                1.5f);
+
+            var ws = new WeaponSystem(weapons, "rifle_default");
+
+            for (int i = 0; i < 30; i++)
+            {
+                ws.Update(0.5f);
+                var (result, _) = ws.ProcessFireRequest();
+                Assert.Equal(WeaponActionResult.Success, result);
+            }
+            Assert.Equal(0, ws.PrimaryAmmo);
+
+            ws.Update(0.5f);
+            var (result31, _) = ws.ProcessFireRequest();
+            Assert.Equal(WeaponActionResult.EmptyMagazine, result31);
+        }
+
+        [Fact]
+        public void Magazine_ReloadRestoresAmmo()
+        {
+            var weapons = new Dictionary<string, WeaponDefinition>();
+            weapons["rifle_default"] = new WeaponDefinition(
+                "rifle_default",
+                "默认突击步枪",
+                WeaponType.Hitscan,
+                12f,
+                7f,
+                30,
+                1.5f,
+                1.5f);
+
+            var ws = new WeaponSystem(weapons, "rifle_default");
+
+            for (int i = 0; i < 30; i++)
+            {
+                ws.Update(0.5f);
+                ws.ProcessFireRequest();
+            }
+            Assert.Equal(0, ws.PrimaryAmmo);
+
+            var (reloadResult, _) = ws.ProcessReloadRequest();
+            Assert.Equal(WeaponActionResult.Success, reloadResult);
+            Assert.True(ws.IsReloading);
+
+            ws.Update(1.5f);
+            Assert.False(ws.IsReloading);
+            Assert.Equal(30, ws.PrimaryAmmo);
+        }
     }
 }
