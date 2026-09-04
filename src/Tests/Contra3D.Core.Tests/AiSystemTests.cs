@@ -273,6 +273,115 @@ namespace Contra3D.Core.Tests
             return states[enemyId];
         }
 
+        /// <summary>
+        /// Helper to inject a private field value via reflection for test setup.
+        /// </summary>
+        private static void SetPrivateField(AiSystem sys, string fieldName, object value)
+        {
+            var field = typeof(AiSystem).GetField(fieldName,
+                System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+            field.SetValue(sys, value);
+        }
+
+        [Fact]
+        public void Patrol_VigilanceDecayWhenOutOfSight()
+        {
+            // BDD: enemy_ai_patrol_vigilance_decay
+            // given: patrol enemy is alert (vigilance raised, state = Alert)
+            // when: player moves out of sight
+            // then: vigilance decays toward 0 over time
+            var defs = new Dictionary<string, EnemyDefinition>();
+            defs["grunt"] = new EnemyDefinition("grunt", "Grunt", 24f, 2f, AiType.Patrol,
+                visionRange: 15f,
+                alertThreshold: 60f,
+                comprehensionThreshold: 100f,
+                vigilanceGainPerSecond: 20f,
+                vigilanceDecayPerSecond: 10f);
+            var sys = new AiSystem(defs);
+            sys.SpawnEnemy("grunt", Vector3.Zero);
+            sys.SetPlayerPosition(new Vector3(5, 0, 0)); // within 15m vision range
+
+            // Raise vigilance to alert level (20/s * 4s = 80 >= 60 threshold)
+            sys.Update(4f);
+            var preState = GetState(sys, "grunt");
+            Assert.Equal(AiState.Alert, preState.State);
+
+            // Move player far out of sight (> 15m)
+            sys.SetPlayerPosition(new Vector3(100, 0, 0));
+
+            // Decay: 10/s * 8s = 80 decay from ~80 → ~0
+            sys.Update(8f);
+            var postState = GetState(sys, "grunt");
+            Assert.True(postState.Vigilance < defs["grunt"].AlertThreshold,
+                $"Expected vigilance to decay below {defs["grunt"].AlertThreshold}, got {postState.Vigilance:F2}");
+            // Once vigilance drops below half-alert, Alert transitions back to Idle
+            Assert.True(postState.State == AiState.Idle || postState.State == AiState.Patrol,
+                $"Expected Idle or Patrol after vigilance decay, got {postState.State}");
+        }
+
+        [Fact]
+        public void Sniper_LaserWarningThenFire()
+        {
+            // BDD: enemy_ai_sniper_laser_warning_then_fire
+            // given: sniper enemy at long range, player enters vision
+            // when: player stays within attack range
+            // then: sniper enters Aim state (laser warning) and fires
+            var defs = new Dictionary<string, EnemyDefinition>();
+            defs["sniper"] = new EnemyDefinition("sniper", "Sniper", 30f, 0f, AiType.Sniper,
+                visionRange: 35f,
+                attackRange: 30f);
+            var sys = new AiSystem(defs);
+            sys.SpawnEnemy("sniper", Vector3.Zero);
+
+            // Player enters sniper vision range (35m) but outside attack range (30m) first
+            sys.SetPlayerPosition(new Vector3(32, 0, 0));
+            sys.Update(1f);
+            var aimState = GetState(sys, "sniper");
+            Assert.True(aimState.State == AiState.Aim,
+                "Sniper should enter Aim state when player in vision range");
+
+            // Player moves into close attack range (< 15m = attackRange * 0.5f)
+            // This triggers Combat state transition from Aim
+            sys.SetPlayerPosition(new Vector3(10, 0, 0));
+            sys.Update(1f);
+            var combatState = GetState(sys, "sniper");
+            Assert.True(combatState.State == AiState.Combat,
+                $"Sniper should enter Combat when player is very close, got {combatState.State}");
+            var cmd = sys.GetCommand("sniper");
+            Assert.True(cmd.FireRequest, "Sniper should request fire from Combat state");
+        }
+
+        [Fact]
+        public void Chase_ReturnsToIdle_WhenLostSight()
+        {
+            // BDD: enemy_ai_chase_returns_to_idle_when_lost_sight
+            // given: chase enemy is actively pursuing the player
+            // when: player moves out of vision range
+            // then: enemy state returns to Idle
+            var defs = new Dictionary<string, EnemyDefinition>();
+            defs["hound"] = new EnemyDefinition("hound", "Hound", 18f, 5f, AiType.Chase,
+                visionRange: 20f,
+                attackRange: 3f);
+            var sys = new AiSystem(defs);
+            sys.SpawnEnemy("hound", Vector3.Zero);
+            sys.SetPlayerPosition(new Vector3(5, 0, 0)); // within 20m vision
+
+            // Advance: hound chases player
+            sys.Update(1f);
+            var chaseState = GetState(sys, "hound");
+            Assert.True(chaseState.State == AiState.Chase || chaseState.State == AiState.Combat,
+                $"Expected Chase or Combat, got {chaseState.State}");
+
+            // Move player far out of vision range (> 20m)
+            sys.SetPlayerPosition(new Vector3(100, 0, 0));
+
+            // Advance enough for state transition logic to execute
+            sys.Update(1f);
+            var postState = GetState(sys, "hound");
+            Assert.True(postState.State == AiState.Idle,
+                "Chase enemy should return to Idle when player is lost out of sight");
+        }
+
         [Fact]
         public void SpawnCap_QueueAndRelease()
         {
