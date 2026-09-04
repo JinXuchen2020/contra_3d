@@ -22,6 +22,11 @@
     <Compile Include="../AI/AISystem.cs" />
     <!-- T-SYS-002 player_movement: MotorTypes.cs / PlayerMotor.cs 由 SDK 默认 glob 收录 -->
     <!-- T-SYS-007 map_loading: MapTypes.cs / MapDefinition.cs / MapLoader.cs 由 SDK 默认 glob 收录 -->
+    <!-- T-BDD-ADOPT-6cbd51 save_load: SaveData.cs / SaveLoader.cs (SDK 默认 glob 收录) -->
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="System.Text.Json" Version="8.0.5" />
   </ItemGroup>
 
 </Project>
