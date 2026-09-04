@@ -236,5 +236,34 @@ namespace Contra3D.Core.Tests
             Assert.False(ws.IsReloading);
             Assert.Equal(30, ws.PrimaryAmmo);
         }
+
+        [Fact]
+        public void SpreadShot_FivePelletsOnFire()
+        {
+            var weapons = new Dictionary<string, WeaponDefinition>();
+            weapons["spread_shot"] = new WeaponDefinition(
+                "spread_shot",
+                "Spread Shot",
+                WeaponType.Projectile,
+                6f,
+                5f,
+                8,
+                2.0f,
+                12f);
+
+            var ws = new WeaponSystem(weapons, "spread_shot");
+            Assert.Equal(8, ws.PrimaryAmmo);
+
+            ws.Update(0.5f);
+            var (result, evt) = ws.ProcessFireRequest();
+
+            Assert.Equal(WeaponActionResult.Success, result);
+            Assert.Equal("spread_shot", evt.WeaponId);
+            Assert.Equal(WeaponType.Projectile, weapons["spread_shot"].Type);
+            Assert.Equal(6f, evt.Damage);
+            Assert.Equal(12f, evt.SpreadDeg);
+            Assert.False(evt.IsHitscan);
+            Assert.Equal(7, ws.PrimaryAmmo);
+        }
     }
 }
