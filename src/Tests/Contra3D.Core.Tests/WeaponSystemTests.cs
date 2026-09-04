@@ -445,5 +445,118 @@ namespace Contra3D.Core.Tests
             Assert.Equal(15f, weapons["homing_missile"].Spread);
             Assert.False(evt.IsHitscan);
         }
+
+        [Fact]
+        public void Weapon_BoxPickupAndSwitch()
+        {
+            // BDD: weapon_box_pickup_switch
+            // Given: player starts with rifle_default as primary
+            var weapons = new Dictionary<string, WeaponDefinition>();
+            weapons["rifle_default"] = new WeaponDefinition(
+                "rifle_default",
+                "默认突击步枪",
+                WeaponType.Hitscan,
+                12f,
+                7f,
+                30,
+                1.5f,
+                1.5f);
+            weapons["spread_shot"] = new WeaponDefinition(
+                "spread_shot",
+                "散布霰弹",
+                WeaponType.Projectile,
+                6f,
+                2f,
+                8,
+                2.2f,
+                12f);
+
+            var ws = new WeaponSystem(weapons, "rifle_default");
+            Assert.Equal("rifle_default", ws.PrimaryId);
+
+            // When: player finds spread_shot weapon box and switches
+            var (result, @event) = ws.ProcessSwitchRequest("spread_shot");
+
+            // Then: primary weapon changes to spread_shot
+            Assert.Equal(WeaponActionResult.Success, result);
+            Assert.Equal("rifle_default", @event.FromWeaponId);
+            Assert.Equal("spread_shot", @event.ToWeaponId);
+            Assert.Equal("spread_shot", ws.PrimaryId);
+            Assert.Equal("rifle_default", ws.SecondaryId);
+            Assert.Equal(8, ws.PrimaryAmmo); // spread_shot magazine size
+        }
+
+        [Fact]
+        public void Weapon_LaserHitscanHighBurst()
+        {
+            // BDD: laser_hitscan_one_shot_kill
+            // Given: laser_beam (damage=35, hitscan) and a 30HP enemy
+            var weapons = new Dictionary<string, WeaponDefinition>();
+            weapons["laser_beam"] = new WeaponDefinition(
+                "laser_beam",
+                "Laser Beam",
+                WeaponType.Hitscan,
+                35f,
+                3f,
+                12,
+                2.5f,
+                0f);
+
+            var ws = new WeaponSystem(weapons, "laser_beam");
+            var healthSys = new HealthDamageSystem();
+            healthSys.RegisterEntity("elite_enemy", 30f);
+
+            // When: player fires laser at the enemy
+            ws.Update(0.5f);
+            var (fireResult, evt) = ws.ProcessFireRequest();
+            var (change, death) = healthSys.ProcessHit("elite_enemy", evt.Damage);
+
+            // Then: hitscan confirmed, 1-hit kill (35 >= 30 HP)
+            Assert.Equal(WeaponActionResult.Success, fireResult);
+            Assert.True(evt.IsHitscan);
+            Assert.Equal(35f, evt.Damage);
+            Assert.Equal(0f, change.NewHealth);
+            Assert.True(change.IsDead);
+            Assert.NotNull(death);
+            Assert.Equal("elite_enemy", death.Value.EntityId);
+            Assert.Equal(11, ws.PrimaryAmmo); // 12 - 1 shot
+        }
+
+        [Fact]
+        public void Magazine_PartialReload_CycleRestoresFullMag()
+        {
+            // Variant of MagazineReloadCycle: fire partially, reload, verify restored
+            var weapons = new Dictionary<string, WeaponDefinition>();
+            weapons["rifle_default"] = new WeaponDefinition(
+                "rifle_default",
+                "默认突击步枪",
+                WeaponType.Hitscan,
+                12f,
+                7f,
+                30,
+                1.5f,
+                1.5f);
+
+            var ws = new WeaponSystem(weapons, "rifle_default");
+
+            // Fire 18 of 30 rounds — not empty, not full
+            for (int i = 0; i < 18; i++)
+            {
+                ws.Update(0.5f);
+                ws.ProcessFireRequest();
+            }
+            Assert.Equal(12, ws.PrimaryAmmo); // 30 - 18 remaining
+            Assert.False(ws.IsReloading);
+
+            // Initiate reload
+            var (reloadResult, _) = ws.ProcessReloadRequest();
+            Assert.Equal(WeaponActionResult.Success, reloadResult);
+            Assert.True(ws.IsReloading);
+
+            // Advance past reload time (1.5s)
+            ws.Update(1.5f);
+            Assert.False(ws.IsReloading);
+            Assert.Equal(30, ws.PrimaryAmmo); // full magazine restored
+        }
     }
 }
