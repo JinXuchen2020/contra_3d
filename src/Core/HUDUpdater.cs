@@ -38,6 +38,7 @@ namespace Contra3D.Core
         /// <summary>处理生命值变化事件。</summary>
         public void Process(HealthChangeEvent @event)
         {
+            if (_state.IsPaused) return;
             var newState = _state.WithHealth(@event.NewHealth);
             _state = newState;
 
@@ -56,6 +57,7 @@ namespace Contra3D.Core
         /// <summary>处理死亡事件。命数减一；归零时重置为初始状态（Respawn）。</summary>
         public void Process(DeathEvent @event)
         {
+            if (_state.IsPaused) return;
             int newLives = _state.Lives - 1;
             if (newLives < 0)
             {
@@ -76,6 +78,7 @@ namespace Contra3D.Core
         /// </summary>
         public void Process(ScoreIncrementEvent @event)
         {
+            if (_state.IsPaused) return;
             int newScore = @event.NewScore;
             _state = _state.WithScore(newScore);
 

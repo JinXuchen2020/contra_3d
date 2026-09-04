@@ -29,7 +29,10 @@ namespace Contra3D.Core
         /// <summary>当前准星扩散角度（度），默认 4.0f。</summary>
         public float CrosshairSpread { get; }
 
-        public HUDState(float health, float maxHealth, int lives, int score, string currentWeaponId, float crosshairSpread = 4.0f)
+        /// <summary>游戏是否已暂停。</summary>
+        public bool IsPaused { get; }
+
+        public HUDState(float health, float maxHealth, int lives, int score, string currentWeaponId, float crosshairSpread = 4.0f, bool isPaused = false)
         {
             if (maxHealth <= 0f) throw new ArgumentException($"MaxHealth must be > 0, got {maxHealth}.", nameof(maxHealth));
             if (health < 0f || health > maxHealth)
@@ -44,6 +47,7 @@ namespace Contra3D.Core
             Score = score;
             CurrentWeaponId = currentWeaponId;
             CrosshairSpread = crosshairSpread;
+            IsPaused = isPaused;
         }
 
         /// <summary>
@@ -97,7 +101,15 @@ namespace Contra3D.Core
             return new HUDState(Health, MaxHealth, Lives, Score, newWeaponId);
         }
 
+        /// <summary>
+        /// 返回暂停状态更新后的新 HUDState（不可变）。
+        /// </summary>
+        public HUDState WithIsPaused(bool isPaused)
+        {
+            return new HUDState(Health, MaxHealth, Lives, Score, CurrentWeaponId, CrosshairSpread, isPaused);
+        }
+
         public override string ToString() =>
-            $"HUDState(health={Health}, maxHealth={MaxHealth}, lives={Lives}, score={Score}, weapon={CurrentWeaponId}, lowHealth={LowHealth}, crosshairSpread={CrosshairSpread})";
+            $"HUDState(health={Health}, maxHealth={MaxHealth}, lives={Lives}, score={Score}, weapon={CurrentWeaponId}, lowHealth={LowHealth}, crosshairSpread={CrosshairSpread}, isPaused={IsPaused})";
     }
 }

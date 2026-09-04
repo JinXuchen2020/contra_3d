@@ -249,6 +249,37 @@ namespace Contra3D.Core.Tests
             Assert.Equal(8.0f, updater.State.CrosshairSpread);
         }
 
+        // ─── BDD: pause_menu_freeze_and_settings ────────────────────────────────
+
+        [Fact]
+        public void HUD_PauseFreezesSimulation()
+        {
+            // given: game running (single player)
+            var updater = new HUDUpdater(InitialState);
+
+            // advance state while unpaused
+            updater.Process(new HealthChangeEvent("player", 30f, 70f, false));
+            updater.Process(new ScoreIncrementEvent(500, 500));
+            var beforePause = updater.State;
+
+            // when: player presses pause key → set paused=true on state
+            updater.Reset(beforePause.WithIsPaused(true));
+            Assert.True(updater.State.IsPaused);
+
+            // then: simulation freezes — events are ignored
+            updater.Process(new HealthChangeEvent("player", 20f, 50f, false));
+            updater.Process(new ScoreIncrementEvent(1000, 1500));
+            updater.Process(new DeathEvent("player", "boss", "loot"));
+
+            // score, health, lives unchanged
+            Assert.Equal(beforePause.Health, updater.State.Health);
+            Assert.Equal(beforePause.Score, updater.State.Score);
+            Assert.Equal(beforePause.Lives, updater.State.Lives);
+            Assert.False(updater.State.LowHealth); // threshold not re-triggered
+            Assert.Empty(updater.GeneratedLowHealthEvents);
+            Assert.Empty(updater.GeneratedExtraLifeEvents);
+        }
+
         // ─── 重置 ───────────────────────────────────────────────────────────────
 
         [Fact]
