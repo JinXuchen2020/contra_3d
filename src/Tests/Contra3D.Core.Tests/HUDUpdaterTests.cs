@@ -200,6 +200,36 @@ namespace Contra3D.Core.Tests
             Assert.Equal("shotgun", updater.State.CurrentWeaponId);
         }
 
+        // ─── BDD: hud_health_lives_low_health_cue ─────────────────────────────
+
+        [Fact]
+        public void HUD_LowHealthFlagTriggersBelow25Percent()
+        {
+            // given: hybrid health model, initial_lives=3
+            var updater = new HUDUpdater(InitialState);
+
+            // when: player takes damage to 24% of max health
+            updater.Process(new HealthChangeEvent("player", 76f, 24f, false));
+
+            // then: LowHealth flag is true
+            Assert.True(updater.State.LowHealth);
+        }
+
+        [Fact]
+        public void HUD_LowHealthClearedOnRecovery()
+        {
+            // given: low-health flag already triggered
+            var updater = new HUDUpdater(InitialState);
+            updater.Process(new HealthChangeEvent("player", 10f, 20f, false));
+            Assert.True(updater.State.LowHealth);
+
+            // when: player recovers above threshold
+            updater.Process(new HealthChangeEvent("player", 0f, 50f, false));
+
+            // then: LowHealth flag is cleared
+            Assert.False(updater.State.LowHealth);
+        }
+
         // ─── 重置 ───────────────────────────────────────────────────────────────
 
         [Fact]
