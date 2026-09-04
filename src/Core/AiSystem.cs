@@ -83,6 +83,7 @@ namespace Contra3D.Core
         public float MaxHealth { get; set; }
         public float Vigilance { get; set; }
         public float TimeSinceLastStimulus { get; set; }
+        public AiState StaggerPrevState { get; set; }
         public Vector3 PatrolTarget { get; set; }
         public bool IsAlive => State != AiState.Dead && Health > 0f;
 
@@ -153,7 +154,7 @@ namespace Contra3D.Core
                 // Stagger briefly
                 var prev = state.State;
                 state.State = AiState.Staggered;
-                // Will return to prev after stagger timer (simplified: 1 frame)
+                state.StaggerPrevState = prev;
             }
         }
 
@@ -187,6 +188,13 @@ namespace Contra3D.Core
                 state.Vigilance = Math.Max(0f, state.Vigilance - def.VigilanceDecayPerSecond * dt);
 
             state.TimeSinceLastStimulus += dt;
+
+            // Stagger recovery: return to previous state after one tick
+            if (state.State == AiState.Staggered)
+            {
+                state.State = state.StaggerPrevState;
+                state.StaggerPrevState = AiState.Idle;
+            }
 
             // State transitions based on ai_type
             switch (def.AiType)

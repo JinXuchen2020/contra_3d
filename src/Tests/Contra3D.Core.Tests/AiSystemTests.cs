@@ -172,6 +172,38 @@ namespace Contra3D.Core.Tests
             Assert.False(state.IsAlive);
         }
 
+        [Fact]
+        public void Stagger_InterruptAndRecover()
+        {
+            var defs = new Dictionary<string, EnemyDefinition>();
+            defs["hound"] = new EnemyDefinition("hound", "Hound", 18f, 5f, AiType.Chase,
+                visionRange: 20f, attackRange: 3f);
+            var sys = new AiSystem(defs);
+            sys.SpawnEnemy("hound", new Vector3(2.5f, 0, 0)); // within attack range
+            sys.SetPlayerPosition(Vector3.Zero);
+
+            // Advance one tick — enemy chases and enters Combat (within attack range)
+            sys.Update(0.1f);
+            var preState = GetState(sys, "hound");
+            // Combat if in range, otherwise Chase (still a valid engagement state)
+            Assert.True(preState.State == AiState.Combat || preState.State == AiState.Chase,
+                $"Expected Combat or Chase before stagger, got {preState.State}");
+
+            // Enemy is hit by player weapon
+            sys.TakeDamage("hound", 5f);
+
+            // State transitions to Staggered and vigilance maxes on hit
+            var staggerState = GetState(sys, "hound");
+            Assert.Equal(AiState.Staggered, staggerState.State);
+            Assert.Equal(defs["hound"].HitVigilanceInstant, staggerState.Vigilance);
+
+            // After one Update tick, recovers back to an engagement state
+            sys.Update(0.016f);
+            var postState = GetState(sys, "hound");
+            Assert.True(postState.State == AiState.Combat || postState.State == AiState.Chase,
+                $"Expected Combat or Chase after stagger recovery, got {postState.State}");
+        }
+
         private static EnemyAIState GetState(AiSystem sys, string enemyId)
         {
             // Use reflection to access private _states dictionary
