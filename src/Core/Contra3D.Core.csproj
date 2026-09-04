@@ -21,6 +21,7 @@
     <Compile Include="../Combat/CombatSystem.cs" />
     <Compile Include="../AI/AISystem.cs" />
     <!-- T-SYS-002 player_movement: MotorTypes.cs / PlayerMotor.cs 由 SDK 默认 glob 收录 -->
+    <!-- T-SYS-007 map_loading: MapTypes.cs / MapDefinition.cs / MapLoader.cs 由 SDK 默认 glob 收录 -->
   </ItemGroup>
 
 </Project>
