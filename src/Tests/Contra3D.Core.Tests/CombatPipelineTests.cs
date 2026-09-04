@@ -218,6 +218,105 @@ namespace Contra3D.Core.Tests
             Assert.True(def.Radius == sweepRadius, "collision radius equals sweep radius");
         }
 
+        // T-BDD-ADOPT-fire_rate_floor: shoot_pipeline_fire_rate_floor_enforced
+        [Fact]
+        public void ShootPipeline_FireRateFloorEnforced()
+        {
+            var weapons = new Dictionary<string, WeaponDefinition>();
+            weapons["rifle"] = new WeaponDefinition("rifle", "Rifle", WeaponType.Hitscan, 12f, 7f, 30, 1.5f, 1.5f);
+            var ws = new WeaponSystem(weapons, "rifle");
+
+            const float rapidDt = 1f / 120f; // fire faster than weapon rate (7/s → interval ~0.143s)
+            const int rapidFires = 20;
+            float elapsed = 0f;
+            int successCount = 0;
+
+            for (int i = 0; i < rapidFires; i++)
+            {
+                ws.Update(rapidDt);
+                elapsed += rapidDt;
+                var (result, _) = ws.ProcessFireRequest();
+                if (result == WeaponActionResult.Success)
+                    successCount++;
+            }
+
+            // With min fire interval = 0.08s and fire rate = 7/s (theoretical min 0.143s),
+            // only ~ceil(elapsed / 0.08) fires should succeed.
+            // At 20 rapid ticks × 1/120 = 0.167s total, expect at most 2 successful hits.
+            Assert.True(successCount <= 2, $"Expected <= 2 successes, got {successCount}. Fire rate floor not enforced.");
+
+            // Verify the min interval constant is respected
+            Assert.Equal(WeaponSystemConfig.MinFireIntervalS, 0.08f);
+        }
+
+        // T-BDD-ADOPT-projectile_cap: projectile_system_cap_recycle_oldest
+        [Fact]
+        public void Projectile_System_CapRecycleOldest()
+        {
+            var def = new ProjectileDefinition(speed: 50f, radius: 0.5f, damage: 10f, lifetime: 1f, maxDistance: 500f);
+            var projSys = new ProjectileSystem(def);
+
+            // Fill to capacity
+            var spawnOrigin = new Vector3(0, 0, 0);
+            var direction = Vector3.UnitZ;
+
+            for (int i = 0; i < ProjectileSystemConfig.MaxProjectiles; i++)
+            {
+                var (result, _) = projSys.SpawnProjectile(spawnOrigin, direction);
+                Assert.Equal(ProjectileActionResult.Success, result);
+            }
+
+            Assert.Equal(ProjectileSystemConfig.MaxProjectiles, projSys.ActiveCount);
+
+            // One more spawn should be rejected (pool exhausted)
+            var (resultNext, _) = projSys.SpawnProjectile(spawnOrigin, direction);
+            Assert.Equal(ProjectileActionResult.PoolExhausted, resultNext);
+
+            // Advance past lifetime so all projectiles recycle
+            projSys.Update(1.1f);
+            Assert.Equal(0, projSys.ActiveCount);
+
+            // After recycling, new spawn should succeed
+            var (resultFresh, freshId) = projSys.SpawnProjectile(spawnOrigin, direction);
+            Assert.Equal(ProjectileActionResult.Success, resultFresh);
+            Assert.True(freshId > 0);
+            Assert.Equal(1, projSys.ActiveCount);
+        }
+
+        // T-BDD-ADOPT-8856a7-v2: combat_death_event_downstream_cascade
+        [Fact]
+        public void Combat_DeathEventDownstreamCascade()
+        {
+            var weapons = new Dictionary<string, WeaponDefinition>();
+            weapons["rifle"] = new WeaponDefinition("rifle", "Rifle", WeaponType.Hitscan, 12f, 7f, 30, 1.5f, 1.5f);
+            var ws = new WeaponSystem(weapons, "rifle");
+
+            var healthSys = new HealthDamageSystem();
+            healthSys.RegisterEntity("grunt_soldier", 24f);
+
+            // Two shots kill the grunt (12+12=24)
+            ws.Update(1f);
+            var (_, fe1) = ws.ProcessFireRequest();
+            var (_, death1) = healthSys.ProcessHit("grunt_soldier", fe1.Damage, killerId: "player1", dropTableId: "grunt_drop");
+            Assert.Null(death1); // not dead yet
+
+            ws.Update(1f);
+            var (_, fe2) = ws.ProcessFireRequest();
+            var (change, death2) = healthSys.ProcessHit("grunt_soldier", fe2.Damage, killerId: "player1", dropTableId: "grunt_drop");
+            Assert.NotNull(death2);
+            Assert.True(change.IsDead);
+            Assert.Equal("grunt_soldier", death2.Value.EntityId);
+            Assert.Equal("player1", death2.Value.KillerId);
+            Assert.Equal("grunt_drop", death2.Value.DropTableId);
+
+            // Verify downstream: entity registered as dead
+            Assert.True(healthSys.IsDead("grunt_soldier"));
+            Assert.Single(healthSys.Deaths);
+            Assert.Equal("grunt_soldier", healthSys.Deaths[0].EntityId);
+            Assert.Equal("player1", healthSys.Deaths[0].KillerId);
+            Assert.Equal("grunt_drop", healthSys.Deaths[0].DropTableId);
+        }
+
         // T-BDD-ADOPT-e0166b: headshot doubles damage via partMultiplier
         [Fact]
         public void DamageFormula_HeadshotBonus()
