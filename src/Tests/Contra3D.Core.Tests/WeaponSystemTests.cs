@@ -414,5 +414,36 @@ namespace Contra3D.Core.Tests
             Assert.Equal(WeaponActionResult.Success, postReloadResult);
             Assert.Equal(29, ws.PrimaryAmmo);
         }
+
+        [Fact]
+        public void HomingMissile_HighDamageLowAccuracy()
+        {
+            // BDD: homing_missile_low_accuracy_high_damage
+            // given: player has homing_missile (high damage=50, low accuracy/spread=15°)
+            var weapons = new Dictionary<string, WeaponDefinition>();
+            weapons["homing_missile"] = new WeaponDefinition(
+                "homing_missile",
+                "Homing Missile",
+                WeaponType.Projectile,
+                50f,
+                1f,
+                4,
+                4.0f,
+                15f);
+
+            var ws = new WeaponSystem(weapons, "homing_missile");
+
+            // when: player fires at enemy
+            ws.Update(0.5f);
+            var (result, evt) = ws.ProcessFireRequest();
+
+            // then: projectile fired with correct weapon id and high damage
+            Assert.Equal(WeaponActionResult.Success, result);
+            Assert.Equal("homing_missile", evt.WeaponId);
+            Assert.Equal(50f, evt.Damage);
+            Assert.Equal(WeaponType.Projectile, weapons["homing_missile"].Type);
+            Assert.Equal(15f, weapons["homing_missile"].Spread);
+            Assert.False(evt.IsHitscan);
+        }
     }
 }
