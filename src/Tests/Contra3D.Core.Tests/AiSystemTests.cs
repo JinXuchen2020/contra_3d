@@ -1,10 +1,34 @@
 using System;
 using System.Collections.Generic;
-using System.Numerics;
 using Xunit;
 
 namespace Contra3D.Core.Tests
 {
+    /// <summary>
+    /// Tracks consecutive enemy deaths at positions for anti-door-camping spawn guard tests.
+    /// </summary>
+    internal static class SpawnGuardTracker
+    {
+        // Key = "x,z" string representation of position (ignores Y for spawn-point matching)
+        private static readonly Dictionary<string, int> _deathCounts = new Dictionary<string, int>();
+        public static float GuardRadius = 5f;
+        public static int DeathCountAt(Vector3 pos) => _deathCounts.TryGetValue(Key(pos), out var c) ? c : 0;
+        public static bool GuardActive => CountLocationsWithThreeDeaths() > 0;
+        public static void RecordDeath(Vector3 position)
+        {
+            var key = Key(position);
+            _deathCounts[key] = _deathCounts.TryGetValue(key, out var c) ? c + 1 : 1;
+        }
+        public static void Reset() { _deathCounts.Clear(); }
+        private static string Key(Vector3 p) => $"{p.X:F3},{p.Z:F3}";
+        private static int CountLocationsWithThreeDeaths()
+        {
+            int count = 0;
+            foreach (var v in _deathCounts.Values) if (v >= 3) count++;
+            return count;
+        }
+    }
+
     public class AiSystemTests
     {
         private static Dictionary<string, EnemyDefinition> MakeDefinitions()
@@ -307,31 +331,6 @@ namespace Contra3D.Core.Tests
                 if (s.IsAlive) count++;
             return count;
         }
-
-    /// <summary>
-    /// Tracks consecutive enemy deaths at positions for anti-door-camping spawn guard tests.
-    /// </summary>
-    internal static class SpawnGuardTracker
-    {
-        // Key = "x,z" string representation of position (ignores Y for spawn-point matching)
-        private static readonly Dictionary<string, int> _deathCounts = new Dictionary<string, int>();
-        public static float GuardRadius = 5f;
-        public static int DeathCountAt(Vector3 pos) => _deathCounts.TryGetValue(Key(pos), out var c) ? c : 0;
-        public static bool GuardActive => CountLocationsWithThreeDeaths() > 0;
-        public static void RecordDeath(Vector3 position)
-        {
-            var key = Key(position);
-            _deathCounts[key] = _deathCounts.TryGetValue(key, out var c) ? c + 1 : 1;
-        }
-        public static void Reset() { _deathCounts.Clear(); }
-        private static string Key(Vector3 p) => $"{p.X:F3},{p.Z:F3}";
-        private static int CountLocationsWithThreeDeaths()
-        {
-            int count = 0;
-            foreach (var v in _deathCounts.Values) if (v >= 3) count++;
-            return count;
-        }
-    }
 
     [Fact]
     public void SpawnGuard_ReducedWeightAfterDeaths()
