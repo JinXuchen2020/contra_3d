@@ -376,5 +376,43 @@ namespace Contra3D.Core.Tests
             Assert.Null(ws.SecondaryId);
             Assert.Equal(rifleDef.MagazineSize, ws.PrimaryAmmo);
         }
+
+        [Fact]
+        public void Magazine_FullCycle_FireEmptyReload()
+        {
+            var weapons = new Dictionary<string, WeaponDefinition>();
+            weapons["rifle"] = new WeaponDefinition("rifle", "Rifle", WeaponType.Hitscan, 12f, 7f, 30, 1.5f, 1.5f);
+            var ws = new WeaponSystem(weapons, "rifle");
+
+            // Phase 1: fire until magazine is empty
+            for (int i = 0; i < 30; i++)
+            {
+                ws.Update(0.5f);
+                var (result, _) = ws.ProcessFireRequest();
+                Assert.Equal(WeaponActionResult.Success, result);
+            }
+            Assert.Equal(0, ws.PrimaryAmmo);
+
+            // Phase 2: attempting to fire while empty returns EmptyMagazine
+            ws.Update(0.5f);
+            var (emptyResult, _) = ws.ProcessFireRequest();
+            Assert.Equal(WeaponActionResult.EmptyMagazine, emptyResult);
+
+            // Phase 3: initiate reload
+            var (reloadResult, _) = ws.ProcessReloadRequest();
+            Assert.Equal(WeaponActionResult.Success, reloadResult);
+            Assert.True(ws.IsReloading);
+
+            // Phase 4: advance time past reload duration
+            ws.Update(1.5f);
+            Assert.False(ws.IsReloading);
+            Assert.Equal(30, ws.PrimaryAmmo);
+
+            // Phase 5: can fire again with full magazine
+            ws.Update(0.5f);
+            var (postReloadResult, _) = ws.ProcessFireRequest();
+            Assert.Equal(WeaponActionResult.Success, postReloadResult);
+            Assert.Equal(29, ws.PrimaryAmmo);
+        }
     }
 }
