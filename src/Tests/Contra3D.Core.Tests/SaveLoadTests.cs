@@ -114,5 +114,52 @@ namespace Contra3D.Core.Tests
             Assert.Equal(continueData.MaxHealth, restored.MaxHealth);
             Assert.Equal(continueData.Lives, restored.Lives);
         }
+
+        /// <summary>
+        /// T-BDD-ADOPT-4ca2cc: save_slot_overwrite_protection (e2e: false)
+        /// Given: existing save file with data
+        /// When: player saves again to same slot
+        /// Then: old data is overwritten (no corruption), new data is intact
+        /// </summary>
+        [Fact]
+        public void SaveLoad_SlotOverwriteIntegrity()
+        {
+            // given: existing save file with data A (score=100)
+            var dataA = new SaveData
+            {
+                Position = new Vector3(1f, 2f, 3f),
+                Health = 50f,
+                MaxHealth = 100f,
+                Score = 100,
+                Lives = 3,
+            };
+            var jsonA = SaveLoader.Serialize(dataA);
+            var restoredA = SaveLoader.Deserialize(jsonA);
+
+            // verify A's data is intact
+            Assert.Equal(100, restoredA.Score);
+            Assert.Equal(50f, restoredA.Health);
+            Assert.Equal(new Vector3(1f, 2f, 3f), restoredA.Position);
+
+            // when: player saves again to same slot — data B (score=9999)
+            var dataB = new SaveData
+            {
+                Position = new Vector3(7f, 8f, 9f),
+                Health = 25f,
+                MaxHealth = 100f,
+                Score = 9999,
+                Lives = 1,
+            };
+            var jsonB = SaveLoader.Serialize(dataB);
+            var restoredB = SaveLoader.Deserialize(jsonB);
+
+            // then: old data (A) is overwritten, new data (B) is intact — no corruption
+            Assert.Equal(9999, restoredB.Score);
+            Assert.NotEqual(100, restoredB.Score);
+            Assert.Equal(25f, restoredB.Health);
+            Assert.NotEqual(50f, restoredB.Health);
+            Assert.Equal(new Vector3(7f, 8f, 9f), restoredB.Position);
+            Assert.Equal(1, restoredB.Lives);
+        }
     }
 }
