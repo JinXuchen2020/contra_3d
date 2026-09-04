@@ -14,33 +14,32 @@ project:
 
 framework:
   name: "unity"
-  version: "6000.0"          # 目标版本（Unity 6 LTS）；Unity Hub 安装后以 ProjectSettings/ProjectVersion.txt 实际值为准
+  version: "2022.3.62f3c1"          # 目标版本（Unity 6 LTS）；Unity Hub 安装后以 ProjectSettings/ProjectVersion.txt 实际值为准
   version_lock: "strict"
   lock_file: "ProjectSettings/ProjectVersion.txt"   # Unity 项目版本锁定文件（Unity 创建工程后生成）
-  build_file: "Assembly-CSharp.csproj"              # Unity 生成的 C# 工程文件（Unity 创建工程后生成）
+  build_file: "src/contra_3d.sln"          # Unity 生成的 C# 工程文件（Unity 创建工程后生成）
 
 commands:
-  # 构建命令（Unity 适配；★ Unity Editor 尚未安装，<UNITY> 为编辑器路径占位，安装后校准）
-  check: "dotnet build contra_3d.sln -v q --nologo"   # 需 Unity 先生成 sln/csproj；此前纯逻辑层可用 dotnet build 单独 csproj
-  build: "<UNITY>/Unity.exe -batchmode -quit -projectPath . -executeMethod BuildScript.BuildWindows -logFile -"
-  release: "<UNITY>/Unity.exe -batchmode -quit -projectPath . -executeMethod BuildScript.BuildWindowsRelease -logFile -"
+  # 构建命令（Unity 适配；★ Unity Editor 尚未安装，E:\programs\unity-editor\2022.3.62f3c1 为编辑器路径占位，安装后校准）
+  check: "dotnet build src/contra_3d.sln -v q --nologo"   # 需 Unity 先生成 sln/csproj；此前纯逻辑层可用 dotnet build 单独 csproj
+  build: "E:\programs\unity-editor\2022.3.62f3c1/Unity.exe -batchmode -quit -projectPath . -executeMethod BuildScript.BuildWindows -logFile -"
+  release: "E:\programs\unity-editor\2022.3.62f3c1/Unity.exe -batchmode -quit -projectPath . -executeMethod BuildScript.BuildWindowsRelease -logFile -"
   demo: ""
   wasm: ""
-  test: "<UNITY>/Unity.exe -batchmode -projectPath . -runTests -testPlatform EditMode -testResults Results/editmode.xml -logFile -"
-  run: "<UNITY>/Unity.exe -projectPath ."
+  test: "E:\programs\unity-editor\2022.3.62f3c1/Unity.exe -batchmode -projectPath . -runTests -testPlatform EditMode -testResults Results/editmode.xml -logFile -"
+  run: "E:\programs\unity-editor\2022.3.62f3c1/Unity.exe -projectPath ."
   # 质量与指标采集
   metrics: "python adapter/tools/collect_metrics.py --dashboard --project-root F:/AI_Projects/projects/contra_3d"
   asset_generation: ""
   asset_placeholder: ""
   visual_verify: ""
-  check_warnings: "python adapter/tools/check_warnings.py --build-command 'dotnet build contra_3d.sln -v q' --module-priority P0"
+  check_warnings: "python adapter/tools/check_warnings.py --build-command 'dotnet build src/contra_3d.sln -v q' --module-priority P0"
   check_hardcoded: "python adapter/tools/check_hardcoded.py --src-dir src/"
 
 paths:
-  # ★★★ OS 路径必须指向 Universal_AI_OS/src，不是根目录 ★★★
-  # ★★★ project_root 是 OS 的兄弟目录（template_registry.yaml: ../projects/{name}），不是子目录 ★★★
-  OS: "F:/AI_Projects/Universal_AI_OS/src"
-  project_root: "F:/AI_Projects/projects/contra_3d"
+   # ★★★ OS 路径不写入 project.yaml——由 os_launcher Phase 2.1 从 pwd 自动探测 → session.json ★★★
+   # ★★★ project_root 由 template_registry.yaml 推导: OS_path/../projects/{name} ★★★
+   project_root: "E:/Freelancer/AI_Projects/projects/contra_3d"
 
 game:
   core_systems:                       # 游戏核心系统 (从 shooter scaffold 自动填充)
@@ -109,7 +108,7 @@ autonomy:
   max_micro_loops: 20
   stop_on_idle: true
   stop_on_blocked: true
-  creative_expansion: true
+  creative_expansion: false
   max_creative_cycles: 20
 
 # 外部循环驱动器配置（留空 = 不自动启动 external_shell_loop）
@@ -197,3 +196,7 @@ directories:
   data: "data/"
   assets: "assets/"
   tests: "src/Tests/"
+
+
+
+

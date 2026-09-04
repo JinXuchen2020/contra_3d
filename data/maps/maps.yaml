@@ -1,9 +1,13 @@
-# Maps Seed Data — 关卡种子数据 (2 张, 对应 seed_round.round_1.maps: 2)
+# Maps Seed Data — 关卡种子数据 (4 张, 对应 seed_round.round_1.maps: 2 + round_3.maps: 2)
 # schema: schemas/map.yaml (fields: map_id/name/spawn_points/cover_points/pickup_locations/navmesh)
+# 设计意图: 魂斗罗风格 run-and-gun，线性关卡 + 横向卷轴感，敌人密度递增
 
 maps:
+  # ── Stage 1: 丛林突袭 (入门关) ──────────────────────────────────────────────
   - map_id: m_stage01
     name: "丛林突袭"
+    difficulty: easy
+    length: medium
     spawn_points:
       - {x: 0, y: 0, z: 0, team: player}
       - {x: 30, y: 0, z: -4, team: enemy}
@@ -13,12 +17,18 @@ maps:
       - {x: 16, y: 0, z: -3}
       - {x: 24, y: 0, z: 4}
     pickup_locations:
-      - {x: 10, y: 1, z: 0, type: weapon}
-      - {x: 28, y: 0, z: 1, type: health}
-    navmesh: ""
+      - {x: 10, y: 1, z: 0, type: weapon, spawn_id: p_weapon_shotgun}
+      - {x: 28, y: 0, z: 1, type: health, spawn_id: p_health_small}
+    enemy_spawns:
+      - {enemy_id: grunt_soldier, count: 5, spawn_point: 1, wave: 1}
+      - {enemy_id: grunt_soldier, count: 3, spawn_point: 2, wave: 2}
+    boss: null
 
+  # ── Stage 2: 基地攻坚 (进阶关) ──────────────────────────────────────────────
   - map_id: m_stage02
     name: "基地攻坚"
+    difficulty: medium
+    length: medium
     spawn_points:
       - {x: 0, y: 0, z: 0, team: player}
       - {x: 25, y: 0, z: 0, team: enemy}
@@ -29,6 +39,65 @@ maps:
       - {x: 18, y: 0, z: -2}
       - {x: 34, y: 0, z: 0}
     pickup_locations:
-      - {x: 12, y: 0, z: -2, type: ammo}
-      - {x: 40, y: 0, z: 2, type: weapon}
-    navmesh: ""
+      - {x: 12, y: 0, z: -2, type: ammo, spawn_id: p_ammo_rifle}
+      - {x: 40, y: 0, z: 2, type: weapon, spawn_id: p_weapon_laser}
+    enemy_spawns:
+      - {enemy_id: grunt_soldier, count: 4, spawn_point: 1, wave: 1}
+      - {enemy_id: charger_mutant, count: 2, spawn_point: 2, wave: 2}
+      - {enemy_id: turret_sniper, count: 2, spawn_point: 3, wave: 3}
+    boss: null
+
+  # ── Stage 3: 深海遗迹 (高难关) ──────────────────────────────────────────────
+  - map_id: m_stage03
+    name: "深海遗迹"
+    difficulty: hard
+    length: long
+    spawn_points:
+      - {x: 0, y: -5, z: 0, team: player}
+      - {x: 35, y: -5, z: -8, team: enemy}
+      - {x: 70, y: -5, z: 0, team: enemy}
+      - {x: 70, y: -5, z: 8, team: enemy}
+    cover_points:
+      - {x: 10, y: -5, z: 3}
+      - {x: 20, y: -5, z: -3}
+      - {x: 35, y: -5, z: 0}
+      - {x: 50, y: -5, z: 4}
+      - {x: 60, y: -5, z: -4}
+    pickup_locations:
+      - {x: 15, y: -4, z: 0, type: health, spawn_id: p_health_large}
+      - {x: 40, y: -4, z: 2, type: weapon, spawn_id: p_weapon_heavy_machinegun}
+      - {x: 55, y: -4, z: -2, type: armor, spawn_id: p_armor_light}
+    enemy_spawns:
+      - {enemy_id: hound_runner, count: 6, spawn_point: 1, wave: 1}
+      - {enemy_id: grunt_soldier, count: 4, spawn_point: 2, wave: 2}
+      - {enemy_id: turret_sniper, count: 3, spawn_point: 3, wave: 3}
+      - {enemy_id: charger_mutant, count: 3, spawn_point: 4, wave: 4}
+    boss: {enemy_id: elite_gunner, spawn_point: 3, wave: 5}
+
+  # ── Stage 4: 最终决战 (Boss 关) ──────────────────────────────────────────────
+  - map_id: m_stage04
+    name: "最终决战"
+    difficulty: extreme
+    length: long
+    spawn_points:
+      - {x: 0, y: 0, z: 0, team: player}
+      - {x: 40, y: 0, z: 0, team: enemy}
+      - {x: 80, y: 0, z: -10, team: enemy}
+      - {x: 80, y: 0, z: 10, team: enemy}
+    cover_points:
+      - {x: 15, y: 0, z: 5}
+      - {x: 30, y: 0, z: -5}
+      - {x: 50, y: 0, z: 0}
+      - {x: 65, y: 0, z: 6}
+      - {x: 75, y: 0, z: -6}
+    pickup_locations:
+      - {x: 20, y: 1, z: 0, type: health, spawn_id: p_health_large}
+      - {x: 45, y: 1, z: 3, type: weapon, spawn_id: p_weapon_laser}
+      - {x: 60, y: 1, z: -3, type: ammo, spawn_id: p_ammo_rifle}
+      - {x: 70, y: 1, z: 0, type: powerup, spawn_id: p_powerup_barrier}
+    enemy_spawns:
+      - {enemy_id: elite_gunner, count: 2, spawn_point: 1, wave: 1}
+      - {enemy_id: turret_sniper, count: 4, spawn_point: 2, wave: 2}
+      - {enemy_id: charger_mutant, count: 5, spawn_point: 3, wave: 3}
+      - {enemy_id: hound_runner, count: 8, spawn_point: 4, wave: 4}
+    boss: {enemy_id: elite_gunner, spawn_point: 0, wave: 5, is_final: true}
