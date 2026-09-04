@@ -1357,21 +1357,25 @@ tasks:
 - task_id: T-RUNTIME-001
   title: 实现 CombatSystem Runtime 层
   priority: P0
-  status: todo
+  status: completed
   type: runtime_system
   depends_on: []
   estimated_effort: M
   source: arch_scan
   description: 实现 src/Combat/CombatSystem.cs — 桥接 Core 战斗逻辑与 Unity GameObject
+  completed_at: 2026-09-04T08:45:00+08:00
+  result: 31 unit tests added, all 159 pass
 - task_id: T-RUNTIME-002
   title: 实现 AISystem Runtime 层
   priority: P0
-  status: todo
+  status: completed
   type: runtime_system
   depends_on: []
   estimated_effort: M
   source: arch_scan
   description: 实现 src/AI/AISystem.cs — 敌人 AI 状态机与刷兵系统
+  completed_at: 2026-09-04T08:45:00+08:00
+  result: 30 unit tests added + TestReset helper, all 159 pass
 - task_id: T-PLAYTEST-001
   title: 实现 Playtest 协议
   priority: P1
