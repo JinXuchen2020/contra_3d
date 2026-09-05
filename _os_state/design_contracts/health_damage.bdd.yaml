@@ -1,0 +1,249 @@
+# health_damage.bdd.yaml — 生命伤害系统行为契约 (contra_3d)
+# 供 Universal_AI_OS BDD 协议消费 (behavior_contract_protocol.md 格式)
+# 系统级参考: templates/system_design/health_damage.md (不替代 scenario 级锚点)
+# 依赖系统: projectile_system/hit_detection (上游, 通过 HitEvent) / drop_system/score_system/spawn_system (下游, 通过 DeathEvent)
+
+system: health_damage
+protocol: bdd
+version: 1
+source: templates/system_design/health_damage.md
+scenarios:
+  - id: hit_event_processed_damage_applied
+    name: 命中事件处理与伤害结算 (端到端)
+    description: HealthDamageSystem 消费 HitEvent, 计算最终伤害并扣减目标生命值
+    given:
+      - 目标实体携带 HealthComponent (current=100, max=100, armor=0, partMultipliers={body:1.0})
+      - HitEvent: damage=12, targetId=目标, hitPoint=(1,0,0), part=body
+    when:
+      - HealthDamageSystem.ProcessHit(hitEvent) 调用
+    then:
+      - DamageCalculator.Calculate(12, 1.0, 0) → 12
+      - 目标 current 从 100 变为 88
+      - 广播 HealthChangeEvent (entityId=目标, damageDealt=12, newHealth=88, isDead=false)
+      - 无 DeathEvent 产出
+    source: templates/system_design/health_damage.md#数据流
+    e2e: true
+
+  - id: headshot_multiplier_applied
+    name: 头部暴击部位倍率生效
+    description: HitEvent 携带 part=head 时, 部位倍率 2.0 生效, 伤害翻倍
+    given:
+      - 目标实体: HealthComponent (current=100, max=100, armor=0, partMultipliers={head:2.0, body:1.0})
+      - HitEvent: damage=12, targetId=目标, part=head
+    when:
+      - HealthDamageSystem.ProcessHit(hitEvent)
+    then:
+      - DamageCalculator.Calculate(12, 2.0, 0) → 24
+      - 目标 current 从 100 变为 76
+      - HealthChangeEvent.damageDealt=24
+    source: templates/system_design/health_damage.md#关键数值约束
+    e2e: false
+
+  - id: armor_reduction_subtractive
+    name: 护甲减免模型 (减法模型)
+    description: 护甲以减法模型减免伤害, 下限 0 (不产生负伤害)
+    given:
+      - 目标实体: HealthComponent (current=100, max=100, armor=20, partMultipliers={body:1.0})
+      - HitEvent: damage=30, targetId=目标, part=body
+    when:
+      - HealthDamageSystem.ProcessHit(hitEvent)
+    then:
+      - DamageCalculator.Calculate(30, 1.0, 20) → max(0, 30 - 20) = 10
+      - 目标 current 从 100 变为 90
+      - HealthChangeEvent.damageDealt=10
+    source: templates/genre_knowledge_reference.yaml#armor_reduction.subtractive
+    e2e: false
+
+  - id: armor_overkill_zero_damage
+    name: 护甲过厚导致零伤害
+    description: 基础伤害小于等于护甲值时, 最终伤害为 0, 不扣血
+    given:
+      - 目标实体: HealthComponent (current=100, max=100, armor=20, partMultipliers={body:1.0})
+      - HitEvent: damage=10, targetId=目标, part=body
+    when:
+      - HealthDamageSystem.ProcessHit(hitEvent)
+    then:
+      - DamageCalculator.Calculate(10, 1.0, 20) → max(0, 10 - 20) = 0
+      - 目标 current 保持 100 不变
+      - HealthChangeEvent.damageDealt=0 (或不广播)
+    source: templates/system_design/health_damage.md#关键数值约束
+    e2e: false
+
+  - id: death_event_broadcast_on_zero_health
+    name: 生命归零触发死亡事件 (端到端)
+    description: 伤害结算后 current ≤ 0, 广播 DeathEvent 并标记实体死亡
+    given:
+      - 目标实体: HealthComponent (current=24, max=24, armor=0) — 标准杂兵
+      - HitEvent: damage=24, targetId=目标, part=body
+    when:
+      - HealthDamageSystem.ProcessHit(hitEvent)
+    then:
+      - 目标 current 变为 0 (不为负)
+      - HealthChangeEvent: newHealth=0, isDead=true
+      - 广播 DeathEvent (entityId=目标, killerId=来源, dropTableId=grunt_soldier)
+      - 实体标记为待销毁/回收
+    source: templates/system_design/health_damage.md#数据流
+    e2e: true
+
+  - id: overkill_damage_clamped_at_zero
+    name: 过量伤害不产生负生命值
+    description: 伤害超过当前生命值时, 生命值钳制在 0, 不产生负数
+    given:
+      - 目标实体: HealthComponent (current=24, max=24, armor=0)
+      - HitEvent: damage=100, targetId=目标, part=body
+    when:
+      - HealthDamageSystem.ProcessHit(hitEvent)
+    then:
+      - 目标 current = 0 (非 -76)
+      - isDead=true, DeathEvent 广播
+      - 无负生命值残留
+    source: templates/system_design/health_damage.md#测试策略
+    e2e: false
+
+  - id: invincibility_frames_post_death
+    name: 死亡后无敌帧防连击
+    description: 实体死亡后 1.0s 内免疫再次伤害, 防止连击 bug
+    given:
+      - 目标实体刚死亡 (current=0, 刚广播 DeathEvent)
+      - 0.5s 后同一来源再次发送 HitEvent (damage=50)
+    when:
+      - HealthDamageSystem.ProcessHit(secondHitEvent)
+    then:
+      - 无伤害结算, current 保持 0
+      - 无额外 HealthChangeEvent/DeathEvent
+      - 系统静默忽略该 HitEvent
+    source: templates/system_design/health_damage.md#关键数值约束
+    e2e: false
+
+  - id: invincibility_frames_expired_allows_damage
+    name: 无敌帧过期后恢复可受击
+    description: 死亡后 1.0s 无敌帧结束, 后续 HitEvent 正常处理 (针对复活/重生场景)
+    given:
+      - 目标实体死亡并重生 (新 HealthComponent current=100)
+      - 重生后 1.1s 后收到 HitEvent (damage=10)
+    when:
+      - HealthDamageSystem.ProcessHit(hitEvent)
+    then:
+      - 正常结算伤害, current 变为 90
+      - HealthChangeEvent 正常广播
+    source: templates/system_design/health_damage.md#关键数值约束
+    e2e: false
+
+  - id: drop_table_resolved_on_death
+    name: 死亡事件驱动掉落表结算
+    description: DeathEvent 携带 dropTableId, 下游 DropManager 按概率表独立 roll 掉落
+    given:
+      - 敌人实体: dropTableId=grunt_soldier (enemies.yaml 定义)
+      - 掉落表: health_pack_small(0.3), weapon_box(0.1), none(0.6)
+      - DeathEvent 广播
+    when:
+      - DropManager 处理 DeathEvent
+    then:
+      - 按概率独立 roll: 30% 小血包, 10% 武器箱, 60% 无
+      - 掉落实体在死亡位置生成 (或略微偏移避免重叠)
+      - 多次死亡每次独立 roll, 无关联
+    source: templates/system_design/health_damage.md#关键数值约束
+    e2e: false
+
+  - id: score_system_receives_kill_event
+    name: 死亡事件驱动积分结算
+    description: DeathEvent 广播后, 积分系统订阅并计入击杀分
+    given:
+      - 玩家击杀敌人, DeathEvent(killerId=player, entityId=敌人)
+      - 积分系统已订阅 DeathEvent
+    when:
+      - 积分系统处理 DeathEvent
+    then:
+      - 玩家累计分数增加 (grunt_soldier 基础 100 分)
+      - 分数立即在 HUD 更新
+    source: templates/system_design/combat_system.md#系统间依赖
+    e2e: false
+
+  - id: spawn_system_quota_decrement_on_death
+    name: 死亡事件驱动刷兵配额释放
+    description: DeathEvent 广播后, 刷兵系统配额计数递减, 允许后续刷兵
+    given:
+      - 刷兵系统当前配额: max_spawns_per_point=5, 已刷 3 只存活
+      - 其中 1 只死亡, DeathEvent 广播
+    when:
+      - 刷兵系统处理 DeathEvent
+    then:
+      - 该刷兵点已刷存活计数从 3 递减为 2
+      - 配额释放, 后续可继续刷新直到上限
+    source: templates/system_design/combat_system.md#系统间依赖
+    e2e: false
+
+  - id: no_bypass_health_modification
+    name: 生命值仅经 health_damage 修改, 无旁路写入
+    description: 代码审查确认: 除 HealthDamageSystem.ProcessHit 外, 无其他代码路径修改 HealthComponent.current
+    given:
+      - 全代码库搜索 HealthComponent.current 赋值操作
+    when:
+      - 静态分析 / 代码审查执行
+    then:
+      - 仅 HealthDamageSystem.cs 中出现 current 赋值
+      - weapon_system / projectile_system / enemy_ai 等均无直接写入
+      - 所有生命值变更均通过 HitEvent → ProcessHit 链路
+    source: templates/system_design/health_damage.md#验收标准对照
+    e2e: false
+
+  - id: damage_deterministic_same_input_same_output
+    name: 伤害计算确定性
+    description: 同一 HitEvent 序列在相同初始状态下两次处理, 产出完全相同的 HealthChangeEvent/DeathEvent 序列
+    given:
+      - 固定初始状态: 两个敌人各 current=100, armor=5
+      - HitEvent 序列: [hitA(damage=12), hitB(damage=20), hitA(damage=12), ...]
+    when:
+      - HealthDamageSystem 处理完整序列两次 (重置状态)
+    then:
+      - 两次输出的 HealthChangeEvent 序列完全一致 (damageDealt, newHealth, isDead, frame)
+      - DeathEvent 触发帧一致
+    source: templates/system_design/health_damage.md#测试策略
+    e2e: false
+
+  - id: multi_target_independent_resolution
+    name: 多目标独立结算
+    description: 同一帧多个 HitEvent 针对不同目标, 各自独立结算, 互不干扰
+    given:
+      - 敌人 A: current=50, armor=0
+      - 敌人 B: current=30, armor=10
+      - 同帧收到 HitEventA(damage=20, target=A), HitEventB(damage=15, target=B)
+    when:
+      - HealthDamageSystem 处理两个 HitEvent (顺序无关)
+    then:
+      - 敌人 A: damage=20, current=30, isDead=false
+      - 敌人 B: damage=max(0,15-10)=5, current=25, isDead=false
+      - 两个 HealthChangeEvent 正确对应各自 targetId
+    source: templates/system_design/health_damage.md#测试策略
+    e2e: false
+
+  - id: limb_multiplier_reduced_damage
+    name: 四肢命中伤害减免
+    description: HitEvent part=limb 时, 部位倍率 0.7 生效, 伤害降低
+    given:
+      - 目标实体: HealthComponent (current=100, max=100, armor=0, partMultipliers={limb:0.7})
+      - HitEvent: damage=12, targetId=目标, part=limb
+    when:
+      - HealthDamageSystem.ProcessHit(hitEvent)
+    then:
+      - DamageCalculator.Calculate(12, 0.7, 0) → 8.4 → 取整/向下取整为 8
+      - 目标 current 从 100 变为 92
+      - HealthChangeEvent.damageDealt=8
+    source: templates/genre_knowledge_reference.yaml#zone_multiplier.limb
+    e2e: false
+
+  - id: weak_point_multiplier_boss
+    name: Boss 弱点暴露窗口高倍率伤害
+    description: Boss 弱点部位 (weak_point) 倍率 3.0, 仅在暴露窗口生效
+    given:
+      - Boss 实体: HealthComponent (current=500, max=500, armor=0, partMultipliers={weak_point:3.0})
+      - Boss 处于弱点暴露状态
+      - HitEvent: damage=35, targetId=Boss, part=weak_point
+    when:
+      - HealthDamageSystem.ProcessHit(hitEvent)
+    then:
+      - DamageCalculator.Calculate(35, 3.0, 0) → 105
+      - Boss current 从 500 变为 395
+      - HealthChangeEvent.damageDealt=105
+    source: templates/genre_knowledge_reference.yaml#zone_multiplier.weak_point
+    e2e: false

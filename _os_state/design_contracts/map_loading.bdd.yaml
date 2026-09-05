@@ -1,0 +1,271 @@
+# map_loading.bdd.yaml — 地图加载系统行为契约 (contra_3d)
+# 供 Universal_AI_OS BDD 协议消费 (behavior_contract_protocol.md 格式)
+# 系统级参考: templates/system_design/map_loading.md (不替代 scenario 级锚点)
+# 依赖系统: 无上游依赖 (启动链路入口) / rendering/collision/entity_instantiation (下游, 通过 SceneLoadedEvent)
+
+system: map_loading
+protocol: bdd
+version: 1
+source: templates/system_design/map_loading.md
+scenarios:
+  - id: valid_yaml_loads_successfully
+    name: 有效 YAML 地图定义加载成功 (端到端)
+    description: MapLoader 解析合法 maps.yaml, 返回完整 MapDefinition, 广播 SceneLoadedEvent
+    given:
+      - data/maps/maps.yaml 包含 map_id="level_01" 的完整定义
+      - 所有引用的 weapon/enemy/pickup 均在对应 schema 中存在
+      - SpawnPoint/cover_point/pickup 坐标均在合法范围
+    when:
+      - MapLoader.Load("data/maps/maps.yaml", "level_01") 调用
+    then:
+      - 返回 MapDefinition (非错误列表)
+      - MapDefinition.map_id = "level_01"
+      - 所有字段 (size, enemies, pickups, spawn_points, cover_points) 均已填充
+      - Runtime 层 MapManager 接收 SceneLoadedEvent 并开始实例化
+    source: templates/system_design/map_loading.md#数据流
+    e2e: true
+
+  - id: invalid_reference_returns_validation_errors
+    name: 无效引用返回结构化校验错误
+    description: YAML 中引用不存在的 weapon/enemy/pickup 时, 返回 MapValidationError 列表而非抛异常
+    given:
+      - maps.yaml 某 map 引用 weapon="nonexistent_rifle" (weapons.yaml 中无此定义)
+      - 或引用 enemy="unknown_boss" (enemies.yaml 中无此定义)
+    when:
+      - MapLoader.Load(path, mapId) 调用
+    then:
+      - 返回 List<MapValidationError> (非 MapDefinition)
+      - 每个错误包含: field_path, expected_type, actual_value, message
+      - 错误信息明确指出缺失的引用名与所属 schema
+      - 无异常抛出, Core 层不崩溃
+    source: templates/system_design/map_loading.md#分层设计
+    e2e: true
+
+  - id: spawn_point_count_minimum_two
+    name: 同地图出生点数量至少 2 个 (玩家+敌人)
+    description: 校验通过的地图必须包含 ≥2 个 SpawnPoint
+    given:
+      - maps.yaml 某 map 仅定义 1 个 SpawnPoint
+    when:
+      - MapLoader.Load() 执行引用校验后进一步做业务规则校验
+    then:
+      - 返回 MapValidationError: "spawn_points count must be ≥ 2"
+      - 错误级别: error (阻塞加载)
+    source: templates/system_design/map_loading.md#关键数值约束
+    e2e: false
+
+  - id: spawn_point_min_distance_enforced
+    name: 出生点间距至少 5m 防原地刷怪
+    description: 任意两个 SpawnPoint 间欧氏距离 ≥ 5m
+    given:
+      - maps.yaml 定义两个 SpawnPoint: A(0,0,0), B(3,0,0) (距离 3m < 5m)
+    when:
+      - MapLoader.Load() 执行业务规则校验
+    then:
+      - 返回 MapValidationError: "spawn_point distance 3.0m < minimum 5m"
+      - 指出冲突的两个 point id
+    source: templates/system_design/map_loading.md#关键数值约束
+    e2e: false
+
+  - id: spawn_point_within_collision_bounds
+    name: 出生点坐标在碰撞边界内
+    description: 所有 SpawnPoint (x,y,z) 必须在地图碰撞边界 collision_bound_x 内
+    given:
+      - 地图定义 collision_bound_x = 50 (半宽)
+      - SpawnPoint 位置 x=60 (超出边界)
+    when:
+      - MapLoader.Load() 校验
+    then:
+      - 返回 MapValidationError: "spawn_point position x=60 exceeds collision_bound_x=50"
+    source: templates/system_design/map_loading.md#验收标准
+    e2e: false
+
+  - id: cover_point_count_ratio
+    name: 掩体点数量至少为出生点数量 50%
+    description: CoverPoint 数量 ≥ SpawnPoint 数量 × 0.5
+    given:
+      - 地图定义 6 个 SpawnPoint, 但仅 2 个 CoverPoint
+    when:
+      - MapLoader.Load() 校验
+    then:
+      - 返回 MapValidationError: "cover_points=2 < spawn_points×0.5=3"
+    source: templates/system_design/map_loading.md#关键数值约束
+    e2e: false
+
+  - id: cover_point_no_overlap_with_spawn
+    name: 掩体点不与出生点重叠
+    description: 任意 CoverPoint 与任意 SpawnPoint 距离 ≥ 2m (避免重叠)
+    given:
+      - SpawnPoint A(10,0,0), CoverPoint B(10.5,0,0) (距离 0.5m)
+    when:
+      - MapLoader.Load() 校验
+    then:
+      - 返回 MapValidationError: "cover_point B overlaps spawn_point A (distance=0.5m < 2m)"
+    source: templates/system_design/map_loading.md#验收标准
+    e2e: false
+
+  - id: pickup_locations_valid_and_in_bounds
+    name: 拾取点有效且不超出地图边界
+    description: 所有 PickupLocation 坐标在碰撞边界内, 总数 ≤ 20
+    given:
+      - 地图定义 25 个 PickupLocation (超出上限 20)
+      - 或某 pickup 位置 y=-10 (地下/无效)
+    when:
+      - MapLoader.Load() 校验
+    then:
+      - 若总数超限: 返回 "pickup count 25 > maximum 20"
+      - 若坐标越界: 返回 "pickup position y=-10 outside valid bounds"
+    source: templates/system_design/map_loading.md#验收标准
+    e2e: false
+
+  - id: map_definition_immutable_data_model
+    name: MapDefinition 为不可变数据模型
+    description: 加载完成后的 MapDefinition 所有字段只读, 运行时不得修改
+    given:
+      - MapLoader.Load() 成功返回 MapDefinition
+    when:
+      - 尝试修改 MapDefinition.spawn_points / enemies / pickups 等集合
+    then:
+      - 编译期/运行时均阻止修改 (readonly / init-only / frozen collection)
+      - Runtime 层只能读取, 实例化时自行复制/转换
+    source: templates/system_design/map_loading.md#分层设计
+    e2e: false
+
+  - id: scene_loaded_event_broadcast
+    name: 加载成功广播 SceneLoadedEvent
+    description: MapLoader 返回 MapDefinition 后, Runtime 层 MapManager 广播 SceneLoadedEvent
+    given:
+      - MapLoader.Load() 返回有效 MapDefinition
+      - MapManager 持有 MapLoader 实例
+    when:
+      - MapManager.LoadMap("level_01") 调用完成
+    then:
+      - 广播 SceneLoadedEvent (mapDefinition=MapDefinition)
+      - 下游系统 (rendering/collision/entity_instantiation) 订阅并开始工作
+      - 事件包含完整地图数据, 无需二次查询
+    source: templates/system_design/map_loading.md#数据流
+    e2e: false
+
+  - id: core_layer_no_unity_dependency
+    name: Core 层零 UnityEngine 引用
+    description: MapLoader/MapDefinition/MapTypes 编译通过且无 UnityEngine 命名空间依赖
+    given:
+      - Contra3D.Core 项目文件
+    when:
+      - `dotnet build` 执行
+    then:
+      - 编译通过
+      - 无 CS0246 (UnityEngine 类型未找到) 错误
+      - 无 UnityEngine.dll 引用
+    source: templates/system_design/map_loading.md#验收标准
+    e2e: false
+
+  - id: dotnet_test_all_green
+    name: Core 单测全绿
+    description: MapLoaderTests 覆盖有效加载/无效引用/边界校验, 全部通过
+    given:
+      - tests/Core.Tests/MapLoaderTests.cs 存在
+    when:
+      - `dotnet test` 执行
+    then:
+      - 所有测试用例通过
+      - 覆盖: valid YAML → 解析成功; 无效引用 → 返回错误; 边界值校验 (spawn数量/间距/cover比例/pickup上限)
+    source: templates/system_design/map_loading.md#测试策略
+    e2e: false
+
+  - id: asmdef_no_back_edges
+    name: asmdef 无回边依赖
+    description: Core.asmdef 不引用 Runtime/Unity; Runtime.asmdef 单向引用 Core
+    given:
+      - Contra3D.Core.asmdef, Contra3D.Runtime.asmdef
+    when:
+      - 静态分析 asmdef 依赖图
+    then:
+      - Core.asmdef references: 无 (或仅引用纯 .NET 库)
+      - Runtime.asmdef references: ["Contra3D.Core"]
+      - 无循环依赖
+    source: templates/system_design/map_loading.md#验收标准清单
+    e2e: false
+
+  - id: max_file_lines_compliance
+    name: 单文件行数 ≤ 500
+    description: MapLoader.cs / MapDefinition.cs / MapTypes.cs 均不超过 500 行
+    given:
+      - 源文件路径
+    when:
+      - `wc -l` 或 IDE 统计行数
+    then:
+      - MapLoader.cs ≤ 500 行
+      - MapDefinition.cs ≤ 500 行
+      - MapTypes.cs ≤ 500 行
+    source: templates/system_design/map_loading.md#验收标准清单
+    e2e: false
+
+  - id: multiple_maps_in_single_yaml
+    name: 单 YAML 文件包含多地图定义, 按 map_id 加载
+    description: maps.yaml 为映射表, MapLoader 支持按 map_id 选择加载特定地图
+    given:
+      - maps.yaml 包含 maps: [{map_id:"level_01", ...}, {map_id:"level_02", ...}, {map_id:"boss_arena", ...}]
+    when:
+      - MapLoader.Load("data/maps/maps.yaml", "level_02") 调用
+    then:
+      - 仅返回 map_id="level_02" 的 MapDefinition
+      - 不加载/解析其他地图数据 (懒加载或按需查找)
+    source: templates/system_design/map_loading.md#文件布局
+    e2e: false
+
+  - id: spawn_point_type_classification
+    name: 出生点类型分类正确 (patrol/ambush/trigger/reinforce)
+    description: SpawnPoint.type 字段必须为枚举值之一, 且 trigger 字段与类型匹配
+    given:
+      - SpawnPoint: {id:"spawn_01", type:"reinforce", trigger:"zone_03"}
+      - SpawnPoint: {id:"spawn_02", type:"patrol", trigger:""} (patrol 类型无需 trigger)
+    when:
+      - MapLoader.Load() 校验
+    then:
+      - type 枚举校验通过
+      - reinforce/ambush/trigger 类型必须有非空 trigger 字段
+      - patrol 类型 trigger 可为空
+    source: templates/genre_knowledge_reference.yaml#data_schema.spawn_points
+    e2e: false
+
+  - id: cover_point_facing_normal_valid
+    name: 掩体点朝向法向量有效
+    description: CoverPoint.facing_normal 为单位向量, 指向威胁方向
+    given:
+      - CoverPoint: {id:"cover_01", facing_normal:[1,0,0]} (有效单位向量)
+      - CoverPoint: {id:"cover_02", facing_normal:[2,0,0]} (非单位向量)
+    when:
+      - MapLoader.Load() 校验
+    then:
+      - cover_01 通过
+      - cover_02 返回错误: "facing_normal must be unit vector (magnitude=1.0)"
+    source: templates/genre_knowledge_reference.yaml#data_schema.cover_points
+    e2e: false
+
+  - id: patrol_path_waypoint_validation
+    name: 巡逻路径路点校验
+    description: PatrolPath.waypoints 每个包含 position/wait_s/speed, 且相邻路点直线需通过视线/碰撞预校验
+    given:
+      - PatrolPath: waypoints=[{pos:[0,0,0], wait:1.0, speed:2.0}, {pos:[10,0,0], wait:0, speed:2.0}]
+      - 两点间有墙体阻挡
+    when:
+      - MapLoader.Load() 校验 (或单独的 PatrolPathValidator)
+    then:
+      - 返回警告/错误: "patrol_path segment 0→1 blocked by collision"
+      - 不阻塞地图加载 (仅警告), 但标记需人工确认
+    source: templates/genre_knowledge_reference.yaml#data_schema.patrol_paths
+    e2e: false
+
+  - id: encounter_zone_lock_blocks_retreat
+    name: 遭遇区封锁退路标记
+    description: EncounterZone.lock=true 时, 玩家进入后退路被封锁 (门关闭/墙升起)
+    given:
+      - EncounterZone: {id:"zone_01", bounds:AABB, on_enter:"spawn_set_01", lock:true}
+    when:
+      - MapLoader.Load() 解析
+    then:
+      - MapDefinition.encounter_zones 包含该 zone, lock=true 保留
+      - Runtime 层 MapManager 读取 lock 字段并在玩家进入时触发封锁逻辑
+    source: templates/genre_knowledge_reference.yaml#data_schema.encounter_zones
+    e2e: false

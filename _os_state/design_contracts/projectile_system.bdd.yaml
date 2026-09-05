@@ -1,0 +1,176 @@
+# projectile_system.bdd.yaml — 弹体系统行为契约 (contra_3d)
+# 供 Universal_AI_OS BDD 协议消费 (behavior_contract_protocol.md 格式)
+# 系统级参考: templates/system_design/projectile_system.md (不替代 scenario 级锚点)
+# 依赖系统: weapon_system (上游) / health_damage (下游, 通过 HitEvent)
+
+system: projectile_system
+protocol: bdd
+version: 1
+source: templates/system_design/projectile_system.md
+scenarios:
+  - id: projectile_spawn_and_advance_linear
+    name: 直线弹体生成与逐帧推进 (端到端)
+    description: 武器系统产出射击事件后, 弹体系统生成物理弹体并按直线弹道每帧推进位置
+    given:
+      - weapon_system 产出 FireEvent (origin=(0,0,0), direction=(1,0,0), weapon=rifle_default, type=projectile)
+      - 弹体定义: speed=50 m/s, radius=0.1m, lifetime=5.0s, damage=12
+    when:
+      - ProjectileSystem.SpawnProjectile() 调用并返回有效 ProjectileId
+      - ProjectileSystem.Update(dt=0.016) 连续调用 10 帧
+    then:
+      - 弹体位置每帧按 speed × dt 推进 (第 10 帧约 x=8.0m)
+      - 弹体状态 active=true, 未超时, 未出界
+      - 对象池 free count 递减 1, active count 递增 1
+    source: templates/system_design/projectile_system.md#数据流
+    e2e: true
+
+  - id: projectile_hitscan_immediate_hit
+    name: Hitscan 弹体即时射线检测与命中事件
+    description: Hitscan 类型武器不生成物理弹体, 直接进行射线投射并产出 HitEvent
+    given:
+      - weapon_system 产出 FireEvent (type=hitscan, max_distance=500m)
+      - 目标实体在射线路径上, 距离 50m, 携带 HealthComponent
+    when:
+      - ProjectileSystem.SpawnProjectile() 处理 hitscan 类型
+    then:
+      - 立即执行射线检测, 不进入对象池推进循环
+      - 产出 HitEvent (projectileId=invalid, targetId=目标, damage=基础伤害, hitPoint=交点)
+      - 无弹体视觉实例化 (Runtime 层不渲染物理弹体)
+    source: templates/system_design/projectile_system.md#分层设计
+    e2e: true
+
+  - id: projectile_homing_tracks_target
+    name: 追踪弹体每帧转向目标
+    description: Homing 类型弹体在存活期间每帧按转向速率调整方向指向目标
+    given:
+      - 弹体定义: type=homing, speed=30 m/s, turn_rate=5.0 rad/s
+      - 目标实体初始在弹体前方 45° 夹角, 距离 20m
+    when:
+      - ProjectileSystem.Update(dt=0.016) 连续调用 20 帧
+    then:
+      - 弹体方向向量每帧按 turn_rate × dt 旋转向目标
+      - 最终方向与目标连线夹角 < 5°
+      - 弹体位置沿曲线推进, 非直线
+    source: templates/system_design/projectile_system.md#分层设计
+    e2e: false
+
+  - id: collision_tolerance_sweep_prevents_tunneling
+    name: 高速弹体容差扫掠防穿透
+    description: 弹体单帧位移大于受击体厚度时, 以 1.0–1.5× 单帧位移扩径做扫掠检测, 避免穿模
+    given:
+      - 弹体速度 100 m/s, dt=0.016s → 单帧位移 1.6m
+      - 薄墙/受击体厚度 0.05m, 位于弹体路径上
+      - 碰撞容差公式: radius + max(1.0×单帧位移, 0.1m)
+    when:
+      - ProjectileSystem.Update() 执行碰撞检测
+    then:
+      - 扫掠半径 ≥ 1.6m (1.0× 单帧位移)
+      - 检测到相交, 产出 HitEvent, 弹体标记命中并回收
+      - 无可见穿透 (弹体不"穿过"受击体)
+    source: templates/system_design/projectile_system.md#关键数值约束
+    e2e: false
+
+  - id: projectile_timeout_recycle
+    name: 弹体超时自动回收
+    description: 弹体存活超过 lifetime (默认 5.0s) 自动标记回收, 释放对象池槽位
+    given:
+      - 弹体定义: lifetime=5.0s
+      - 弹体已生成并处于 active 状态
+    when:
+      - ProjectileSystem.Update(dt=0.016) 累计推进 5.1s (319 帧)
+    then:
+      - 弹体状态变为 inactive, 回收入对象池
+      - free count 恢复, active count 递减
+      - 无 HitEvent 产出
+    source: templates/system_design/projectile_system.md#关键数值约束
+    e2e: false
+
+  - id: projectile_out_of_bounds_recycle
+    name: 弹体出界自动回收
+    description: 弹体距离出生点超过 500m 自动回收
+    given:
+      - 弹体定义: speed=100 m/s, 出界阈值=500m
+      - 弹体已生成, 位置距离出生点 490m
+    when:
+      - ProjectileSystem.Update(dt=0.016) 推进 1 帧 (位移 1.6m, 总距 491.6m)
+      - 再推进 6 帧 (总距 > 500m)
+    then:
+      - 超过 500m 后弹体自动回收
+      - 对象池槽位释放
+    source: templates/system_design/projectile_system.md#关键数值约束
+    e2e: false
+
+  - id: projectile_cap_recycles_oldest
+    name: 同屏弹体上限 200, 超出时回收最旧弹体
+    description: 对象池满时 (200 个 active), 新生成请求触发最旧弹体回收后再分配
+    given:
+      - 对象池 MAX_PROJECTILES=200, 当前 active=200 (最旧弹体 age=3.0s)
+      - weapon_system 产出新的 FireEvent
+    when:
+      - ProjectileSystem.SpawnProjectile() 处理新请求
+    then:
+      - 最旧弹体 (age=3.0s) 被强制回收
+      - 新弹体获得槽位, active 仍为 200
+      - 返回有效 ProjectileId (非 invalid)
+    source: templates/system_design/projectile_system.md#关键数值约束
+    e2e: false
+
+  - id: projectile_pool_deterministic
+    name: 对象池与弹道推进确定性
+    description: 同一输入序列 (Spawn+Update) 两次执行产出完全相同的 HitEvent 序列
+    given:
+      - 固定随机种子 / 无随机因素的弹道参数
+      - 输入序列: Spawn A, Update×10, Spawn B, Update×5, ...
+    when:
+      - 完整执行输入序列两次 (重置系统状态)
+    then:
+      - 两次执行产出的 HitEvent 序列完全一致 (id, targetId, damage, hitPoint, frame)
+      - 对象池分配顺序一致
+    source: templates/system_design/projectile_system.md#测试策略
+    e2e: false
+
+  - id: projectile_spread_shot_multiple_pellets
+    name: 散弹枪单次射击产出多颗短程弹丸
+    description: spread_shot 武器单次射击生成 5 颗弹丸, 每颗独立推进与碰撞检测
+    given:
+      - weapon_system 产出 FireEvent (weapon=spread_shot, pellets=5, spread=12°)
+      - 目标在贴脸距离 (2m)
+    when:
+      - ProjectileSystem.SpawnProjectile() 处理散射类型
+    then:
+      - 单次调用产出 5 个 ProjectileId (或批量生成)
+      - 5 颗弹丸初始方向在 12° 锥角内均匀分布
+      - 贴脸距离下 5 颗均命中 → 产出 5 个 HitEvent
+    source: templates/system_design/projectile_system.md#分层设计
+    e2e: false
+
+  - id: projectile_faction_identification
+    name: 弹体携带阵营信息用于敌我识别
+    description: 弹体生成时绑定 ownerTag (player/enemy), 碰撞检测时仅检测敌对阵营目标
+    given:
+      - 玩家发射弹体 (ownerTag=player)
+      - 敌人发射弹体 (ownerTag=enemy)
+      - 场景中同时存在玩家实体与敌人实体
+    when:
+      - 玩家弹体与敌人实体相交 / 敌人弹体与玩家实体相交
+    then:
+      - 玩家弹体仅对 enemy 标签实体产生 HitEvent
+      - 敌人弹体仅对 player 标签实体产生 HitEvent
+      - 同阵营实体相交不产生 HitEvent (无友伤, 除非配置开启)
+    source: templates/system_design/projectile_system.md#系统概述与边界
+    e2e: false
+
+  - id: projectile_hitscan_penetration_first_hit_only
+    name: Hitscan 射线穿透多层目标但仅首个命中生效
+    description: Hitscan 射线可穿透多个目标, 但仅最近的命中产生 HitEvent
+    given:
+      - 射线路径上依次有敌人 A (30m), 敌人 B (50m), 敌人 C (80m)
+      - hitscan max_distance=500m
+    when:
+      - ProjectileSystem.SpawnProjectile() 执行射线检测
+    then:
+      - 仅产出针对敌人 A 的 HitEvent (最近命中)
+      - 敌人 B、C 不产生 HitEvent
+      - 射线不继续检测首个命中之后的目标
+    source: templates/system_design/projectile_system.md#关键数值约束
+    e2e: false
