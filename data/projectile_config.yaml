@@ -1,0 +1,10 @@
+# projectile_config.yaml — ProjectileSystemConfig 外部化配置
+# 所有数值对应 ProjectileSystemConfig 字段
+# 调参只改本文件，无需重新编译 Core 逻辑层
+# 支持按平台/模式覆盖：可创建 projectile_config.standalone.yaml, projectile_config.editor.yaml 等
+
+projectile_system_config:
+  max_projectiles: 200                    # 弹体对象池最大容量（范围 50–500）
+  collision_tolerance_multiplier: 1.5     # 碰撞容差倍率，防止高速穿透（范围 1.0–2.0）
+  out_of_bounds_distance: 500.0           # 超出边界回收距离 m（范围 100–2000）
+  default_lifetime: 5.0                   # 默认弹体存活时间 s（范围 1–30）

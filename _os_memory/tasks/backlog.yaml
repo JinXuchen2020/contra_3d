@@ -2831,7 +2831,7 @@ tasks:
   depends_on: []
   estimated_effort: 0.5-2 小时
   completed_at: '2026-09-06T01:00:00+08:00'
-  result: SKIPPED — MapLoader does not validate weapon/enemy/pickup references against schemas (feature gap: schema validation layer missing). Test exists as skipped assertion.
+  result: 'SKIPPED — MapLoader does not validate weapon/enemy/pickup references against schemas (feature gap: schema validation layer missing). Test exists as skipped assertion.'
   description: 'BDD/Playtest 行为契约 adoption (由 protocol_adoption_scanner.py 确定性建):
 
     protocol: bdd
@@ -2991,7 +2991,7 @@ tasks:
   depends_on: []
   estimated_effort: 0.5-2 小时
   completed_at: '2026-09-06T01:00:00+08:00'
-  result: SKIPPED — MapLoader does not check CoverPoint-SpawnPoint distance (feature gap: overlap check missing from ValidateMap). Test exists as skipped assertion.
+  result: 'SKIPPED — MapLoader does not check CoverPoint-SpawnPoint distance (feature gap: overlap check missing from ValidateMap). Test exists as skipped assertion.'
   description: 'BDD/Playtest 行为契约 adoption (由 protocol_adoption_scanner.py 确定性建):
 
     protocol: bdd
@@ -3087,7 +3087,7 @@ tasks:
   depends_on: []
   estimated_effort: 0.5-2 小时
   completed_at: '2026-09-06T01:00:00+08:00'
-  result: SKIPPED — No SceneLoadedEvent or MapManager in Core layer (feature gap: event system missing). Test exists as skipped assertion.
+  result: 'SKIPPED — No SceneLoadedEvent or MapManager in Core layer (feature gap: event system missing). Test exists as skipped assertion.'
   description: 'BDD/Playtest 行为契约 adoption (由 protocol_adoption_scanner.py 确定性建):
 
     protocol: bdd
@@ -3277,7 +3277,7 @@ tasks:
   depends_on: []
   estimated_effort: 0.5-2 小时
   completed_at: '2026-09-06T01:00:00+08:00'
-  result: SKIPPED — SpawnPoint has no type/trigger fields (feature gap: SpawnPoint struct needs extension). Test exists as skipped assertion.
+  result: \'SKIPPED — SpawnPoint has no type/trigger fields (feature gap: SpawnPoint struct needs extension). Test exists as skipped assertion.\'
   description: 'BDD/Playtest 行为契约 adoption (由 protocol_adoption_scanner.py 确定性建):
 
     protocol: bdd
@@ -3311,7 +3311,7 @@ tasks:
   depends_on: []
   estimated_effort: 0.5-2 小时
   completed_at: '2026-09-06T01:00:00+08:00'
-  result: SKIPPED — CoverPoint has no facing_normal field (feature gap: CoverPoint struct needs extension). Test exists as skipped assertion.
+  result: \'SKIPPED — CoverPoint has no facing_normal field (feature gap: CoverPoint struct needs extension). Test exists as skipped assertion.\'
   description: 'BDD/Playtest 行为契约 adoption (由 protocol_adoption_scanner.py 确定性建):
 
     protocol: bdd
@@ -3344,7 +3344,7 @@ tasks:
   depends_on: []
   estimated_effort: 0.5-2 小时
   completed_at: '2026-09-06T01:00:00+08:00'
-  result: SKIPPED — No PatrolPath type in MapTypes (feature gap: PatrolPath model missing). Test exists as skipped assertion.
+  result: \'SKIPPED — No PatrolPath type in MapTypes (feature gap: PatrolPath model missing). Test exists as skipped assertion.\'
   description: 'BDD/Playtest 行为契约 adoption (由 protocol_adoption_scanner.py 确定性建):
 
     protocol: bdd
@@ -3377,7 +3377,7 @@ tasks:
   depends_on: []
   estimated_effort: 0.5-2 小时
   completed_at: '2026-09-06T01:00:00+08:00'
-  result: SKIPPED — No EncounterZone type in MapTypes or MapDefinition (feature gap: EncounterZone model missing). Test exists as skipped assertion.
+  result: \'SKIPPED — No EncounterZone type in MapTypes or MapDefinition (feature gap: EncounterZone model missing). Test exists as skipped assertion.\'
   description: 'BDD/Playtest 行为契约 adoption (由 protocol_adoption_scanner.py 确定性建):
 
     protocol: bdd

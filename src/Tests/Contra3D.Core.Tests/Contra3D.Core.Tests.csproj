@@ -8,7 +8,6 @@
     <ImplicitUsings>disable</ImplicitUsings>
     <IsPackable>false</IsPackable>
     <RootNamespace>Contra3D.Core.Tests</RootNamespace>
-    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
   </PropertyGroup>
 
   <ItemGroup>
@@ -19,16 +18,6 @@
 
   <ItemGroup>
     <ProjectReference Include="../../Core/Contra3D.Core.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Compile Include="AISystemRuntimeTests.cs" />
-    <Compile Include="AiSystemTests.cs" />
-    <Compile Include="CombatPipelineTests.cs" />
-    <Compile Include="HealthDamageTests.cs" />
-    <Compile Include="HUDUpdaterTests.cs" />
-    <Compile Include="PlayerMotorTests.cs" />
-    <Compile Include="WeaponSystemTests.cs" />
   </ItemGroup>
 
 </Project>

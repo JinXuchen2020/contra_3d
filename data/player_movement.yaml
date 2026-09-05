@@ -1,0 +1,17 @@
+# player_movement.yaml — MotorConfig 物理参数外部化配置
+# 所有数值对应 MotorConfig 结构体字段（见 src/Core/MotorTypes.cs）
+# 调参只改本文件，无需重新编译 Core 逻辑层
+# 范围参考 genre_knowledge/shooter_base.yaml (movement_feel / input_response 节)
+
+motor_config:
+  max_speed: 7.0              # 最大平面速度 m/s（范围 5–10）
+  ground_accel: 40.0          # 地面加速 m/s²（范围 20–60）
+  ground_decel: 60.0          # 地面减速 m/s²（≈1.5× 加速 → 停得干脆；范围 30–100）
+  air_control_mult: 0.6       # 空中控制系数（空中加速度 = 地面 × 本系数；范围 0.4–0.8）
+  jump_height: 2.2            # 跳跃高度 m（范围 1.5–3.0）
+  airtime: 0.85               # 设计滞空时长 s（范围 0.6–1.2），用于反解起跳初速
+  fall_gravity_mult: 1.5      # 下落重力倍率（下落重力 > 上升重力 → 干脆抛物线；范围 1.2–2.0）
+  variable_jump_retain: 0.5   # 可变跳跃截断保留比（松键截断上升速度至 30–50%）
+  coyote_time: 0.120          # 土狼时间 s（范围 0.080–0.150）
+  input_buffer: 0.150         # 跳跃输入缓冲 s（范围 0.100–0.200）
+  look_sensitivity: 0.002     # 鼠标视角灵敏度（rad per count）

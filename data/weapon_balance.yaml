@@ -1,0 +1,8 @@
+# weapon_balance.yaml — WeaponSystemConfig 全局默认值外部化配置
+# 所有数值对应 WeaponSystemConfigData 结构体字段（见 src/Core/WeaponTypes.cs）
+# 调参只改本文件，无需重新编译 Core 逻辑层
+# 单武器的 min_fire_interval / switch_cooldown 仍由 data/weapons/weapons.yaml 单独配置
+
+weapon_system_config:
+  default_min_fire_interval_s: 0.08   # 全局最小射击间隔下限（秒），防止射速过高导致的视觉/物理异常
+  default_switch_cooldown_s: 0.5      # 全局切换武器冷却时间（秒）

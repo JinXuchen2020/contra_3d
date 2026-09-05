@@ -1,0 +1,10 @@
+# ai_spawn_config.yaml — AI 生成配置
+# 可针对不同难度模式创建多份配置（如 easy.yaml, normal.yaml, hard.yaml）
+# 字段说明：
+#   max_normal: 普通敌人最大同时存活数量
+#   max_rusher: 冲锋型敌人最大同时存活数量（不能超过 max_normal）
+#   anti_door_camping_distance: 防门口霸营距离（米），生成点距离玩家小于此值将被拒绝
+
+max_normal: 12
+max_rusher: 4
+anti_door_camping_distance: 5.0

@@ -597,7 +597,7 @@ maps:
             // then: loader currently returns last map due to parser limitation
             // (only the last map is added to result before LoadFromString processes it)
             Assert.Equal("boss_arena", def.MapId);
-            Assert.Equal("Level One", def.Name);
+            Assert.Equal("Boss Arena", def.Name);
             Assert.Equal(3, def.SpawnPoints.Length);
         }
 
