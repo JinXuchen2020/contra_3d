@@ -50,7 +50,17 @@ namespace Contra3D.Core
             Position = startPosition; TargetPosition = targetPosition;
             Rotation = new Vector3(0f, 0f, 0f); FOV = 60f;
             _splitscreenRigs = new List<(string, CameraRig)>();
-            _minimapCamera = new CameraRig(startPosition, targetPosition) { Mode = CameraMode.Minimap };
+            _minimapCamera = new CameraRig(startPosition, targetPosition, true) { Mode = CameraMode.Minimap };
+        }
+
+        // Internal constructor for minimap camera to avoid infinite recursion
+        private CameraRig(Vector3 startPosition, Vector3 targetPosition, bool isMinimap)
+        {
+            Position = startPosition; TargetPosition = targetPosition;
+            Rotation = new Vector3(0f, 0f, 0f); FOV = 60f;
+            _splitscreenRigs = new List<(string, CameraRig)>();
+            if (!isMinimap)
+                _minimapCamera = new CameraRig(startPosition, targetPosition, true) { Mode = CameraMode.Minimap };
         }
 
         public void UpdateThirdPersonFollow(float dt)
