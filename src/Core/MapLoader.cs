@@ -8,8 +8,8 @@ using System.IO;
 
 namespace Contra3D.Core
 {
-    /// <summary>
-    /// 从 YAML 文件加载并校验地图定义。使用简单文本解析（不引入新依赖）。
+/// <summary>
+    /// 从 YAML 文件加载地图定义。使用简单文本解析（不引入新依赖）。
     /// 校验规则:
     ///   - SpawnPoint 数量 ≥ 2
     ///   - SpawnPoint 间距 ≥ 5 m
@@ -17,6 +17,10 @@ namespace Contra3D.Core
     ///   - PickupLocation 数量 ≤ 20
     ///   - 所有坐标 X 绝对值 ≤ collision_bound_x（默认 25.0）
     /// </summary>
+    /// <remarks>
+    /// LOAD-TIME ONLY: This class performs YAML parsing with string.Split allocations.
+    /// Must only be called at startup/level load, NEVER in runtime hot paths (Update, FixedUpdate, etc.).
+    /// </remarks>
     public static class MapLoader
     {
         /// <summary>默认碰撞边界 X 半宽（米）。</summary>
