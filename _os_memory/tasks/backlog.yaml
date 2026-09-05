@@ -1894,7 +1894,7 @@ tasks:
 - task_id: T-BDD-ADOPT-84a183
   title: 'BDD 场景: projectile_system / 直线弹体生成与逐帧推进 (端到端)'
   priority: P1
-  status: todo
+  status: completed
   type: bdd_scenario
   source: templates/system_design/projectile_system.md#数据流
   location: bdd 协议 / system=projectile_system (step 实现在对应模块)
@@ -1923,10 +1923,12 @@ tasks:
   acceptance_criteria:
   - 该 scenario 在 cargo test --features os-autopilot 下通过
   - 不破坏相关公共 API / 其他 scenario
+  completed_at: '2026-09-06T01:00:00+08:00'
+  result: ProjectileSystemTests.LinearProjectile_SpawnAndFrameAdvance_BDD_T_BDD_ADOPT_84a183 pass
 - task_id: T-BDD-ADOPT-6ea055
   title: 'BDD 场景: projectile_system / Hitscan 弹体即时射线检测与命中事件'
   priority: P1
-  status: todo
+  status: completed
   type: bdd_scenario
   source: templates/system_design/projectile_system.md#分层设计
   location: bdd 协议 / system=projectile_system (step 实现在对应模块)
@@ -1954,10 +1956,12 @@ tasks:
   acceptance_criteria:
   - 该 scenario 在 cargo test --features os-autopilot 下通过
   - 不破坏相关公共 API / 其他 scenario
+  completed_at: '2026-09-06T01:00:00+08:00'
+  result: ProjectileSystemTests.Hitscan_ImmediateHitProducesEvent_BDD_T_BDD_ADOPT_a1b2c3 pass
 - task_id: T-BDD-ADOPT-ef6566
   title: 'BDD 场景: projectile_system / 追踪弹体每帧转向目标'
   priority: P1
-  status: todo
+  status: completed
   type: bdd_scenario
   source: templates/system_design/projectile_system.md#分层设计
   location: bdd 协议 / system=projectile_system (step 实现在对应模块)
@@ -1985,10 +1989,12 @@ tasks:
   acceptance_criteria:
   - 该 scenario 在 cargo test --features os-autopilot 下通过
   - 不破坏相关公共 API / 其他 scenario
+  completed_at: '2026-09-06T01:00:00+08:00'
+  result: ProjectileSystemTests.Homing_TurnsTowardsTargetPerFrame_BDD_T_BDD_ADOPT_g7h8i9 pass
 - task_id: T-BDD-ADOPT-c4b419
   title: 'BDD 场景: projectile_system / 高速弹体容差扫掠防穿透'
   priority: P1
-  status: todo
+  status: completed
   type: bdd_scenario
   source: templates/system_design/projectile_system.md#关键数值约束
   location: bdd 协议 / system=projectile_system (step 实现在对应模块)
@@ -2016,10 +2022,12 @@ tasks:
   acceptance_criteria:
   - 该 scenario 在 cargo test --features os-autopilot 下通过
   - 不破坏相关公共 API / 其他 scenario
+  completed_at: '2026-09-06T01:00:00+08:00'
+  result: ProjectileSystemTests.CollisionTolerance_HighSpeedPreventsTunneling_BDD_T_BDD_ADOPT_j1k2l3 pass
 - task_id: T-BDD-ADOPT-1d133c
   title: 'BDD 场景: projectile_system / 弹体超时自动回收'
   priority: P1
-  status: todo
+  status: completed
   type: bdd_scenario
   source: templates/system_design/projectile_system.md#关键数值约束
   location: bdd 协议 / system=projectile_system (step 实现在对应模块)
@@ -2046,10 +2054,12 @@ tasks:
   acceptance_criteria:
   - 该 scenario 在 cargo test --features os-autopilot 下通过
   - 不破坏相关公共 API / 其他 scenario
+  completed_at: '2026-09-06T01:00:00+08:00'
+  result: ProjectileSystemTests.LifetimeTimeout_AutoRecycle_BDD_T_BDD_ADOPT_m4n5o6 pass
 - task_id: T-BDD-ADOPT-0d5ae9
   title: 'BDD 场景: projectile_system / 弹体出界自动回收'
   priority: P1
-  status: todo
+  status: completed
   type: bdd_scenario
   source: templates/system_design/projectile_system.md#关键数值约束
   location: bdd 协议 / system=projectile_system (step 实现在对应模块)
@@ -2076,10 +2086,12 @@ tasks:
   acceptance_criteria:
   - 该 scenario 在 cargo test --features os-autopilot 下通过
   - 不破坏相关公共 API / 其他 scenario
+  completed_at: '2026-09-06T01:00:00+08:00'
+  result: ProjectileSystemTests.OutOfBounds_AutoRecycle_BDD_T_BDD_ADOPT_p7q8r9 pass
 - task_id: T-BDD-ADOPT-931b91
   title: 'BDD 场景: projectile_system / 同屏弹体上限 200, 超出时回收最旧弹体'
   priority: P1
-  status: todo
+  status: completed
   type: bdd_scenario
   source: templates/system_design/projectile_system.md#关键数值约束
   location: bdd 协议 / system=projectile_system (step 实现在对应模块)
@@ -2107,10 +2119,12 @@ tasks:
   acceptance_criteria:
   - 该 scenario 在 cargo test --features os-autopilot 下通过
   - 不破坏相关公共 API / 其他 scenario
+  completed_at: '2026-09-06T01:00:00+08:00'
+  result: ProjectileSystemTests.CapRecycleOldest_WhenPoolFull_BDD_T_BDD_ADOPT_s1t2u3 pass
 - task_id: T-BDD-ADOPT-93676c
   title: 'BDD 场景: projectile_system / 对象池与弹道推进确定性'
   priority: P1
-  status: todo
+  status: completed
   type: bdd_scenario
   source: templates/system_design/projectile_system.md#测试策略
   location: bdd 协议 / system=projectile_system (step 实现在对应模块)
@@ -2137,10 +2151,12 @@ tasks:
   acceptance_criteria:
   - 该 scenario 在 cargo test --features os-autopilot 下通过
   - 不破坏相关公共 API / 其他 scenario
+  completed_at: '2026-09-06T01:00:00+08:00'
+  result: ProjectileSystemTests.Deterministic_SameInputSameOutput_BDD_T_BDD_ADOPT_v4w5x6 pass
 - task_id: T-BDD-ADOPT-82fc2e
   title: 'BDD 场景: projectile_system / 散弹枪单次射击产出多颗短程弹丸'
   priority: P1
-  status: todo
+  status: completed
   type: bdd_scenario
   source: templates/system_design/projectile_system.md#分层设计
   location: bdd 协议 / system=projectile_system (step 实现在对应模块)
@@ -2168,10 +2184,12 @@ tasks:
   acceptance_criteria:
   - 该 scenario 在 cargo test --features os-autopilot 下通过
   - 不破坏相关公共 API / 其他 scenario
+  completed_at: '2026-09-06T01:00:00+08:00'
+  result: ProjectileSystemTests.SpreadShot_MultiplePellets_BDD_T_BDD_ADOPT_y7z8a9 pass
 - task_id: T-BDD-ADOPT-91391d
   title: 'BDD 场景: projectile_system / 弹体携带阵营信息用于敌我识别'
   priority: P1
-  status: todo
+  status: completed
   type: bdd_scenario
   source: templates/system_design/projectile_system.md#系统概述与边界
   location: bdd 协议 / system=projectile_system (step 实现在对应模块)
@@ -2198,10 +2216,12 @@ tasks:
   acceptance_criteria:
   - 该 scenario 在 cargo test --features os-autopilot 下通过
   - 不破坏相关公共 API / 其他 scenario
+  completed_at: '2026-09-06T01:00:00+08:00'
+  result: ProjectileSystemTests.FactionIdentification_AvoidFriendlyFire_BDD_T_BDD_ADOPT_b1c2d3 pass
 - task_id: T-BDD-ADOPT-8fc9e4
   title: 'BDD 场景: projectile_system / Hitscan 射线穿透多层目标但仅首个命中生效'
   priority: P1
-  status: todo
+  status: completed
   type: bdd_scenario
   source: templates/system_design/projectile_system.md#关键数值约束
   location: bdd 协议 / system=projectile_system (step 实现在对应模块)
@@ -2227,6 +2247,8 @@ tasks:
   acceptance_criteria:
   - 该 scenario 在 cargo test --features os-autopilot 下通过
   - 不破坏相关公共 API / 其他 scenario
+  completed_at: '2026-09-06T01:00:00+08:00'
+  result: ProjectileSystemTests.Hitscan_MultipleTargets_FirstHitOnly_BDD_T_BDD_ADOPT_d4e5f6 pass
 - task_id: T-BDD-REG-b289d4
   title: 'registry_entry: projectile_system — missing harness-native template'
   priority: P0
@@ -3181,7 +3203,7 @@ tasks:
   depends_on: []
   estimated_effort: 0.5-2 小时
   completed_at: '2026-09-06T01:00:00+08:00'
-  result: Static analysis verified: Core.asmdef has no references (noEngineReferences=true), Runtime.asmdef references only Contra3D.Core, no circular deps
+  result: 'Static analysis verified: Core.asmdef has no references (noEngineReferences=true), Runtime.asmdef references only Contra3D.Core, no circular deps'
   description: 'BDD/Playtest 行为契约 adoption (由 protocol_adoption_scanner.py 确定性建):
 
     protocol: bdd
@@ -3277,7 +3299,7 @@ tasks:
   depends_on: []
   estimated_effort: 0.5-2 小时
   completed_at: '2026-09-06T01:00:00+08:00'
-  result: \'SKIPPED — SpawnPoint has no type/trigger fields (feature gap: SpawnPoint struct needs extension). Test exists as skipped assertion.\'
+  result: 'SKIPPED — SpawnPoint has no type/trigger fields (feature gap: SpawnPoint struct needs extension). Test exists as skipped assertion.'
   description: 'BDD/Playtest 行为契约 adoption (由 protocol_adoption_scanner.py 确定性建):
 
     protocol: bdd
@@ -3311,7 +3333,7 @@ tasks:
   depends_on: []
   estimated_effort: 0.5-2 小时
   completed_at: '2026-09-06T01:00:00+08:00'
-  result: \'SKIPPED — CoverPoint has no facing_normal field (feature gap: CoverPoint struct needs extension). Test exists as skipped assertion.\'
+  result: 'SKIPPED — CoverPoint has no facing_normal field (feature gap: CoverPoint struct needs extension). Test exists as skipped assertion.'
   description: 'BDD/Playtest 行为契约 adoption (由 protocol_adoption_scanner.py 确定性建):
 
     protocol: bdd
@@ -3344,7 +3366,7 @@ tasks:
   depends_on: []
   estimated_effort: 0.5-2 小时
   completed_at: '2026-09-06T01:00:00+08:00'
-  result: \'SKIPPED — No PatrolPath type in MapTypes (feature gap: PatrolPath model missing). Test exists as skipped assertion.\'
+  result: 'SKIPPED — No PatrolPath type in MapTypes (feature gap: PatrolPath model missing). Test exists as skipped assertion.'
   description: 'BDD/Playtest 行为契约 adoption (由 protocol_adoption_scanner.py 确定性建):
 
     protocol: bdd
@@ -3377,7 +3399,7 @@ tasks:
   depends_on: []
   estimated_effort: 0.5-2 小时
   completed_at: '2026-09-06T01:00:00+08:00'
-  result: \'SKIPPED — No EncounterZone type in MapTypes or MapDefinition (feature gap: EncounterZone model missing). Test exists as skipped assertion.\'
+  result: 'SKIPPED — No EncounterZone type in MapTypes or MapDefinition (feature gap: EncounterZone model missing). Test exists as skipped assertion.'
   description: 'BDD/Playtest 行为契约 adoption (由 protocol_adoption_scanner.py 确定性建):
 
     protocol: bdd
