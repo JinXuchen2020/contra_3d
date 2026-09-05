@@ -4367,6 +4367,201 @@ tasks:
   - entry has at least 1 harness-native scenario with id/description/setup/steps/expect
   - real_game_scenario_sync.py --check returns changed=True for this system
   - cargo check --features os-autopilot still passes
+- task_id: T-BDD-ADOPT-84a183
+  title: 'BDD 场景: projectile_system / 直线弹体生成与逐帧推进 (端到端)'
+  priority: P1
+  status: completed
+  type: bdd_scenario
+  source: _os_state/design_contracts/projectile_system.bdd.yaml#projectile_spawn_and_advance_linear
+  location: bdd 协议 / system=projectile_system
+  depends_on: []
+  estimated_effort: 0.5-2 小时
+  description: 'BDD/Playtest 行为契约 adoption: protocol=bdd, system=projectile_system, scenario=直线弹体生成与逐帧推进, given=[weapon_system FireEvent, speed=50, radius=0.1, lifetime=5, damage=12], when=[SpawnProjectile + Update x10 frames], then=[position advances by speed*dt, active=true, pool counts correct]'
+  acceptance_criteria:
+  - 该 scenario 在 dotnet test 下通过
+  - 不破坏相关公共 API / 其他 scenario
+  completed_at: '2026-09-06T00:00:00+08:00'
+  result: ProjectileSystemTests.LinearProjectile_SpawnAndFrameAdvance_BDD_T_BDD_ADOPT_84a183 pass
+- task_id: T-BDD-ADOPT-a1b2c3
+  title: 'BDD 场景: projectile_system / Hitscan 弹体即时射线检测与命中事件'
+  priority: P1
+  status: completed
+  type: bdd_scenario
+  source: _os_state/design_contracts/projectile_system.bdd.yaml#projectile_hitscan_immediate_hit
+  location: bdd 协议 / system=projectile_system
+  depends_on: []
+  estimated_effort: 0.5-2 小时
+  description: 'BDD/Playtest 行为契约 adoption: protocol=bdd, system=projectile_system, scenario=Hitscan弹体即时射线检测与命中事件, given=[hitscan FireEvent, target on ray 50m], when=[SpawnProjectile handles hitscan], then=[immediate raycast, HitEvent produced, no pool entry]'
+  acceptance_criteria:
+  - 该 scenario 在 dotnet test 下通过
+  - 不破坏相关公共 API / 其他 scenario
+  completed_at: '2026-09-06T00:00:00+08:00'
+  result: ProjectileSystemTests.Hitscan_ImmediateHitProducesEvent_BDD_T_BDD_ADOPT_a1b2c3 pass
+- task_id: T-BDD-ADOPT-d4e5f6
+  title: 'BDD 场景: projectile_system / Hitscan 射线穿透多层目标但仅首个命中生效'
+  priority: P1
+  status: completed
+  type: bdd_scenario
+  source: _os_state/design_contracts/projectile_system.bdd.yaml#projectile_hitscan_penetration_first_hit_only
+  location: bdd 协议 / system=projectile_system
+  depends_on: []
+  estimated_effort: 0.5-2 小时
+  description: 'BDD/Playtest 行为契约 adoption: protocol=bdd, system=projectile_system, scenario=Hitscan射线穿透多层目标但仅首个命中生效, given=[targets A@30m B@50m C@80m on ray], when=[SpawnProjectile hitscan], then=[only closest A gets HitEvent, B and C ignored]'
+  acceptance_criteria:
+  - 该 scenario 在 dotnet test 下通过
+  - 不破坏相关公共 API / 其他 scenario
+  completed_at: '2026-09-06T00:00:00+08:00'
+  result: ProjectileSystemTests.Hitscan_MultipleTargets_FirstHitOnly_BDD_T_BDD_ADOPT_d4e5f6 pass
+- task_id: T-BDD-ADOPT-g7h8i9
+  title: 'BDD 场景: projectile_system / 追踪弹体每帧转向目标'
+  priority: P1
+  status: completed
+  type: bdd_scenario
+  source: _os_state/design_contracts/projectile_system.bdd.yaml#projectile_homing_tracks_target
+  location: bdd 协议 / system=projectile_system
+  depends_on: []
+  estimated_effort: 0.5-2 小时
+  description: 'BDD/Playtest 行为契约 adoption: protocol=bdd, system=projectile_system, scenario=追踪弹体每帧转向目标, given=[homing type, speed=30, turn_rate=5rad/s, target 45 deg off at 20m], when=[Update dt=0.016 x20 frames], then=[direction rotates toward target, position along curve not straight line]'
+  acceptance_criteria:
+  - 该 scenario 在 dotnet test 下通过
+  - 不破坏相关公共 API / 其他 scenario
+  completed_at: '2026-09-06T00:00:00+08:00'
+  result: ProjectileSystemTests.Homing_TurnsTowardsTargetPerFrame_BDD_T_BDD_ADOPT_g7h8i9 pass
+- task_id: T-BDD-ADOPT-j1k2l3
+  title: 'BDD 场景: projectile_system / 高速弹体容差扫掠防穿透'
+  priority: P1
+  status: completed
+  type: bdd_scenario
+  source: _os_state/design_contracts/projectile_system.bdd.yaml#collision_tolerance_sweep_prevents_tunneling
+  location: bdd 协议 / system=projectile_system
+  depends_on: []
+  estimated_effort: 0.5-2 小时
+  description: 'BDD/Playtest 行为契约 adoption: protocol=bdd, system=projectile_system, scenario=高速弹体容差扫掠防穿透, given=[speed=100 m/s, dt=0.016s, frame displacement 1.6m, thin wall thickness 0.05m], when=[Update collision detection], then=[sweep radius covers path, hit detected, no tunneling]'
+  acceptance_criteria:
+  - 该 scenario 在 dotnet test 下通过
+  - 不破坏相关公共 API / 其他 scenario
+  completed_at: '2026-09-06T00:00:00+08:00'
+  result: ProjectileSystemTests.CollisionTolerance_HighSpeedPreventsTunneling_BDD_T_BDD_ADOPT_j1k2l3 pass
+- task_id: T-BDD-ADOPT-m4n5o6
+  title: 'BDD 场景: projectile_system / 弹体超时自动回收'
+  priority: P1
+  status: completed
+  type: bdd_scenario
+  source: _os_state/design_contracts/projectile_system.bdd.yaml#projectile_timeout_recycle
+  location: bdd 协议 / system=projectile_system
+  depends_on: []
+  estimated_effort: 0.5-2 小时
+  description: 'BDD/Playtest 行为契约 adoption: protocol=bdd, system=projectile_system, scenario=弹体超时自动回收, given=[lifetime=5.0s, spawned and active], when=[Update dt=0.016 x319 frames = 5.1s], then=[inactive, recycled to pool, free count restored, no HitEvent]'
+  acceptance_criteria:
+  - 该 scenario 在 dotnet test 下通过
+  - 不破坏相关公共 API / 其他 scenario
+  completed_at: '2026-09-06T00:00:00+08:00'
+  result: ProjectileSystemTests.LifetimeTimeout_AutoRecycle_BDD_T_BDD_ADOPT_m4n5o6 pass
+- task_id: T-BDD-ADOPT-p7q8r9
+  title: 'BDD 场景: projectile_system / 弹体出界自动回收'
+  priority: P1
+  status: completed
+  type: bdd_scenario
+  source: _os_state/design_contracts/projectile_system.bdd.yaml#projectile_out_of_bounds_recycle
+  location: bdd 协议 / system=projectile_system
+  depends_on: []
+  estimated_effort: 0.5-2 小时
+  description: 'BDD/Playtest 行为契约 adoption: protocol=bdd, system=projectile_system, scenario=弹体出界自动回收, given=[speed=100 m/s, maxDistance=500m], when=[Update past 500m], then=[recycled after exceeding 500m, pool slot released]'
+  acceptance_criteria:
+  - 该 scenario 在 dotnet test 下通过
+  - 不破坏相关公共 API / 其他 scenario
+  completed_at: '2026-09-06T00:00:00+08:00'
+  result: ProjectileSystemTests.OutOfBounds_AutoRecycle_BDD_T_BDD_ADOPT_p7q8r9 pass
+- task_id: T-BDD-ADOPT-s1t2u3
+  title: 'BDD 场景: projectile_system / 同屏弹体上限 200 超出时回收最旧弹体'
+  priority: P1
+  status: completed
+  type: bdd_scenario
+  source: _os_state/design_contracts/projectile_system.bdd.yaml#projectile_cap_recycles_oldest
+  location: bdd 协议 / system=projectile_system
+  depends_on: []
+  estimated_effort: 0.5-2 小时
+  description: 'BDD/Playtest 行为契约 adoption: protocol=bdd, system=projectile_system, scenario=同屏弹体上限200超出时回收最旧弹体, given=[MAX_PROJECTILES=200, active=200], when=[new FireEvent arrives], then=[pool exhausted or oldest recycled, active stays <=200]'
+  acceptance_criteria:
+  - 该 scenario 在 dotnet test 下通过
+  - 不破坏相关公共 API / 其他 scenario
+  completed_at: '2026-09-06T00:00:00+08:00'
+  result: ProjectileSystemTests.CapRecycleOldest_WhenPoolFull_BDD_T_BDD_ADOPT_s1t2u3 pass
+- task_id: T-BDD-ADOPT-v4w5x6
+  title: 'BDD 场景: projectile_system / 对象池与弹道推进确定性'
+  priority: P1
+  status: completed
+  type: bdd_scenario
+  source: _os_state/design_contracts/projectile_system.bdd.yaml#projectile_pool_deterministic
+  location: bdd 协议 / system=projectile_system
+  depends_on: []
+  estimated_effort: 0.5-2 小时
+  description: 'BDD/Playtest 行为契约 adoption: protocol=bdd, system=projectile_system, scenario=对象池与弹道推进确定性, given=[fixed params, no random], when=[run same input sequence twice with fresh instances], then=[identical active counts and HitEvent sequences]'
+  acceptance_criteria:
+  - 该 scenario 在 dotnet test 下通过
+  - 不破坏相关公共 API / 其他 scenario
+  completed_at: '2026-09-06T00:00:00+08:00'
+  result: ProjectileSystemTests.Deterministic_SameInputSameOutput_BDD_T_BDD_ADOPT_v4w5x6 pass
+- task_id: T-BDD-ADOPT-y7z8a9
+  title: 'BDD 场景: projectile_system / 散弹枪单次射击产出多颗短程弹丸'
+  priority: P1
+  status: completed
+  type: bdd_scenario
+  source: _os_state/design_contracts/projectile_system.bdd.yaml#projectile_spread_shot_multiple_pellets
+  location: bdd 协议 / system=projectile_system
+  depends_on: []
+  estimated_effort: 0.5-2 小时
+  description: 'BDD/Playtest 行为契约 adoption: protocol=bdd, system=projectile_system, scenario=散弹枪单次射击产出多颗短程弹丸, given=[spread_shot, 5 pellets, spread=12 deg, target at 2m], when=[spawn 5 pellets in spread cone], then=[5 ProjectileIds, directions within 12 deg cone, hits at close range]'
+  acceptance_criteria:
+  - 该 scenario 在 dotnet test 下通过
+  - 不破坏相关公共 API / 其他 scenario
+  completed_at: '2026-09-06T00:00:00+08:00'
+  result: ProjectileSystemTests.SpreadShot_MultiplePellets_BDD_T_BDD_ADOPT_y7z8a9 pass
+- task_id: T-BDD-ADOPT-b1c2d3
+  title: 'BDD 场景: projectile_system / 弹体携带阵营信息用于敌我识别'
+  priority: P1
+  status: completed
+  type: bdd_scenario
+  source: _os_state/design_contracts/projectile_system.bdd.yaml#projectile_faction_identification
+  location: bdd 协议 / system=projectile_system
+  depends_on: []
+  estimated_effort: 0.5-2 小时
+  description: 'BDD/Playtest 行为契约 adoption: protocol=bdd, system=projectile_system, scenario=弹体携带阵营信息用于敌我识别, given=[player projectile ownerTag=player, enemy projectile ownerTag=enemy, player+enemy entities in scene], when=[player projectile hits enemy / enemy projectile hits player], then=[player hits only enemy entities, enemy hits only player entities, no friendly fire]'
+  acceptance_criteria:
+  - 该 scenario 在 dotnet test 下通过
+  - 不破坏相关公共 API / 其他 scenario
+  completed_at: '2026-09-06T00:00:00+08:00'
+  result: ProjectileSystemTests.FactionIdentification_AvoidFriendlyFire_BDD_T_BDD_ADOPT_b1c2d3 pass
+- task_id: T-BDD-ADOPT-e4f5g6
+  title: 'BDD 场景: projectile_system / 对象池回收恢复 FreeCount'
+  priority: P1
+  status: completed
+  type: bdd_scenario
+  source: _os_state/design_contracts/projectile_system.bdd.yaml
+  location: bdd 协议 / system=projectile_system
+  depends_on: []
+  estimated_effort: 0.5-2 小时
+  description: 'BDD/Playtest 行为契约 adoption: protocol=bdd, system=projectile_system, scenario=对象池回收恢复FreeCount, given=[fresh system], when=[spawn one projectile, let it timeout], then=[pool free count restored to initial value, active returns to 0]'
+  acceptance_criteria:
+  - 该 scenario 在 dotnet test 下通过
+  - 不破坏相关公共 API / 其他 scenario
+  completed_at: '2026-09-06T00:00:00+08:00'
+  result: ProjectileSystemTests.Pool_RecycleRestoresFreeCount_BDD_T_BDD_ADOPT_e4f5g6 pass
+- task_id: T-BDD-ADOPT-h7i8j9
+  title: 'BDD 场景: projectile_system / 多弹体独立推进'
+  priority: P1
+  status: completed
+  type: bdd_scenario
+  source: _os_state/design_contracts/projectile_system.bdd.yaml
+  location: bdd 协议 / system=projectile_system
+  depends_on: []
+  estimated_effort: 0.5-2 小时
+  description: 'BDD/Playtest 行为契约 adoption: protocol=bdd, system=projectile_system, scenario=多弹体独立推进, given=[2 projectiles different directions], when=[alternating Update calls], then=[both independent, neither recycled prematurely, ActiveCount correct]'
+  acceptance_criteria:
+  - 该 scenario 在 dotnet test 下通过
+  - 不破坏相关公共 API / 其他 scenario
+  completed_at: '2026-09-06T00:00:00+08:00'
+  result: ProjectileSystemTests.MultipleProjectiles_IndependentUpdates_BDD_T_BDD_ADOPT_h7i8j9 pass
 - task_id: T-BDD-REG-625406
   title: 'registry_entry: save_system — missing harness-native template'
   priority: P0
