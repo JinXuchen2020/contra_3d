@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -37,7 +38,67 @@ namespace Contra3D.Core
                 MaxHealth = 100f,
                 Score = 0,
                 Lives = 3,
+                SlotId = -1,
+                SaveType = "auto",
+                CurrentWeapon = "rifle_default",
+                WeaponsUnlocked = new List<string> { "rifle_default" },
+                Inventory = new Dictionary<string, int>(),
+                QuestProgress = new Dictionary<string, bool>(),
             };
+
+        [JsonPropertyName("slot_id")]
+        public int SlotId { get; set; } = -1;
+
+        [JsonPropertyName("save_type")]
+        public string SaveType { get; set; } = "manual";
+
+        [JsonPropertyName("timestamp")]
+        public string Timestamp { get; set; } = "";
+
+        [JsonPropertyName("playtime")]
+        public double Playtime { get; set; } = 0.0;
+
+        [JsonPropertyName("current_area")]
+        public string CurrentArea { get; set; } = "";
+
+        [JsonPropertyName("version")]
+        public int Version { get; set; } = 3;
+
+        [JsonPropertyName("crc32")]
+        public uint Crc32 { get; set; } = 0;
+
+        [JsonConverter(typeof(Vector3Converter))]
+        [JsonPropertyName("checkpoint_position")]
+        public Vector3 CheckpointPosition { get; set; } = Vector3.Zero;
+
+        [JsonPropertyName("current_weapon")]
+        public string CurrentWeapon { get; set; } = "rifle_default";
+
+        [JsonPropertyName("weapons_unlocked")]
+        public List<string> WeaponsUnlocked { get; set; } = new List<string> { "rifle_default" };
+
+        [JsonPropertyName("inventory")]
+        public Dictionary<string, int> Inventory { get; set; } = new Dictionary<string, int>();
+
+        [JsonPropertyName("quest_progress")]
+        public Dictionary<string, bool> QuestProgress { get; set; } = new Dictionary<string, bool>();
+
+        [JsonPropertyName("old_ammo_count")]
+        public int? OldAmmoCount { get; set; }
+
+        public uint ComputeCrc32()
+        {
+            var opts = new JsonSerializerOptions { WriteIndented = false };
+            var json = JsonSerializer.Serialize(this, opts);
+            var idx = json.IndexOf("\"crc32\"");
+            if (idx >= 0)
+            {
+                var end = json.IndexOfAny(new[] { ',', '}' }, idx);
+                if (end >= 0)
+                    json = json.Remove(idx, end - idx + 1);
+            }
+            return Crc32Helper.Calculate(json);
+        }
     }
 
     /// <summary>
@@ -130,6 +191,36 @@ namespace Contra3D.Core
 
         public override string ToString() =>
             $"({X}, {Y}, {Z})";
+    }
+
+    public static class Crc32Helper
+    {
+        private static readonly uint[] _table;
+        static Crc32Helper()
+        {
+            _table = new uint[256];
+            for (uint i = 0; i < 256; i++)
+            {
+                uint c = i;
+                for (int j = 0; j < 8; j++)
+                    c = (c & 1) != 0 ? 0xEDB88320 ^ (c >> 1) : c >> 1;
+                _table[i] = c;
+            }
+        }
+        public static uint Calculate(string input)
+        {
+            var bytes = System.Text.Encoding.UTF8.GetBytes(input);
+            uint crc = 0xFFFFFFFF;
+            foreach (byte b in bytes)
+                crc = _table[(crc ^ b) & 0xFF] ^ (crc >> 8);
+            return crc ^ 0xFFFFFFFF;
+        }
+    }
+
+    public class SaveCorruptedException : Exception
+    {
+        public SaveCorruptedException(string slotId)
+            : base($"Save file for slot {slotId} is corrupted (CRC32 mismatch).") { }
     }
 
     /// <summary>
