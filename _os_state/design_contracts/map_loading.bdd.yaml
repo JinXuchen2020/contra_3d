@@ -152,7 +152,7 @@ scenarios:
     given:
       - Contra3D.Core 项目文件
     when:
-      - `dotnet build` 执行
+      - "`dotnet build` 执行"
     then:
       - 编译通过
       - 无 CS0246 (UnityEngine 类型未找到) 错误
@@ -166,7 +166,7 @@ scenarios:
     given:
       - tests/Core.Tests/MapLoaderTests.cs 存在
     when:
-      - `dotnet test` 执行
+      - "`dotnet test` 执行"
     then:
       - 所有测试用例通过
       - 覆盖: valid YAML → 解析成功; 无效引用 → 返回错误; 边界值校验 (spawn数量/间距/cover比例/pickup上限)
@@ -193,7 +193,7 @@ scenarios:
     given:
       - 源文件路径
     when:
-      - `wc -l` 或 IDE 统计行数
+      - "`wc -l` 或 IDE 统计行数"
     then:
       - MapLoader.cs ≤ 500 行
       - MapDefinition.cs ≤ 500 行
