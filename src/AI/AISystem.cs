@@ -7,46 +7,70 @@ namespace Contra3D.AI
     /// <summary>
     /// 敌人 AI 系统 — Unity Runtime 层集成。
     /// 职责：桥接 Core.AiSystem 与 Unity GameObject，处理刷兵、感知、状态同步。
+    /// 实例化设计（推荐用于测试），支持依赖注入。
+    /// 通过 <see cref="Default"/> 提供共享实例以兼容现有静态调用风格。
     /// </summary>
-    public static class AISystem
+    public sealed class AISystem
     {
-        private static readonly Dictionary<string, EnemyDefinition> _definitions = new();
-        private static readonly Dictionary<string, EnemyAIState> _states = new();
-        private static Vector3 _playerPosition;
-        private static readonly Queue<string> _spawnQueue = new();
-        private static int _activeCount;
-        private static int _rusherCount;
+        private readonly Dictionary<string, EnemyDefinition> _definitions = new();
+        private readonly Dictionary<string, EnemyAIState> _states = new();
+        private readonly Queue<string> _spawnQueue = new();
+        private Vector3 _playerPosition;
+        private int _activeCount;
+        private int _rusherCount;
+        private readonly AISpawnConfig _config;
+        private readonly IRandomProvider _random;
 
-        public static int ActiveCount => _activeCount;
-        public static int RusherCount => _rusherCount;
+        /// <summary>共享默认实例（向后兼容静态调用风格）。</summary>
+        public static readonly AISystem Default = new AISystem();
+
+        /// <summary>当前活跃敌人数量。</summary>
+        public int ActiveCount => _activeCount;
+
+        /// <summary>当前冲锋型敌人数量。</summary>
+        public int RusherCount => _rusherCount;
+
+        /// <summary>当前使用的生成配置（只读）。</summary>
+        public AISpawnConfig Config => _config;
+
+        /// <summary>
+        /// 创建 AI 系统实例（推荐用于测试，支持依赖注入）。
+        /// </summary>
+        /// <param name="config">生成配置（可选，默认使用 <see cref="AISpawnConfig.Default"/>）。</param>
+        /// <param name="randomProvider">随机数提供者（可选，默认使用 <see cref="DefaultRandomProvider"/>)。</param>
+        public AISystem(AISpawnConfig config = null, IRandomProvider randomProvider = null)
+        {
+            _config = config ?? AISpawnConfig.Default;
+            _random = randomProvider ?? new DefaultRandomProvider();
+        }
 
         /// <summary>注册敌人定义。</summary>
-        public static void RegisterDefinition(EnemyDefinition def)
+        public void RegisterDefinition(EnemyDefinition def)
         {
             if (def == null) throw new ArgumentNullException(nameof(def));
             _definitions[def.Id] = def;
         }
 
         /// <summary>设置玩家位置。</summary>
-        public static void SetPlayerPosition(Vector3 position)
+        public void SetPlayerPosition(Vector3 position)
         {
             _playerPosition = position;
         }
 
         /// <summary>刷兵请求（排队机制）。</summary>
-        public static bool TrySpawn(string enemyId, Vector3 position)
+        public bool TrySpawn(string enemyId, Vector3 position)
         {
             if (!_definitions.TryGetValue(enemyId, out var def))
                 return false;
 
             // Anti-door camping: reject if too close to player
             float distToPlayer = Vector3.Distance(position, _playerPosition);
-            if (distToPlayer < 5f)
+            if (distToPlayer < _config.AntiDoorCampingDistance)
                 return false;
 
             // Check spawn caps
-            int maxNormal = 12;
-            int maxRusher = 4;
+            int maxNormal = _config.MaxNormal;
+            int maxRusher = _config.MaxRusher;
 
             if (def.AiType == AiType.Rusher && _rusherCount >= maxRusher)
             {
@@ -65,7 +89,7 @@ namespace Contra3D.AI
             return true;
         }
 
-        private static void SpawnInternal(string enemyId, Vector3 position)
+        private void SpawnInternal(string enemyId, Vector3 position)
         {
             if (!_definitions.TryGetValue(enemyId, out var def)) return;
 
@@ -87,7 +111,7 @@ namespace Contra3D.AI
         }
 
         /// <summary>处理死亡事件。</summary>
-        public static void OnEnemyDead(string enemyId)
+        public void OnEnemyDead(string enemyId)
         {
             if (_states.TryGetValue(enemyId, out var state))
             {
@@ -96,7 +120,7 @@ namespace Contra3D.AI
                 _states.Remove(enemyId);
 
                 // Release next queued spawn
-                if (_spawnQueue.Count > 0 && _activeCount < 12)
+                if (_spawnQueue.Count > 0 && _activeCount < _config.MaxNormal)
                 {
                     string nextId = _spawnQueue.Dequeue();
                     SpawnInternal(nextId, state.Position);
@@ -105,7 +129,7 @@ namespace Contra3D.AI
         }
 
         /// <summary>推进一帧。</summary>
-        public static void Update(float dt)
+        public void Update(float dt)
         {
             if (dt <= 0f || float.IsNaN(dt) || float.IsInfinity(dt))
                 return;
@@ -120,7 +144,7 @@ namespace Contra3D.AI
             }
         }
 
-        private static void UpdateState(EnemyAIState state, EnemyDefinition def, float dt)
+        private void UpdateState(EnemyAIState state, EnemyDefinition def, float dt)
         {
             float distToPlayer = Vector3.Distance(state.Position, _playerPosition);
             bool playerInSight = distToPlayer <= def.VisionRange;
@@ -148,7 +172,7 @@ namespace Contra3D.AI
             }
         }
 
-        private static void UpdatePatrol(EnemyAIState state, EnemyDefinition def, float dt, bool playerInSight, float distToPlayer)
+        private void UpdatePatrol(EnemyAIState state, EnemyDefinition def, float dt, bool playerInSight, float distToPlayer)
         {
             switch (state.State)
             {
@@ -170,8 +194,8 @@ namespace Contra3D.AI
                 case AiState.Patrol:
                     if (Vector3.Distance(state.Position, state.PatrolTarget) < 1f)
                         state.PatrolTarget = state.Position + new Vector3(
-                            (float)(new Random().NextDouble() * 20 - 10), 0,
-                            (float)(new Random().NextDouble() * 20 - 10));
+                            _random.NextFloat(-10f, 10f), 0,
+                            _random.NextFloat(-10f, 10f));
                     Vector3 dir = Vector3.Normalize(state.PatrolTarget - state.Position);
                     state.Position += dir * def.Speed * dt;
                     if (state.Vigilance >= def.AlertThreshold) state.State = AiState.Alert;
@@ -179,7 +203,7 @@ namespace Contra3D.AI
             }
         }
 
-        private static void UpdateChase(EnemyAIState state, EnemyDefinition def, float dt, bool playerInSight, float distToPlayer)
+        private void UpdateChase(EnemyAIState state, EnemyDefinition def, float dt, bool playerInSight, float distToPlayer)
         {
             switch (state.State)
             {
@@ -203,7 +227,7 @@ namespace Contra3D.AI
             }
         }
 
-        private static void UpdateSniper(EnemyAIState state, EnemyDefinition def, float dt, bool playerInSight, float distToPlayer)
+        private void UpdateSniper(EnemyAIState state, EnemyDefinition def, float dt, bool playerInSight, float distToPlayer)
         {
             switch (state.State)
             {
@@ -229,7 +253,7 @@ namespace Contra3D.AI
             }
         }
 
-        private static void UpdateRusher(EnemyAIState state, EnemyDefinition def, float dt, bool playerInSight, float distToPlayer)
+        private void UpdateRusher(EnemyAIState state, EnemyDefinition def, float dt, bool playerInSight, float distToPlayer)
         {
             switch (state.State)
             {
@@ -254,7 +278,7 @@ namespace Contra3D.AI
         }
 
         /// <summary>获取敌人指令。</summary>
-        public static AICommand GetCommand(string enemyId)
+        public AICommand GetCommand(string enemyId)
         {
             if (!_states.TryGetValue(enemyId, out var state) || !state.IsAlive)
                 return AICommand.Idle;
@@ -277,16 +301,6 @@ namespace Contra3D.AI
         }
 
         /// <summary>获取所有存活敌人状态。</summary>
-        public static IReadOnlyDictionary<string, EnemyAIState> GetStates() => _states;
-
-        /// <summary>仅供单元测试使用：重置所有静态状态。</summary>
-        internal static void TestReset()
-        {
-            _definitions.Clear();
-            _states.Clear();
-            _spawnQueue.Clear();
-            _activeCount = 0;
-            _rusherCount = 0;
-        }
+        public IReadOnlyDictionary<string, EnemyAIState> GetStates() => _states;
     }
 }
