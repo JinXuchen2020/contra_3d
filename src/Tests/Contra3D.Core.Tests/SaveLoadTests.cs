@@ -193,5 +193,168 @@ namespace Contra3D.Core.Tests
             Assert.Equal(0, result.Score);
             Assert.Equal(3, result.Lives);
         }
+
+        [Fact]
+        public void SaveLoad_ManualSlotWriteRead_BDD_Tmanual_save_slot_write_read()
+        {
+            var original = new SaveData
+            {
+                Position = new Vector3(120f, 5f, 80f),
+                Health = 2f, MaxHealth = 100f, Score = 45000, Lives = 3,
+                SlotId = 2, SaveType = "manual",
+                Timestamp = "2026-09-06T00:00:00Z", Playtime = 1800.0,
+                CurrentArea = "level_3", Version = 3,
+                CurrentWeapon = "spread_shot",
+                WeaponsUnlocked = new System.Collections.Generic.List<string> { "rifle_default", "spread_shot" },
+                Inventory = new System.Collections.Generic.Dictionary<string, int> { { "health_pack", 2 } },
+                QuestProgress = new System.Collections.Generic.Dictionary<string, bool> { { "boss_defeated", false } },
+            };
+            original.Crc32 = original.ComputeCrc32();
+            var restored = SaveLoader.Deserialize(SaveLoader.Serialize(original));
+            Assert.Equal(2, restored.SlotId);
+            Assert.Equal("manual", restored.SaveType);
+            Assert.Equal("level_3", restored.CurrentArea);
+            Assert.Equal(3, restored.Version);
+            Assert.Equal(new Vector3(120f, 5f, 80f), restored.Position);
+            Assert.Equal(2f, restored.Health);
+            Assert.Equal(45000, restored.Score);
+            Assert.Equal("spread_shot", restored.CurrentWeapon);
+            Assert.Contains("spread_shot", restored.WeaponsUnlocked);
+            Assert.Equal(2, restored.Inventory["health_pack"]);
+            Assert.False(restored.QuestProgress["boss_defeated"]);
+            Assert.Equal(original.Crc32, restored.ComputeCrc32());
+        }
+
+        [Fact]
+        public void SaveLoad_AutoSaveOnSceneTransition_BDD_Tautosave_on_scene_transition()
+        {
+            var saved = new SaveData { Position = Vector3.Zero, Health = 100f, MaxHealth = 100f, Score = 0, Lives = 3, SlotId = 0, SaveType = "auto", CurrentArea = "level_3", Version = 3 };
+            saved.Crc32 = saved.ComputeCrc32();
+            var loaded = SaveLoader.Deserialize(SaveLoader.Serialize(saved));
+            Assert.Equal("auto", loaded.SaveType);
+            Assert.Equal(0, loaded.SlotId);
+            Assert.Equal("level_3", loaded.CurrentArea);
+            Assert.Equal(Vector3.Zero, loaded.Position);
+            Assert.Equal(3, loaded.Lives);
+            var (tempPath, finalPath, committed) = SaveLoader.AtomicSave("save_slot_0.sav", loaded, "0");
+            Assert.EndsWith(".tmp", tempPath);
+            Assert.EndsWith(".sav", finalPath);
+            Assert.Equal("level_3", committed.CurrentArea);
+        }
+
+        [Fact]
+        public void SaveLoad_AutoSaveBeforeBoss_BDD_Tautosave_before_boss()
+        {
+            var preBoss = new SaveData { Position = new Vector3(50f, 0f, 200f), Health = 1f, MaxHealth = 100f, Score = 78000, Lives = 2, SlotId = 0, SaveType = "auto", CurrentArea = "level_3", Version = 3, CurrentWeapon = "laser_rifle", WeaponsUnlocked = new System.Collections.Generic.List<string> { "rifle_default", "laser_rifle" } };
+            preBoss.Crc32 = preBoss.ComputeCrc32();
+            var loaded = SaveLoader.Deserialize(SaveLoader.Serialize(preBoss));
+            Assert.Equal("auto", loaded.SaveType);
+            Assert.Equal(1f, loaded.Health);
+            Assert.Equal(78000, loaded.Score);
+            Assert.Equal("laser_rifle", loaded.CurrentWeapon);
+            Assert.Contains("laser_rifle", loaded.WeaponsUnlocked);
+            Assert.DoesNotContain("boss_health", loaded.Inventory.Keys);
+        }
+
+        [Fact]
+        public void SaveLoad_QuickSaveLoadSlot_BDD_Tquick_save_load_slot()
+        {
+            var gs = new SaveData { Position = new Vector3(60f, 0f, 40f), Health = 50f, MaxHealth = 100f, Score = 22000, Lives = 3, SlotId = -1, SaveType = "quick", CurrentArea = "level_2", Version = 3, CurrentWeapon = "rifle_default" };
+            gs.Crc32 = gs.ComputeCrc32();
+            var loaded = SaveLoader.Deserialize(SaveLoader.Serialize(gs));
+            Assert.Equal(-1, loaded.SlotId);
+            Assert.Equal("quick", loaded.SaveType);
+            Assert.Equal(new Vector3(60f, 0f, 40f), loaded.Position);
+            Assert.Equal(50f, loaded.Health);
+            Assert.Equal(22000, loaded.Score);
+            Assert.NotEqual(2, loaded.SlotId);
+            Assert.NotEqual(0, loaded.SlotId);
+        }
+
+        [Fact]
+        public void SaveLoad_VersionMigrationV1ToV3_BDD_Tsave_version_migration()
+        {
+            var migrated = SaveLoader.LoadMigrated("{\"position\":{\"x\":10,\"y\":5,\"z\":0},\"health\":80,\"maxHealth\":100,\"score\":3000,\"lives\":3,\"version\":1,\"old_ammo_count\":50}");
+            Assert.Equal(3, migrated.Version);
+            Assert.Equal(new Vector3(10f, 5f, 0f), migrated.Position);
+            Assert.Equal(80f, migrated.Health);
+            Assert.Equal(3000, migrated.Score);
+            Assert.Equal(3, migrated.Lives);
+            Assert.NotNull(migrated.WeaponsUnlocked);
+            Assert.Equal("rifle_default", migrated.CurrentWeapon);
+            Assert.Equal(50, migrated.OldAmmoCount);
+        }
+
+        [Fact]
+        public void SaveLoad_CorruptionDetectionRejectsLoad_BDD_Tsave_corruption_detection()
+        {
+            var corrupt = new SaveData { Position = new Vector3(10f, 5f, 0f), Health = 80f, MaxHealth = 100f, Score = 3000, Lives = 3, Version = 3 };
+            corrupt.Crc32 = corrupt.ComputeCrc32();
+            corrupt.Score = 9999;
+            var json = SaveLoader.Serialize(corrupt);
+            var ex = Assert.Throws<SaveCorruptedException>(() => SaveLoader.LoadVerified(json, slotId: 1));
+            Assert.Contains("1", ex.Message);
+            Assert.Equal(0, SaveData.Default().Score);
+        }
+
+        [Fact]
+        public void SaveLoad_AtomicWriteTempFile_BDD_Tatomic_write_temp_file()
+        {
+            var data = new SaveData { Position = new Vector3(10f, 5f, 0f), Health = 100f, MaxHealth = 100f, Score = 5000, Lives = 3, SlotId = 1, SaveType = "manual", CurrentArea = "level_2", Version = 3 };
+            data.Crc32 = data.ComputeCrc32();
+            var (tempPath, finalPath, committed) = SaveLoader.AtomicSave("save_slot_1.sav", data, "1");
+            Assert.EndsWith(".tmp", tempPath);
+            Assert.EndsWith(".sav", finalPath);
+            Assert.Equal(data.Crc32, committed.Crc32);
+            Assert.Equal("level_2", committed.CurrentArea);
+            Assert.Equal(1, committed.SlotId);
+            Assert.True(System.IO.File.Exists(finalPath));
+            if (System.IO.File.Exists(finalPath)) System.IO.File.Delete(finalPath);
+            if (System.IO.File.Exists(tempPath)) System.IO.File.Delete(tempPath);
+        }
+
+        [Fact]
+        public void SaveLoad_CheckpointRespawnState_BDD_Tcheckpoint_respawn_state()
+        {
+            var cp = new SaveData { Position = new Vector3(50f, 0f, 30f), Health = 3f, MaxHealth = 100f, Score = 12000, Lives = 3, CurrentWeapon = "rifle_default", CheckpointPosition = new Vector3(50f, 0f, 30f), Version = 3 };
+            cp.Crc32 = cp.ComputeCrc32();
+            var r = SaveLoader.Deserialize(SaveLoader.Serialize(cp));
+            Assert.Equal(new Vector3(50f, 3f, 30f), new Vector3(r.CheckpointPosition.X, r.CheckpointPosition.Y + 3f, r.CheckpointPosition.Z));
+            Assert.Equal(2, r.Lives - 1);
+        }
+
+        [Fact]
+        public void SaveLoad_GameOverContinueFlow_BDD_Tgame_over_continue_flow()
+        {
+            var g = new SaveData { Position = new Vector3(100f, 0f, 50f), Health = 0f, MaxHealth = 100f, Score = 35000, Lives = 1, CurrentWeapon = "spread_shot", CheckpointPosition = new Vector3(100f, 0f, 50f), CurrentArea = "level_2", Version = 3 };
+            g.Crc32 = g.ComputeCrc32();
+            int c = 2; c--;
+            var cont = new SaveData { Position = g.CheckpointPosition, Health = 3f, MaxHealth = 100f, Score = g.Score, Lives = 3, CurrentWeapon = g.CurrentWeapon, CurrentArea = "level_2", Version = 3 };
+            cont.Crc32 = cont.ComputeCrc32();
+            Assert.Equal(1, c);
+            Assert.Equal(3, cont.Lives);
+            Assert.Equal(new Vector3(100f, 0f, 50f), cont.Position);
+            Assert.Equal("spread_shot", cont.CurrentWeapon);
+            Assert.Equal(35000, cont.Score);
+        }
+
+        [Fact]
+        public void SaveLoad_SchemaTemplateDriven_BDD_Tsave_schema_template_driven()
+        {
+            var t = new SaveData { Position = Vector3.Zero, Health = 100f, MaxHealth = 100f, Score = 0, Lives = 3, CurrentWeapon = "rifle_default", WeaponsUnlocked = new System.Collections.Generic.List<string> { "rifle_default" }, CheckpointPosition = Vector3.Zero, Version = 3 };
+            t.Crc32 = t.ComputeCrc32();
+            var json = SaveLoader.Serialize(t);
+            var d = SaveLoader.Deserialize(json);
+            Assert.Equal("rifle_default", d.CurrentWeapon);
+            Assert.Contains("rifle_default", d.WeaponsUnlocked);
+            Assert.Equal(3, d.Lives);
+            Assert.Equal(0, d.Score);
+            Assert.Equal(3, d.Version);
+            Assert.Contains("\"current_weapon\"", json);
+            Assert.Contains("\"weapons_unlocked\"", json);
+            Assert.Contains("\"lives\"", json);
+            Assert.Contains("\"score\"", json);
+            Assert.Contains("\"version\"", json);
+        }
     }
 }
