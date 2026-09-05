@@ -902,8 +902,8 @@ tasks:
   title: 'BDD 场景: weapon_system / 武器箱拾取与主副槽切换 (端到端)'
   priority: P1
   status: completed
-  completed_at: '2026-09-04T13:40:00+08:00'
-  result: BDD scenario verified against existing test coverage
+  completed_at: '2026-09-06T00:00:00+08:00'
+  result: WeaponSystemTests.Weapon_BoxPickupAndSwitch_BDD_T01bf03 pass (switch+cooldown+params)
   type: bdd_scenario
   source: templates/system_design/combat_system.md#子系统职责划分
   location: bdd 协议 / system=weapon_system (step 实现在对应模块)
@@ -933,8 +933,8 @@ tasks:
   title: 'BDD 场景: weapon_system / 默认步枪基准参数符合性'
   priority: P1
   status: completed
-  completed_at: '2026-09-04T13:40:00+08:00'
-  result: BDD scenario verified against existing test coverage
+  completed_at: '2026-09-06T00:00:00+08:00'
+  result: WeaponSystemTests.Rifle_BaselineStatsConformance_BDD_T8d7e09 pass (damage=12, fireRate=7, mag=30, reload=1.5, spread=1.5)
   type: bdd_scenario
   source: data/weapons/weapons.yaml#weapons.rifle_default
   location: bdd 协议 / system=weapon_system (step 实现在对应模块)
@@ -964,8 +964,8 @@ tasks:
   title: 'BDD 场景: weapon_system / 散弹枪近中距面杀伤表现'
   priority: P1
   status: completed
-  completed_at: '2026-09-04T13:40:00+08:00'
-  result: BDD scenario verified against existing test coverage
+  completed_at: '2026-09-06T00:00:00+08:00'
+  result: WeaponSystemTests.SpreadShot_CloseRangeBurst_BDD_Te30037 pass (5 pellets, 30 dmg burst kill)
   type: bdd_scenario
   source: data/weapons/weapons.yaml#weapons.spread_shot
   location: bdd 协议 / system=weapon_system (step 实现在对应模块)
@@ -995,8 +995,8 @@ tasks:
   title: 'BDD 场景: weapon_system / 激光高伤即中与小弹匣长装填'
   priority: P1
   status: completed
-  completed_at: '2026-09-04T13:40:00+08:00'
-  result: BDD scenario verified against existing test coverage
+  completed_at: '2026-09-06T00:00:00+08:00'
+  result: WeaponSystemTests.Laser_HitscanHighBurstLowMag_BDD_Tb1eabe pass (hitscan instant, 2.5s reload, spread=0)
   type: bdd_scenario
   source: data/weapons/weapons.yaml#weapons.laser_beam
   location: bdd 协议 / system=weapon_system (step 实现在对应模块)
@@ -1026,8 +1026,8 @@ tasks:
   title: 'BDD 场景: weapon_system / 弹匣耗尽与换弹循环'
   priority: P1
   status: completed
-  completed_at: '2026-09-04T13:40:00+08:00'
-  result: BDD scenario verified against existing test coverage
+  completed_at: '2026-09-06T00:00:00+08:00'
+  result: WeaponSystemTests.Magazine_ReloadCycle_BDD_Tc6ce43 pass (empty reject + reload cycle + reload-blocked switch)
   type: bdd_scenario
   source: templates/system_design/combat_system.md#子系统职责划分
   location: bdd 协议 / system=weapon_system (step 实现在对应模块)
@@ -1057,8 +1057,8 @@ tasks:
   title: 'BDD 场景: weapon_system / 全武器 DPS 平衡包络校验 (端到端)'
   priority: P1
   status: completed
-  completed_at: '2026-09-04T13:40:00+08:00'
-  result: BDD scenario verified against existing test coverage
+  completed_at: '2026-09-06T00:00:00+08:00'
+  result: WeaponSystemTests.DPS_BalanceEnvelope_AcrossArsenal_BDD_T3b730f pass (all 5 weapons in [0.8x, 1.5x] envelope)
   type: bdd_scenario
   source: templates/genre_knowledge_reference.yaml#weapon_balance.balance
   location: bdd 协议 / system=weapon_system (step 实现在对应模块)
@@ -1088,8 +1088,8 @@ tasks:
   title: 'BDD 场景: weapon_system / 死亡重置为默认步枪 (经典规则, 端到端)'
   priority: P1
   status: completed
-  completed_at: '2026-09-04T13:40:00+08:00'
-  result: BDD scenario verified against existing test coverage
+  completed_at: '2026-09-06T00:00:00+08:00'
+  result: WeaponSystemTests.Death_ResetsToDefaultRifle_BDD_T641503 pass (reset to rifle_default, slot cleared, re-acquirable)
   type: bdd_scenario
   source: templates/genre_knowledge_reference.yaml#weapon_balance.acquisition_and_loss
   location: bdd 协议 / system=weapon_system (step 实现在对应模块)
@@ -2122,7 +2122,10 @@ tasks:
 - task_id: T-BDD-ADOPT-47a6c2
   title: 'BDD 场景: health_damage / 命中事件处理与伤害结算 (端到端)'
   priority: P1
-  status: todo
+  status: completed
+  completed_at: 2026-09-06T00:10:00+08:00
+  result: HealthDamageTests.cs 完成, 16 BDD tests pass (26/26 total), commit pending
+
   type: bdd_scenario
   source: templates/system_design/health_damage.md#数据流
   location: bdd 协议 / system=health_damage (step 实现在对应模块)
@@ -2154,7 +2157,10 @@ tasks:
 - task_id: T-BDD-ADOPT-ba2a17
   title: 'BDD 场景: health_damage / 头部暴击部位倍率生效'
   priority: P1
-  status: todo
+  status: completed
+  completed_at: 2026-09-06T00:10:00+08:00
+  result: HealthDamageTests.cs 完成, 16 BDD tests pass (26/26 total), commit pending
+
   type: bdd_scenario
   source: templates/system_design/health_damage.md#关键数值约束
   location: bdd 协议 / system=health_damage (step 实现在对应模块)
@@ -2185,7 +2191,10 @@ tasks:
 - task_id: T-BDD-ADOPT-300ab8
   title: 'BDD 场景: health_damage / 护甲减免模型 (减法模型)'
   priority: P1
-  status: todo
+  status: completed
+  completed_at: 2026-09-06T00:10:00+08:00
+  result: HealthDamageTests.cs 完成, 16 BDD tests pass (26/26 total), commit pending
+
   type: bdd_scenario
   source: templates/genre_knowledge_reference.yaml#armor_reduction.subtractive
   location: bdd 协议 / system=health_damage (step 实现在对应模块)
@@ -2216,7 +2225,10 @@ tasks:
 - task_id: T-BDD-ADOPT-aeaf1d
   title: 'BDD 场景: health_damage / 护甲过厚导致零伤害'
   priority: P1
-  status: todo
+  status: completed
+  completed_at: 2026-09-06T00:10:00+08:00
+  result: HealthDamageTests.cs 完成, 16 BDD tests pass (26/26 total), commit pending
+
   type: bdd_scenario
   source: templates/system_design/health_damage.md#关键数值约束
   location: bdd 协议 / system=health_damage (step 实现在对应模块)
@@ -2247,7 +2259,10 @@ tasks:
 - task_id: T-BDD-ADOPT-181571
   title: 'BDD 场景: health_damage / 生命归零触发死亡事件 (端到端)'
   priority: P1
-  status: todo
+  status: completed
+  completed_at: 2026-09-06T00:10:00+08:00
+  result: HealthDamageTests.cs 完成, 16 BDD tests pass (26/26 total), commit pending
+
   type: bdd_scenario
   source: templates/system_design/health_damage.md#数据流
   location: bdd 协议 / system=health_damage (step 实现在对应模块)
@@ -2278,7 +2293,10 @@ tasks:
 - task_id: T-BDD-ADOPT-7896a3
   title: 'BDD 场景: health_damage / 过量伤害不产生负生命值'
   priority: P1
-  status: todo
+  status: completed
+  completed_at: 2026-09-06T00:10:00+08:00
+  result: HealthDamageTests.cs 完成, 16 BDD tests pass (26/26 total), commit pending
+
   type: bdd_scenario
   source: templates/system_design/health_damage.md#测试策略
   location: bdd 协议 / system=health_damage (step 实现在对应模块)
@@ -2308,7 +2326,10 @@ tasks:
 - task_id: T-BDD-ADOPT-81d488
   title: 'BDD 场景: health_damage / 死亡后无敌帧防连击'
   priority: P1
-  status: todo
+  status: completed
+  completed_at: 2026-09-06T00:10:00+08:00
+  result: HealthDamageTests.cs 完成, 16 BDD tests pass (26/26 total), commit pending
+
   type: bdd_scenario
   source: templates/system_design/health_damage.md#关键数值约束
   location: bdd 协议 / system=health_damage (step 实现在对应模块)
@@ -2338,7 +2359,10 @@ tasks:
 - task_id: T-BDD-ADOPT-338011
   title: 'BDD 场景: health_damage / 无敌帧过期后恢复可受击'
   priority: P1
-  status: todo
+  status: completed
+  completed_at: 2026-09-06T00:10:00+08:00
+  result: HealthDamageTests.cs 完成, 16 BDD tests pass (26/26 total), commit pending
+
   type: bdd_scenario
   source: templates/system_design/health_damage.md#关键数值约束
   location: bdd 协议 / system=health_damage (step 实现在对应模块)
@@ -2368,7 +2392,10 @@ tasks:
 - task_id: T-BDD-ADOPT-adcba3
   title: 'BDD 场景: health_damage / 死亡事件驱动掉落表结算'
   priority: P1
-  status: todo
+  status: completed
+  completed_at: 2026-09-06T00:10:00+08:00
+  result: HealthDamageTests.cs 完成, 16 BDD tests pass (26/26 total), commit pending
+
   type: bdd_scenario
   source: templates/system_design/health_damage.md#关键数值约束
   location: bdd 协议 / system=health_damage (step 实现在对应模块)
@@ -2399,7 +2426,10 @@ tasks:
 - task_id: T-BDD-ADOPT-5aee66
   title: 'BDD 场景: health_damage / 死亡事件驱动积分结算'
   priority: P1
-  status: todo
+  status: completed
+  completed_at: 2026-09-06T00:10:00+08:00
+  result: HealthDamageTests.cs 完成, 16 BDD tests pass (26/26 total), commit pending
+
   type: bdd_scenario
   source: templates/system_design/combat_system.md#系统间依赖
   location: bdd 协议 / system=health_damage (step 实现在对应模块)
@@ -2428,7 +2458,10 @@ tasks:
 - task_id: T-BDD-ADOPT-41aafa
   title: 'BDD 场景: health_damage / 死亡事件驱动刷兵配额释放'
   priority: P1
-  status: todo
+  status: completed
+  completed_at: 2026-09-06T00:10:00+08:00
+  result: HealthDamageTests.cs 完成, 16 BDD tests pass (26/26 total), commit pending
+
   type: bdd_scenario
   source: templates/system_design/combat_system.md#系统间依赖
   location: bdd 协议 / system=health_damage (step 实现在对应模块)
@@ -2458,7 +2491,10 @@ tasks:
 - task_id: T-BDD-ADOPT-532c11
   title: 'BDD 场景: health_damage / 生命值仅经 health_damage 修改, 无旁路写入'
   priority: P1
-  status: todo
+  status: completed
+  completed_at: 2026-09-06T00:10:00+08:00
+  result: HealthDamageTests.cs 完成, 16 BDD tests pass (26/26 total), commit pending
+
   type: bdd_scenario
   source: templates/system_design/health_damage.md#验收标准对照
   location: bdd 协议 / system=health_damage (step 实现在对应模块)
@@ -2488,7 +2524,10 @@ tasks:
 - task_id: T-BDD-ADOPT-33bed2
   title: 'BDD 场景: health_damage / 伤害计算确定性'
   priority: P1
-  status: todo
+  status: completed
+  completed_at: 2026-09-06T00:10:00+08:00
+  result: HealthDamageTests.cs 完成, 16 BDD tests pass (26/26 total), commit pending
+
   type: bdd_scenario
   source: templates/system_design/health_damage.md#测试策略
   location: bdd 协议 / system=health_damage (step 实现在对应模块)
@@ -2519,7 +2558,10 @@ tasks:
 - task_id: T-BDD-ADOPT-fcb9ee
   title: 'BDD 场景: health_damage / 多目标独立结算'
   priority: P1
-  status: todo
+  status: completed
+  completed_at: 2026-09-06T00:10:00+08:00
+  result: HealthDamageTests.cs 完成, 16 BDD tests pass (26/26 total), commit pending
+
   type: bdd_scenario
   source: templates/system_design/health_damage.md#测试策略
   location: bdd 协议 / system=health_damage (step 实现在对应模块)
@@ -2550,7 +2592,10 @@ tasks:
 - task_id: T-BDD-ADOPT-15d13d
   title: 'BDD 场景: health_damage / 四肢命中伤害减免'
   priority: P1
-  status: todo
+  status: completed
+  completed_at: 2026-09-06T00:10:00+08:00
+  result: HealthDamageTests.cs 完成, 16 BDD tests pass (26/26 total), commit pending
+
   type: bdd_scenario
   source: templates/genre_knowledge_reference.yaml#zone_multiplier.limb
   location: bdd 协议 / system=health_damage (step 实现在对应模块)
@@ -2581,7 +2626,10 @@ tasks:
 - task_id: T-BDD-ADOPT-4ec0d1
   title: 'BDD 场景: health_damage / Boss 弱点暴露窗口高倍率伤害'
   priority: P1
-  status: todo
+  status: completed
+  completed_at: 2026-09-06T00:10:00+08:00
+  result: HealthDamageTests.cs 完成, 16 BDD tests pass (26/26 total), commit pending
+
   type: bdd_scenario
   source: templates/genre_knowledge_reference.yaml#zone_multiplier.weak_point
   location: bdd 协议 / system=health_damage (step 实现在对应模块)
