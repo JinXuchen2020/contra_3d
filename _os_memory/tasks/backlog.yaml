@@ -4476,3 +4476,267 @@ tasks:
   - cargo check --features os-autopilot still passes
   completed_at: '2026-09-05T23:11:52+08:00'
   result: Registry entry already present for ui_hud (rg_hud_health_displayed, rg_hud_score_updated). Updated.
+
+- task_id: T-BDD-ADOPT-6253be
+  title: 'BDD 场景: ui_hud / HUD 初始状态正确'
+  priority: P1
+  status: completed
+  completed_at: '2026-09-06T00:00:00+08:00'
+  result: Test HUD_InitState_CorrectValues_BDD_T6253be passes; 255 PASS, 7 SKIP
+  type: bdd_scenario
+  source: templates/system_design/ui_hud.md#分层设计
+  location: bdd 协议 / system=ui_hud (step 实现在对应模块)
+  depends_on: []
+  estimated_effort: 0.5-2 小时
+  description: 'BDD/Playtest 行为契约 adoption (由 protocol_adoption_scanner.py 确定性建):
+
+    protocol: bdd
+
+    system: ui_hud
+
+    scenario: HUD 初始状态正确
+
+    source 锚点: templates/system_design/ui_hud.md#分层设计
+
+    given: [''游戏刚启动，玩家实体已创建'', ''玩家初始生命值 100，最大生命值 100'', ''玩家初始命数 3'', ''玩家初始得分 0'',
+    ''玩家初始武器 rifle_default'']
+
+    when: [''HUDUpdater 初始化并处理首帧'']
+
+    then: [''HUDState.health == 100'', ''HUDState.maxHealth == 100'', ''HUDState.lives
+    == 3'', ''HUDState.score == 0'', ''HUDState.currentWeaponId == "rifle_default"'',
+    ''HUDState.lowHealth == false'']
+
+    注: 场景锚定真实需求/spec/现有测试, 禁止自由发挥。'
+  acceptance_criteria:
+  - 该 scenario 在 cargo test --features os-autopilot 下通过
+  - 不破坏相关公共 API / 其他 scenario
+- task_id: T-BDD-ADOPT-a24844
+  title: 'BDD 场景: ui_hud / 受伤事件驱动 HUD 生命值更新'
+  priority: P1
+  status: completed
+  completed_at: '2026-09-06T00:00:00+08:00'
+  result: Test HUD_HealthUpdate_OnDamage_BDD_Ta24844 passes; 255 PASS, 7 SKIP
+  type: bdd_scenario
+  source: templates/system_design/ui_hud.md#数据流
+  location: bdd 协议 / system=ui_hud (step 实现在对应模块)
+  depends_on: []
+  estimated_effort: 0.5-2 小时
+  description: 'BDD/Playtest 行为契约 adoption (由 protocol_adoption_scanner.py 确定性建):
+
+    protocol: bdd
+
+    system: ui_hud
+
+    scenario: 受伤事件驱动 HUD 生命值更新
+
+    source 锚点: templates/system_design/ui_hud.md#数据流
+
+    given: [''HUDState 初始 health=100, maxHealth=100, lowHealth=false'', ''玩家受到 30
+    点伤害'']
+
+    when: [''HealthChangeEvent (delta=-30, newHealth=70) 发布'', ''HUDUpdater.Process()
+    处理事件'']
+
+    then: [''HUDState.health == 70'', ''HUDState.maxHealth == 100'', ''HUDState.lowHealth
+    == false (70/100 = 70% >= 25%)'', ''返回新的 HUDState 实例 (不可变性)'']
+
+    注: 场景锚定真实需求/spec/现有测试, 禁止自由发挥。'
+  acceptance_criteria:
+  - 该 scenario 在 cargo test --features os-autopilot 下通过
+  - 不破坏相关公共 API / 其他 scenario
+- task_id: T-BDD-ADOPT-e4c384
+  title: 'BDD 场景: ui_hud / 低血量阈值触发 LowHealthFlag'
+  priority: P1
+  status: completed
+  completed_at: '2026-09-06T00:00:00+08:00'
+  result: Test HUD_LowHealthFlag_TriggeredBelow25pct_BDD_Te4c384 passes; 255 PASS, 7 SKIP
+  type: bdd_scenario
+  source: templates/system_design/ui_hud.md#关键数值约束
+  location: bdd 协议 / system=ui_hud (step 实现在对应模块)
+  depends_on: []
+  estimated_effort: 0.5-2 小时
+  description: 'BDD/Playtest 行为契约 adoption (由 protocol_adoption_scanner.py 确定性建):
+
+    protocol: bdd
+
+    system: ui_hud
+
+    scenario: 低血量阈值触发 LowHealthFlag
+
+    source 锚点: templates/system_design/ui_hud.md#关键数值约束
+
+    given: [''HUDState health=30, maxHealth=100, lowHealth=false'', ''玩家再受 10 点伤害'']
+
+    when: [''HealthChangeEvent (delta=-10, newHealth=20) 发布'', ''HUDUpdater.Process()
+    处理事件'']
+
+    then: [''HUDState.health == 20'', ''HUDState.lowHealth == true (20/100 = 20% <
+    25%)'', ''LowHealthEvent 广播 (供音频/视觉系统订阅)'']
+
+    注: 场景锚定真实需求/spec/现有测试, 禁止自由发挥。'
+  acceptance_criteria:
+  - 该 scenario 在 cargo test --features os-autopilot 下通过
+  - 不破坏相关公共 API / 其他 scenario
+- task_id: T-BDD-ADOPT-085420
+  title: 'BDD 场景: ui_hud / 死亡事件扣除命数'
+  priority: P1
+  status: completed
+  completed_at: '2026-09-06T00:00:00+08:00'
+  result: Tests HUD_Death_DecrementsLives_BDD_T085420 and HUD_Death_LastLife_TriggerGameOver_BDD_T085420 pass; 255 PASS, 7 SKIP
+  type: bdd_scenario
+  source: templates/system_design/ui_hud.md#数据流
+  location: bdd 协议 / system=ui_hud (step 实现在对应模块)
+  depends_on: []
+  estimated_effort: 0.5-2 小时
+  description: 'BDD/Playtest 行为契约 adoption (由 protocol_adoption_scanner.py 确定性建):
+
+    protocol: bdd
+
+    system: ui_hud
+
+    scenario: 死亡事件扣除命数
+
+    source 锚点: templates/system_design/ui_hud.md#数据流
+
+    given: [''HUDState lives=3, health=1'', ''玩家受到致命伤害'']
+
+    when: [''DeathEvent 发布'', ''HUDUpdater.Process() 处理事件'']
+
+    then: [''HUDState.lives == 2'', ''HUDState.health 重置为 maxHealth (复活逻辑由上游决定，HUD
+    仅反映)'', ''若 lives 递减至 0 → GameOverEvent 广播'']
+
+    注: 场景锚定真实需求/spec/现有测试, 禁止自由发挥。'
+  acceptance_criteria:
+  - 该 scenario 在 cargo test --features os-autopilot 下通过
+  - 不破坏相关公共 API / 其他 scenario
+- task_id: T-BDD-ADOPT-de7a62
+  title: 'BDD 场景: ui_hud / 得分递增与 1UP 阈值触发'
+  priority: P1
+  status: completed
+  completed_at: '2026-09-06T00:00:00+08:00'
+  result: Tests HUD_ScoreIncrement_1UPTresholdCrossed_BDD_Tde7a62 and HUD_ScoreIncrement_NextThresholdAdvances_BDD_Tde7a62 pass; 255 PASS, 7 SKIP
+  type: bdd_scenario
+  source: templates/system_design/ui_hud.md#关键数值约束
+  location: bdd 协议 / system=ui_hud (step 实现在对应模块)
+  depends_on: []
+  estimated_effort: 0.5-2 小时
+  description: 'BDD/Playtest 行为契约 adoption (由 protocol_adoption_scanner.py 确定性建):
+
+    protocol: bdd
+
+    system: ui_hud
+
+    scenario: 得分递增与 1UP 阈值触发
+
+    source 锚点: templates/system_design/ui_hud.md#关键数值约束
+
+    given: [''HUDState score=19500, lives=3'', {''1UP 阈值序列'': ''20000, 50000, 100000
+    (递增)''}]
+
+    when: [''ScoreIncrementEvent (amount=600) 发布'', ''HUDUpdater.Process() 处理事件'']
+
+    then: [''HUDState.score == 20100'', ''HUDState.lives == 4 (跨过 20000 阈值)'', ''ExtraLifeEvent
+    广播'', ''下一 1UP 阈值更新为 50000'']
+
+    注: 场景锚定真实需求/spec/现有测试, 禁止自由发挥。'
+  acceptance_criteria:
+  - 该 scenario 在 cargo test --features os-autopilot 下通过
+  - 不破坏相关公共 API / 其他 scenario
+- task_id: T-BDD-ADOPT-4e320d
+  title: 'BDD 场景: ui_hud / 武器切换事件同步 HUD 武器指示器'
+  priority: P1
+  status: completed
+  completed_at: '2026-09-06T00:00:00+08:00'
+  result: Test HUD_WeaponChange_ReflectsToHUD_BDD_T4e320d passes; 255 PASS, 7 SKIP
+  type: bdd_scenario
+  source: templates/system_design/ui_hud.md#分层设计
+  location: bdd 协议 / system=ui_hud (step 实现在对应模块)
+  depends_on: []
+  estimated_effort: 0.5-2 小时
+  description: 'BDD/Playtest 行为契约 adoption (由 protocol_adoption_scanner.py 确定性建):
+
+    protocol: bdd
+
+    system: ui_hud
+
+    scenario: 武器切换事件同步 HUD 武器指示器
+
+    source 锚点: templates/system_design/ui_hud.md#分层设计
+
+    given: [''HUDState.currentWeaponId == "rifle_default"'', ''玩家拾取 spread_shot 武器箱'']
+
+    when: [''WeaponChangeEvent (newWeaponId="spread_shot") 发布'', ''HUDUpdater.Process()
+    处理事件'']
+
+    then: [''HUDState.currentWeaponId == "spread_shot"'', ''HUDState 返回新实例 (不可变性)'']
+
+    注: 场景锚定真实需求/spec/现有测试, 禁止自由发挥。'
+  acceptance_criteria:
+  - 该 scenario 在 cargo test --features os-autopilot 下通过
+  - 不破坏相关公共 API / 其他 scenario
+- task_id: T-BDD-ADOPT-93b81f
+  title: 'BDD 场景: ui_hud / 连续事件批量处理合并状态'
+  priority: P1
+  status: completed
+  completed_at: '2026-09-06T00:00:00+08:00'
+  result: Tests HUD_ConcurrentEvents_BatchProcessed_MergedState_BDD_T93b81f and HUD_ConcurrentEvents_NoLeakToRenderer_BDD_T93b81f pass; 255 PASS, 7 SKIP
+  type: bdd_scenario
+  source: templates/system_design/ui_hud.md#测试策略
+  location: bdd 协议 / system=ui_hud (step 实现在对应模块)
+  depends_on: []
+  estimated_effort: 0.5-2 小时
+  description: 'BDD/Playtest 行为契约 adoption (由 protocol_adoption_scanner.py 确定性建):
+
+    protocol: bdd
+
+    system: ui_hud
+
+    scenario: 连续事件批量处理合并状态
+
+    source 锚点: templates/system_design/ui_hud.md#测试策略
+
+    given: [''HUDState health=100, score=0, lives=3'', {''同帧内依次发生'': ''受伤 20、得分 500、拾取武器''}]
+
+    when: [''HealthChangeEvent (delta=-20) → ScoreIncrementEvent (500) → WeaponChangeEvent
+    依次发布'', ''HUDUpdater.Process() 对每个事件调用'']
+
+    then: [{''最终 HUDState'': ''health=80, score=500, currentWeaponId=新武器''}, ''中间状态不泄露给渲染层
+    (仅最终快照可读)'']
+
+    注: 场景锚定真实需求/spec/现有测试, 禁止自由发挥。'
+  acceptance_criteria:
+  - 该 scenario 在 cargo test --features os-autopilot 下通过
+  - 不破坏相关公共 API / 其他 scenario
+- task_id: T-BDD-ADOPT-f9c88f
+  title: 'BDD 场景: ui_hud / HUDState 不可变性保证'
+  priority: P1
+  status: completed
+  completed_at: '2026-09-06T00:00:00+08:00'
+  result: Tests HUD_StateImmutability_OriginalUnchanged_BDD_Tf9c88f and HUD_StateImmutability_ChainUpdatesPreserveOriginal_BDD_Tf9c88f pass; 255 PASS, 7 SKIP
+  type: bdd_scenario
+  source: templates/system_design/ui_hud.md#关键数值约束
+  location: bdd 协议 / system=ui_hud (step 实现在对应模块)
+  depends_on: []
+  estimated_effort: 0.5-2 小时
+  description: 'BDD/Playtest 行为契约 adoption (由 protocol_adoption_scanner.py 确定性建):
+
+    protocol: bdd
+
+    system: ui_hud
+
+    scenario: HUDState 不可变性保证
+
+    source 锚点: templates/system_design/ui_hud.md#关键数值约束
+
+    given: [''HUDState 初始实例 stateA (health=100)'', ''处理 HealthChangeEvent (delta=-10)'']
+
+    when: [''stateB = HUDUpdater.Process(stateA, event)'']
+
+    then: [''stateA.health == 100 (未变)'', ''stateB.health == 90'', ''stateA !== stateB
+    (引用不同)'']
+
+    注: 场景锚定真实需求/spec/现有测试, 禁止自由发挥。'
+  acceptance_criteria:
+  - 该 scenario 在 cargo test --features os-autopilot 下通过
+  - 不破坏相关公共 API / 其他 scenario
