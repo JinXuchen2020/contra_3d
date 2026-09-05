@@ -205,7 +205,7 @@ scenarios:
     name: 单 YAML 文件包含多地图定义, 按 map_id 加载
     description: maps.yaml 为映射表, MapLoader 支持按 map_id 选择加载特定地图
     given:
-      - maps.yaml 包含 maps: [{map_id:"level_01", ...}, {map_id:"level_02", ...}, {map_id:"boss_arena", ...}]
+      - maps.yaml 包含 maps: [{map_id: "level_01"}, {map_id: "level_02"}, {map_id: "boss_arena"}]
     when:
       - MapLoader.Load("data/maps/maps.yaml", "level_02") 调用
     then:
@@ -218,8 +218,8 @@ scenarios:
     name: 出生点类型分类正确 (patrol/ambush/trigger/reinforce)
     description: SpawnPoint.type 字段必须为枚举值之一, 且 trigger 字段与类型匹配
     given:
-      - SpawnPoint: {id:"spawn_01", type:"reinforce", trigger:"zone_03"}
-      - SpawnPoint: {id:"spawn_02", type:"patrol", trigger:""} (patrol 类型无需 trigger)
+      - SpawnPoint: {id: "spawn_01", type:"reinforce", trigger:"zone_03"}
+      - SpawnPoint: {id: "spawn_02", type: "patrol", trigger: ""}
     when:
       - MapLoader.Load() 校验
     then:
@@ -233,8 +233,8 @@ scenarios:
     name: 掩体点朝向法向量有效
     description: CoverPoint.facing_normal 为单位向量, 指向威胁方向
     given:
-      - CoverPoint: {id:"cover_01", facing_normal:[1,0,0]} (有效单位向量)
-      - CoverPoint: {id:"cover_02", facing_normal:[2,0,0]} (非单位向量)
+      - CoverPoint: {id: "cover_01", facing_normal:[1,0,0]}
+      - CoverPoint: {id: "cover_02", facing_normal:[2,0,0]}
     when:
       - MapLoader.Load() 校验
     then:
@@ -261,7 +261,7 @@ scenarios:
     name: 遭遇区封锁退路标记
     description: EncounterZone.lock=true 时, 玩家进入后退路被封锁 (门关闭/墙升起)
     given:
-      - EncounterZone: {id:"zone_01", bounds:AABB, on_enter:"spawn_set_01", lock:true}
+      - EncounterZone: {id: "zone_01", bounds:AABB, on_enter:"spawn_set_01", lock:true}
     when:
       - MapLoader.Load() 解析
     then:
