@@ -175,7 +175,7 @@ scenarios:
 
   - id: no_bypass_health_modification
     name: 生命值仅经 health_damage 修改, 无旁路写入
-    description: 代码审查确认: 除 HealthDamageSystem.ProcessHit 外, 无其他代码路径修改 HealthComponent.current
+    description: "代码审查确认: 除 HealthDamageSystem.ProcessHit 外, 无其他代码路径修改 HealthComponent.current"
     given:
       - 全代码库搜索 HealthComponent.current 赋值操作
     when:

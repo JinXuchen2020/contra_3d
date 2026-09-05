@@ -1,0 +1,137 @@
+# audio_system.bdd.yaml — 音频系统行为契约 (contra_3d)
+# 供 Universal_AI_OS BDD 协议消费 (behavior_contract_protocol.md 格式)
+# 系统级参考: src/core/engine/audio_system.md (不替代 scenario 级锚点)
+# 依赖系统: combat_system (上游事件) / animation_system (上游事件) / scene_management (上游事件)
+
+system: audio_system
+protocol: bdd
+version: 1
+source: src/core/engine/audio_system.md
+scenarios:
+  - id: bgm_area_transition_crossfade
+    name: 区域 BGM 切换平滑交叉淡入淡出
+    description: 玩家跨区域时旧 BGM 淡出、新 BGM 淡入，过渡期间无静音
+    given:
+      - 当前播放 BGM_A (区域 1 主题)，音量 1.0
+      - 玩家进入区域 2 触发区
+      - 区域 2 BGM_B 已预加载
+    when:
+      - AudioSystem.TransitionBGM("BGM_B", duration=2.0s) 调用
+    then:
+      - BGM_A 音量在 2.0s 内从 1.0 线性衰减至 0.0
+      - BGM_B 音量在 2.0s 内从 0.0 线性增至 1.0
+      - 过渡任意时刻混合音量 > 0 (无静音间隙)
+      - 过渡完成后 BGM_A 停止并释放，BGM_B 循环播放
+    source: src/core/engine/audio_system.md#BGM管理
+    e2e: true
+
+  - id: bgm_combat_layering
+    name: 战斗切入/切出 BGM 分层
+    description: 进入战斗叠加战斗层，脱离战斗淡出恢复探索层
+    given:
+      - 探索 BGM (层 0) 正在播放，音量 1.0
+      - 战斗 BGM 层 (层 1) 已预加载，初始音量 0.0
+      - 玩家进入战斗触发区
+    when:
+      - AudioSystem.EnterCombat() 调用
+    then:
+      - 探索层音量在 1.0s 内淡至 0.3 (背景保留)
+      - 战斗层音量在 1.0s 内淡至 1.0
+      - 两层同步播放 (相同拍点/节拍对齐)
+      - 脱离战斗时反向过渡：战斗层淡出，探索层恢复 1.0
+    source: src/core/engine/audio_system.md#BGM管理
+    e2e: true
+
+  - id: sfx_event_driven_playback
+    name: 事件驱动 SFX 播放
+    description: 战斗/动画/UI 事件触发对应音效，支持 3D 空间定位
+    given:
+      - 玩家开火 (FireEvent: weapon=rifle_default, position=(10,0,5))
+      - 步枪开火音效已加载，类别 SFX，3D 启用
+    when:
+      - AudioSystem.PlaySFX("rifle_fire", position, spatial=true) 调用
+    then:
+      - 音效在指定位置实例化，立即播放
+      - 听者位置 (0,0,0) 处听到音量按距离衰减 (约 -6dB @ 10m)
+      - 声像定位正确 (声源在右前方 → 右声道更响)
+      - 并发实例数 < 最大并发限制 (默认 8)
+    source: src/core/engine/audio_system.md#SFX管理
+    e2e: false
+
+  - id: sfx_concurrency_limit_priority
+    name: SFX 并发限制与优先级抢占
+    description: 同类音效超出并发上限时按优先级抢占，UI > 战斗 > 环境
+    given:
+      - 环境音效 (优先级 1) 正在播放 8 个实例 (已达上限)
+      - 玩家开火触发战斗音效 (优先级 2)
+    when:
+      - AudioSystem.PlaySFX("rifle_fire", priority=2) 调用
+    then:
+      - 最旧的环境音效实例被停止回收
+      - 新战斗音效获得播放槽位并播放
+      - 活跃实例总数仍 ≤ 8
+    source: src/core/engine/audio_system.md#SFX管理
+    e2e: false
+
+  - id: sfx_distance_attenuation
+    name: 3D 音效距离衰减模型
+    description: 声源距离听者越远音量越小，超出最大距离静音
+    given:
+      - 爆炸音效 (referenceDistance=1m, maxDistance=50m, rolloff=logarithmic)
+      - 听者位置固定 (0,0,0)
+    when:
+      - 在 1m、10m、30m、60m 处分别触发爆炸
+    then:
+      - 1m 处音量 ≈ 1.0 (参考音量)
+      - 10m 处音量 ≈ 0.1 (-20dB，对数衰减)
+      - 30m 处音量 ≈ 0.033 (-30dB)
+      - 60m 处 > maxDistance → 音量 0.0 (静音)
+    source: src/core/engine/audio_system.md#3D空间音效
+    e2e: false
+
+  - id: sfx_doppler_effect
+    name: 多普勒效应相对速度影响音高
+    description: 高速移动声源/听者产生音高偏移 (可选功能)
+    given:
+      - 启用多普勒效应 (dopplerFactor=1.0)
+      - 声源以 30m/s 速度向听者靠近
+      - 基础音高 1.0
+    when:
+      - AudioSystem.Update() 计算多普勒偏移
+    then:
+      - 观测音高 > 1.0 (频率升高)
+      - 速度方向反向时音高 < 1.0
+      - 相对速度为 0 时音高 = 1.0
+    source: src/core/engine/audio_system.md#3D空间音效
+    e2e: false
+
+  - id: audio_resource_pool_preload_unload
+    name: 音频资源池预加载与动态卸载
+    description: 常用音效常驻内存，场景特定音效按需加载/卸载
+    given:
+      - 常用音效集 (开火、跳跃、UI点击) 标记为预加载
+      - Boss 战专用音效标记为场景加载
+    when:
+      - 场景切换至 Boss 关卡
+      - AudioSystem.LoadSceneAudio("boss_arena") 调用
+    then:
+      - Boss 音效加载完成前不阻塞游戏 (异步)
+      - 加载完成后可立即播放无延迟
+      - 离开 Boss 关卡时 AudioSystem.UnloadSceneAudio() 释放内存
+      - 预加载音效始终保留不被卸载
+    source: src/core/engine/audio_system.md#音频资源池
+    e2e: false
+
+  - id: audio_latency_budget
+    name: 音频延迟预算达标
+    description: 从事件触发到出声延迟 ≤ 80ms (理想 50ms)
+    given:
+      - 固定逻辑帧 60Hz (16.67ms/帧)
+      - 音频线程独立运行，混音缓冲 256 samples @ 48kHz ≈ 5.3ms
+    when:
+      - FireEvent 触发 → AudioSystem.PlaySFX() 调用 → 混音输出
+    then:
+      - 端到端延迟 ≤ 80ms (含逻辑帧对齐 + 音频线程调度 + 缓冲)
+      - 无可感知的音画不同步
+    source: src/core/engine/audio_system.md#视听反馈分层
+    e2e: true

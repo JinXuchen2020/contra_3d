@@ -1,0 +1,141 @@
+# ui_hud.bdd.yaml — HUD 系统行为契约 (contra_3d)
+# 供 Universal_AI_OS BDD 协议消费 (behavior_contract_protocol.md 格式)
+# 系统级参考: templates/system_design/ui_hud.md (不替代 scenario 级锚点)
+# 依赖系统: health_damage (上游) / weapon_system (上游) / score_system (上游)
+
+system: ui_hud
+protocol: bdd
+version: 1
+source: templates/system_design/ui_hud.md
+scenarios:
+  - id: hud_initial_state
+    name: HUD 初始状态正确
+    description: 游戏启动时 HUDState 包含正确的初始值
+    given:
+      - 游戏刚启动，玩家实体已创建
+      - 玩家初始生命值 100，最大生命值 100
+      - 玩家初始命数 3
+      - 玩家初始得分 0
+      - 玩家初始武器 rifle_default
+    when:
+      - HUDUpdater 初始化并处理首帧
+    then:
+      - HUDState.health == 100
+      - HUDState.maxHealth == 100
+      - HUDState.lives == 3
+      - HUDState.score == 0
+      - HUDState.currentWeaponId == "rifle_default"
+      - HUDState.lowHealth == false
+    source: templates/system_design/ui_hud.md#分层设计
+    e2e: false
+
+  - id: hud_health_update_on_damage
+    name: 受伤事件驱动 HUD 生命值更新
+    description: HealthChangeEvent 触发时 HUDState.health 同步更新并触发低血量标记
+    given:
+      - HUDState 初始 health=100, maxHealth=100, lowHealth=false
+      - 玩家受到 30 点伤害
+    when:
+      - HealthChangeEvent (delta=-30, newHealth=70) 发布
+      - HUDUpdater.Process() 处理事件
+    then:
+      - HUDState.health == 70
+      - HUDState.maxHealth == 100
+      - HUDState.lowHealth == false (70/100 = 70% >= 25%)
+      - 返回新的 HUDState 实例 (不可变性)
+    source: templates/system_design/ui_hud.md#数据流
+    e2e: false
+
+  - id: hud_low_health_flag_trigger
+    name: 低血量阈值触发 LowHealthFlag
+    description: 当生命值低于最大值 25% 时 LowHealth 标记置真
+    given:
+      - HUDState health=30, maxHealth=100, lowHealth=false
+      - 玩家再受 10 点伤害
+    when:
+      - HealthChangeEvent (delta=-10, newHealth=20) 发布
+      - HUDUpdater.Process() 处理事件
+    then:
+      - HUDState.health == 20
+      - HUDState.lowHealth == true (20/100 = 20% < 25%)
+      - LowHealthEvent 广播 (供音频/视觉系统订阅)
+    source: templates/system_design/ui_hud.md#关键数值约束
+    e2e: true
+
+  - id: hud_death_decrements_lives
+    name: 死亡事件扣除命数
+    description: DeathEvent 触发时 HUDState.lives 递减，生命归零触发 GameOver
+    given:
+      - HUDState lives=3, health=1
+      - 玩家受到致命伤害
+    when:
+      - DeathEvent 发布
+      - HUDUpdater.Process() 处理事件
+    then:
+      - HUDState.lives == 2
+      - HUDState.health 重置为 maxHealth (复活逻辑由上游决定，HUD 仅反映)
+      - 若 lives 递减至 0 → GameOverEvent 广播
+    source: templates/system_design/ui_hud.md#数据流
+    e2e: true
+
+  - id: hud_score_increment_and_extra_life
+    name: 得分递增与 1UP 阈值触发
+    description: ScoreIncrementEvent 累加得分，跨过阈值生成 ExtraLifeEvent
+    given:
+      - HUDState score=19500, lives=3
+      - 1UP 阈值序列: 20000, 50000, 100000 (递增)
+    when:
+      - ScoreIncrementEvent (amount=600) 发布
+      - HUDUpdater.Process() 处理事件
+    then:
+      - HUDState.score == 20100
+      - HUDState.lives == 4 (跨过 20000 阈值)
+      - ExtraLifeEvent 广播
+      - 下一 1UP 阈值更新为 50000
+    source: templates/system_design/ui_hud.md#关键数值约束
+    e2e: true
+
+  - id: hud_weapon_change_reflects
+    name: 武器切换事件同步 HUD 武器指示器
+    description: 玩家拾取新武器时 HUDState.currentWeaponId 更新
+    given:
+      - HUDState.currentWeaponId == "rifle_default"
+      - 玩家拾取 spread_shot 武器箱
+    when:
+      - WeaponChangeEvent (newWeaponId="spread_shot") 发布
+      - HUDUpdater.Process() 处理事件
+    then:
+      - HUDState.currentWeaponId == "spread_shot"
+      - HUDState 返回新实例 (不可变性)
+    source: templates/system_design/ui_hud.md#分层设计
+    e2e: false
+
+  - id: hud_concurrent_events_batch_process
+    name: 连续事件批量处理合并状态
+    description: 同一帧内多个事件按顺序处理，最终产出单一 HUDState
+    given:
+      - HUDState health=100, score=0, lives=3
+      - 同帧内依次发生: 受伤 20、得分 500、拾取武器
+    when:
+      - HealthChangeEvent (delta=-20) → ScoreIncrementEvent (500) → WeaponChangeEvent 依次发布
+      - HUDUpdater.Process() 对每个事件调用
+    then:
+      - 最终 HUDState: health=80, score=500, currentWeaponId=新武器
+      - 中间状态不泄露给渲染层 (仅最终快照可读)
+    source: templates/system_design/ui_hud.md#测试策略
+    e2e: false
+
+  - id: hud_state_immutability
+    name: HUDState 不可变性保证
+    description: 每次更新返回新实例，旧实例保持不变
+    given:
+      - HUDState 初始实例 stateA (health=100)
+      - 处理 HealthChangeEvent (delta=-10)
+    when:
+      - stateB = HUDUpdater.Process(stateA, event)
+    then:
+      - stateA.health == 100 (未变)
+      - stateB.health == 90
+      - stateA !== stateB (引用不同)
+    source: templates/system_design/ui_hud.md#关键数值约束
+    e2e: false

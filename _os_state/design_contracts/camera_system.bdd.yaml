@@ -1,0 +1,155 @@
+# camera_system.bdd.yaml — 相机系统行为契约 (contra_3d)
+# 供 Universal_AI_OS BDD 协议消费 (behavior_contract_protocol.md 格式)
+# 系统级参考: src/core/engine/camera_system.md (不替代 scenario 级锚点)
+# 依赖系统: physics_system (射线检测) / scene_management (模式切换触发)
+
+system: camera_system
+protocol: bdd
+version: 1
+source: src/core/engine/camera_system.md
+scenarios:
+  - id: third_person_follow_smooth_damping
+    name: 第三人称跟随平滑阻尼跟踪
+    description: 相机以指数衰减插值平滑跟随目标，无瞬移
+    given:
+      - 相机模式: 第三人称跟随
+      - 目标实体位置 (0,0,0)，偏移 (0,1.7,0) (头部高度)
+      - 相机偏移: right=0.6, back=2.5, up=1.7 (越肩)
+      - 阻尼系数 damping=5.0
+      - 当前相机位姿: position=(0,2, -2), rotation=look_at(目标)
+    when:
+      - 目标瞬移至 (10,0,0) (模拟传送/重生)
+      - CameraRig.Update(dt=0.016) 连续调用 10 帧
+    then:
+      - 相机位置每帧按 lerp(current, desired, 1 - e^(-damping*dt)) 推进
+      - 第 10 帧相机位置接近期望位置 (误差 < 0.1m)
+      - 相机朝向始终 look_at(目标位置 + 偏移)
+      - 无瞬移、无抖动、轨迹平滑
+    source: src/core/engine/camera_system.md#第三人称跟随
+    e2e: true
+
+  - id: camera_collision_correction
+    name: 相机穿墙修正射线检测
+    description: 相机与目标间有障碍物时，相机位置修正至碰撞点前方
+    given:
+      - 相机期望位置 (0,2,-5)，目标位置 (0,1,0)
+      - 两者间有一堵墙，距离目标 2m 处 (0,1,-2)
+      - 射线检测距离 = 相机到目标距离 (约 5.4m)
+    when:
+      - CameraRig.Update() 执行穿墙检测
+    then:
+      - 射线从相机向目标投射，检测到墙面碰撞
+      - 相机位置修正至碰撞点前方 0.2m 处 (约 (0,1.5,-2.2))
+      - 相机仍朝向目标
+      - 障碍物移除后相机平滑回归期望位置
+    source: src/core/engine/camera_system.md#相机穿墙修正
+    e2e: true
+
+  - id: camera_mode_transition_ease
+    name: 相机模式切换缓动过渡
+    description: 模式切换时位姿在持续时间内按 ease-in-out-cubic 插值
+    given:
+      - 当前模式: 第三人称跟随 (位姿 A)
+      - 目标模式: 固定视角 (位姿 B，位置固定、朝向固定)
+      - 过渡持续时间: 1.5s
+    when:
+      - CameraRig.SwitchMode("fixed", duration=1.5) 调用
+      - CameraRig.Update(dt=0.016) 连续调用直到过渡完成
+    then:
+      - 进度 t = clamp(累计时间 / 1.5, 0, 1)
+      - 缓动值 = ease_in_out_cubic(t) = 3t² - 2t³
+      - 位姿 = lerp(位姿A, 位姿B, 缓动值)
+      - t=1.0 时过渡完成，清除旧模式，当前模式 = fixed
+      - 全程无突变，首尾速度为 0
+    source: src/core/engine/camera_system.md#平滑过渡
+    e2e: false
+
+  - id: camera_shake_trauma_model
+    name: 创伤值驱动屏幕抖动
+    description: 爆炸/受击事件增加 trauma 值，抖动幅度 ∝ trauma²，随时间衰减
+    given:
+      - 当前 trauma = 0.0
+      - 爆炸事件触发，距离相机 5m，基础 trauma 增量 0.5
+      - trauma 衰减率: 1.0/s (线性)
+    when:
+      - AudioSystem/CombatSystem 触发 CameraShakeEvent(trauma=0.5)
+      - CameraRig.Update(dt=0.016) 连续调用
+    then:
+      - trauma 立即增加至 0.5 (上限 1.0)
+      - 抖动位移幅度 ∝ trauma² = 0.25 (归一化单位)
+      - 抖动旋转幅度 ∝ trauma²
+      - Perlin 噪声驱动 XYZ 三轴独立抖动
+      - 每帧 trauma -= 衰减率 * dt
+      - 约 0.5s 后 trauma 衰减至 0，抖动停止
+      - 远距离爆炸 (20m) trauma 增量按距离衰减 (如 0.5 * (5/20) = 0.125)
+    source: src/core/engine/camera_system.md#相机抖动
+    e2e: true
+
+  - id: camera_fov_dynamic_speed
+    name: 速度触发 FOV 动态调整
+    description: 冲刺/高速移动时 FOV 放大增强速度感，停止时平滑复原
+    given:
+      - 基础 FOV = 60°，最大 FOV = 90°
+      - 速度阈值: 8m/s 触发，12m/s 达到最大
+      - 玩家当前速度 0m/s，FOV=60°
+    when:
+      - 玩家加速至 10m/s 并保持
+      - CameraRig.Update(dt=0.016) 连续调用
+    then:
+      - 目标 FOV = lerp(60, 90, (speed-8)/(12-8)) = 75°
+      - 实际 FOV 每帧按插值因子 0.1 接近目标
+      - 约 0.5s 后 FOV 稳定在 75° ± 1°
+      - 玩家减速至 5m/s 时 FOV 平滑回归 60°
+    source: src/core/engine/camera_system.md#FOV动态调整
+    e2e: false
+
+  - id: camera_constraints_pitch_yaw_limits
+    name: 相机俯仰偏航角限制
+    description: 相机旋转受约束防止翻转/过度仰视
+    given:
+      - 相机约束: pitch_min=-60°, pitch_max=80°, yaw无限制
+      - 玩家鼠标输入尝试将 pitch 推至 -80° (过度俯视)
+    when:
+      - CameraRig.ApplyInput(deltaPitch=-30°, deltaYaw=0) 调用
+    then:
+      - 实际 pitch 限制在 -60° (不低于最小值)
+      - yaw 正常累加无限制
+      - 约束应用后相机朝向合法，无翻转
+    source: src/core/engine/camera_system.md#CameraConstraint
+    e2e: false
+
+  - id: splitscreen_horizontal_two_player
+    name: 双人本地分屏水平分割
+    description: 横版 run-and-gun 采用水平分屏，每玩家独立相机视口
+    given:
+      - 双人本地合作模式启用
+      - 屏幕分辨率 1920x1080
+      - 分屏模式: Horizontal (上下分割)
+    when:
+      - CameraRig.SetupSplitscreen(2, "horizontal") 调用
+    then:
+      - 玩家 1 视口: rect(0, 0.5, 1, 0.5) (上半屏 1920x540)
+      - 玩家 2 视口: rect(0, 0, 1, 0.5) (下半屏 1920x540)
+      - 每玩家独立 CameraRig 实例，独立目标跟随
+      - 渲染开销 ≈ 单相机 × 1.8 (共享静态资源)
+      - HUD 为每玩家独立渲染在各自视口内
+    source: src/core/engine/camera_system.md#分屏模式
+    e2e: false
+
+  - id: minimap_camera_orthographic
+    name: 小地图相机正交俯视
+    description: 小地图使用独立正交相机，俯视角跟随玩家
+    given:
+      - 小地图相机: 正交投影，size=20m，位置 (player.x, 50, player.z)
+      - 旋转: (90°, 0, 0) 俯视
+      - 渲染层: 独立 UI 层，不受主相机影响
+    when:
+      - 玩家移动 (10,0,10) → (20,0,20)
+      - MinimapCamera.Update() 调用
+    then:
+      - 小地图相机 XZ 位置跟随玩家 XZ
+      - Y 固定 50m (高度)
+      - 正交投影无透视畸变
+      - 仅渲染指定层 (地形、实体图标、不渲染天空盒)
+    source: src/core/engine/camera_system.md#特殊相机
+    e2e: false
