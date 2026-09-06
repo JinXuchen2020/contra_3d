@@ -4,7 +4,9 @@
 
 using UnityEditor;
 using UnityEngine;
+using UnityEditor.Build.Reporting;  // 关键：BuildResult 定义在此命名空间
 using System.IO;
+using System.Linq;
 
 /// <summary>
 /// 构建脚本 — 由 OS runtime_verify 协议调用
@@ -110,15 +112,23 @@ public static class BuildScript
             Directory.CreateDirectory(outputDir);
         }
 
-        var result = BuildPipeline.BuildPlayer(options);
+        // Unity 6000.6.0f1 API: BuildPipeline.BuildPlayer returns BuildReport
+        var report = BuildPipeline.BuildPlayer(options);
         
-        if (result.summary.result != BuildResult.Succeeded)
+        Debug.Log("[BuildScript] Build completed!");
+        Debug.Log("[BuildScript] Output: " + options.locationPathName);
+        Debug.Log("[BuildScript] Status: " + report.summary.result);
+        
+        // BuildResult 在 UnityEditor.Build.Reporting 命名空间中
+        if (report.summary.result != BuildResult.Succeeded)
         {
-            throw new BuildFailedException($"Build failed: {result.summary.details}");
+            Debug.LogError("[BuildScript] Build failed with " + report.summary.totalErrors + " errors");
         }
-
-        Debug.Log($"[BuildScript] Build succeeded: {options.locationPathName}");
-        Debug.Log($"[BuildScript] Total time: {result.totalTime}");
-        Debug.Log($"[BuildScript] Total size: {result.totalSize} bytes");
+        else
+        {
+            Debug.Log("[BuildScript] Build succeeded!");
+            Debug.Log("[BuildScript] Total time: " + report.summary.totalTime + " seconds");
+            Debug.Log("[BuildScript] Total size: " + report.summary.totalSize + " bytes");
+        }
     }
 }
