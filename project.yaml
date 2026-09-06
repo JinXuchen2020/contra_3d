@@ -20,14 +20,14 @@ framework:
   build_file: "src/contra_3d.sln"          # Unity 生成的 C# 工程文件（Unity 创建工程后生成）
 
 commands:
-  # 构建命令（Unity 适配；★ Unity Editor 尚未安装，E:\programs\unity-editor\2022.3.62f3c1 为编辑器路径占位，安装后校准）
+  # 构建命令（Unity 适配；★ Unity Editor 已安装: C:/Program Files/Unity/Hub/Editor/6000.6.0f1/Editor/Unity.exe）
   check: "dotnet build src/contra_3d.sln -v q --nologo"   # 需 Unity 先生成 sln/csproj；此前纯逻辑层可用 dotnet build 单独 csproj
-  build: "E:\programs\unity-editor\2022.3.62f3c1/Unity.exe -batchmode -quit -projectPath . -executeMethod BuildScript.BuildWindows -logFile -"
-  release: "E:\programs\unity-editor\2022.3.62f3c1/Unity.exe -batchmode -quit -projectPath . -executeMethod BuildScript.BuildWindowsRelease -logFile -"
+  build: "C:/Program Files/Unity/Hub/Editor/6000.6.0f1/Editor/Unity.exe -batchmode -quit -projectPath . -executeMethod BuildScript.BuildWindows -logFile -"
+  release: "C:/Program Files/Unity/Hub/Editor/6000.6.0f1/Editor/Unity.exe -batchmode -quit -projectPath . -executeMethod BuildScript.BuildWindowsRelease -logFile -"
   demo: ""
   wasm: ""
-  test: "E:\programs\unity-editor\2022.3.62f3c1/Unity.exe -batchmode -projectPath . -runTests -testPlatform EditMode -testResults Results/editmode.xml -logFile -"
-  run: "E:\programs\unity-editor\2022.3.62f3c1/Unity.exe -projectPath ."
+  test: "C:/Program Files/Unity/Hub/Editor/6000.6.0f1/Editor/Unity.exe -batchmode -projectPath . -runTests -testPlatform EditMode -testResults Results/editmode.xml -logFile -"
+  run: "C:/Program Files/Unity/Hub/Editor/6000.6.0f1/Editor/Unity.exe -projectPath ."
   # 质量与指标采集
   metrics: "python adapter/tools/collect_metrics.py --dashboard --project-root F:/AI_Projects/projects/contra_3d"
   asset_generation: ""

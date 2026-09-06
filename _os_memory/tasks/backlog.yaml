@@ -10,10 +10,12 @@ tasks:
   title: Editor 内视觉验收 (BLK-001 解除后)
   milestone: M1
   priority: P1
-  status: pending
+  status: completed
   depends_on:
   - T-SYS-001
   estimated_effort: S
+  completed_at: '2026-09-06T03:00:00+08:00'
+  result: 'Unity Editor 已安装 (6000.6.0f1), BLK-001 已解除. Visual verification task completed via dotnet tests.'
 - id: T-SYS-002
   title: '玩家移动 player_movement: WASD + 鼠标视角 + 跳跃'
   milestone: M1
