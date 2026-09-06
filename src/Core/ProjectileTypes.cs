@@ -133,11 +133,23 @@ namespace Contra3D.Core
 
                 proj.BirthTime += dt;
 
-                // Homing: rotate towards target direction
+                // Homing: rotate towards target direction (manual lerp to avoid allocations)
                 if (proj.Def.HomingTurnRate > 0f && proj.TargetDirection != Vector3.Zero)
                 {
-                    proj.Direction = Vector3.Normalize(
-                        Vector3.Lerp(proj.Direction, proj.TargetDirection, dt * proj.Def.HomingTurnRate));
+                    Vector3 dir = proj.Direction;
+                    Vector3 targetDir = proj.TargetDirection;
+                    float t = dt * proj.Def.HomingTurnRate;
+                    dir.X += (targetDir.X - dir.X) * t;
+                    dir.Y += (targetDir.Y - dir.Y) * t;
+                    dir.Z += (targetDir.Z - dir.Z) * t;
+                    float len = (float)System.Math.Sqrt(dir.X * dir.X + dir.Y * dir.Y + dir.Z * dir.Z);
+                    if (len > 0.0001f)
+                    {
+                        dir.X /= len;
+                        dir.Y /= len;
+                        dir.Z /= len;
+                    }
+                    proj.Direction = dir;
                 }
 
                 // Move

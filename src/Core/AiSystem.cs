@@ -241,7 +241,7 @@ namespace Contra3D.Core
                 case AiState.Patrol:
                     // Move towards patrol target
                     if (Vector3.Distance(state.Position, state.PatrolTarget) < 1f)
-                        state.PatrolTarget = state.Position + new Vector3((float)new Random().NextDouble() * 20f - 10f, 0, (float)new Random().NextDouble() * 20f - 10f);
+                        state.PatrolTarget = state.Position + new Vector3(RandomExtensions.Shared.NextFloat(-10f, 10f), 0, RandomExtensions.Shared.NextFloat(-10f, 10f));
                     Vector3 dir = Vector3.Normalize(state.PatrolTarget - state.Position);
                     state.Position += dir * def.Speed * dt;
                     if (state.Vigilance >= def.AlertThreshold)
@@ -353,9 +353,9 @@ namespace Contra3D.Core
     }
 
     /// <summary>随机数扩展方法。</summary>
-    internal static class RandomExtensions
+    public static class RandomExtensions
     {
-        private static readonly Random Shared = new Random();
+        public static readonly Random Shared = new Random();
         public static float NextFloat(this Random _, float min, float max) => (float)Shared.NextDouble() * (max - min) + min;
     }
 }
