@@ -47,7 +47,7 @@
         "contract_coverage": null,
         "simulation_coverage": null,
         "clippy_warnings": null,
-        "note": "S001 session completed. 197/197 tasks complete (100%). 255 tests PASS, 7 SKIP. Boot.unity and BuildScript.cs created. Runtime verification passed (partial - PlayMode/build blocked by external Unity Editor instance, not code issue). All actionable work complete. Fixed runtime_verify.py path quoting bug for Windows. ARCHIVE VERIFICATION: P0=0, P1=0, P2=0.",
+        "note": "S001 session completed. 197/197 tasks complete (100%). 255 tests PASS, 7 SKIP. Boot.unity and BuildScript.cs created. Runtime verification passed (partial - PlayMode/build blocked by external Unity Editor instance, not code issue). All actionable work complete. Fixed runtime_verify.py path quoting bug for Windows. ARCH SCAN: P0=0, P1=18, P2=12. P1 issues are quality/design debt, not blocking (quality_gate.blocking_priorities=[P0]). Remaining P1: D1-001 reflection, D1-002 duplicate types, D2-002 collision stub, D3 per-frame Random (partially fixed), D5 hardcoded constants.",
     },
     "quality_blocker_reason": {
         "blocked_by": [],
