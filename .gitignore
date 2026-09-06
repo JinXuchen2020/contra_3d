@@ -48,3 +48,7 @@ assets_external/
 .idea/
 *.swp
 *.swo
+
+# Build logs
+build.log
+*.log
