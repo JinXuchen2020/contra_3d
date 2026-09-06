@@ -21,6 +21,7 @@ namespace Contra3D.Combat
         private readonly HealthDamageSystem _healthDamageSystem;
         private readonly Dictionary<string, TargetEntry> _targetRegistry;
         private readonly List<(string TargetId, Vector3 Position, float Radius)> _targetListCache;
+        private readonly IRandomProvider _random;
 
         // 计分与掉落
         public int Score { get; private set; }
@@ -40,13 +41,15 @@ namespace Contra3D.Combat
         public CombatSystem(
             WeaponSystem weaponSystem,
             ProjectileSystem projectileSystem,
-            HealthDamageSystem healthDamageSystem)
+            HealthDamageSystem healthDamageSystem,
+            IRandomProvider randomProvider = null)
         {
             _weaponSystem = weaponSystem ?? throw new ArgumentNullException(nameof(weaponSystem));
             _projectileSystem = projectileSystem ?? throw new ArgumentNullException(nameof(projectileSystem));
             _healthDamageSystem = healthDamageSystem ?? throw new ArgumentNullException(nameof(healthDamageSystem));
             _targetRegistry = new Dictionary<string, TargetEntry>();
             _targetListCache = new List<(string, Vector3, float)>();
+            _random = randomProvider ?? new DefaultRandomProvider();
         }
 
         // ──────────────────────────────────────────────────────────────────────
@@ -85,7 +88,7 @@ namespace Contra3D.Combat
             if (result != WeaponActionResult.Success)
                 return (result, default, null);
 
-            direction = ApplySpread(direction, fireEvent.SpreadDeg);
+            direction = ApplySpread(direction, fireEvent.SpreadDeg, _random);
 
             if (fireEvent.IsHitscan)
             {
@@ -111,7 +114,7 @@ namespace Contra3D.Combat
             if (result != WeaponActionResult.Success)
                 return (result, null, null);
 
-            direction = ApplySpread(direction, fireEvent.SpreadDeg);
+            direction = ApplySpread(direction, fireEvent.SpreadDeg, _random);
 
             if (fireEvent.IsHitscan)
             {
@@ -225,17 +228,18 @@ namespace Contra3D.Combat
             }
         }
 
+        private readonly Dictionary<string, int> _scoreTable = new()
+        {
+            ["grunt_soldier"] = 100,
+            ["charger_mutant"] = 200,
+            ["turret_sniper"] = 150,
+            ["hound_runner"] = 120,
+            ["elite_gunner"] = 500
+        };
+
         private int ComputeScore(string enemyId)
         {
-            return enemyId switch
-            {
-                "grunt_soldier" => 100,
-                "charger_mutant" => 200,
-                "turret_sniper" => 150,
-                "hound_runner" => 120,
-                "elite_gunner" => 500,
-                _ => 50
-            };
+            return _scoreTable.TryGetValue(enemyId, out var score) ? score : 50;
         }
 
         private void BuildTargetList()
@@ -247,12 +251,12 @@ namespace Contra3D.Combat
             }
         }
 
-        private static Vector3 ApplySpread(Vector3 direction, float spreadDeg)
+        private static Vector3 ApplySpread(Vector3 direction, float spreadDeg, IRandomProvider random)
         {
             if (spreadDeg <= 0f) return direction;
             float spreadRad = spreadDeg * (float)Math.PI / 180f;
-            float dx = (float)(new Random().NextDouble() * 2 - 1) * spreadRad;
-            float dz = (float)(new Random().NextDouble() * 2 - 1) * spreadRad;
+            float dx = (float)(random.NextDouble() * 2 - 1) * spreadRad;
+            float dz = (float)(random.NextDouble() * 2 - 1) * spreadRad;
             return Vector3.Normalize(new Vector3(direction.X + dx, direction.Y, direction.Z + dz));
         }
     }
