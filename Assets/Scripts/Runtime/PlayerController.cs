@@ -39,8 +39,8 @@ namespace Contra3D.Runtime
 
             MotorInput input = new MotorInput
             {
-                MoveXZ = _input.Move,
-                LookDelta = _input.Look,
+                MoveXZ = new System.Numerics.Vector2(_input.Move.x, _input.Move.y),
+                LookDelta = new System.Numerics.Vector2(_input.Look.x, _input.Look.y),
                 JumpPressed = _input.ConsumeJumpPressed(),
                 JumpHeld = _input.JumpHeld,
                 IsGrounded = _characterController.isGrounded
@@ -53,7 +53,7 @@ namespace Contra3D.Runtime
             Vector3 displacement = new Vector3(_state.Velocity.X, _state.Velocity.Y, _state.Velocity.Z) * dt;
             _characterController.Move(displacement);
             Vector3 actual = transform.position;
-            _state.Position = new Vector3(actual.x, actual.y, actual.z);
+            _state.Position = new System.Numerics.Vector3(actual.x, actual.y, actual.z);
 
             // 朝向：yaw 驱动本体，pitch 驱动子相机（弧度 → 欧拉角）
             transform.rotation = Quaternion.Euler(0f, _state.Yaw * Mathf.Rad2Deg, 0f);
