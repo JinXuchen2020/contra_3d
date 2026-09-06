@@ -47,7 +47,7 @@
         "contract_coverage": null,
         "simulation_coverage": null,
         "clippy_warnings": null,
-        "note": "S001 session completed. 197/197 tasks complete (100%). 255 tests PASS, 7 SKIP. Boot.unity and BuildScript.cs created. Runtime verification passed (partial - PlayMode/build blocked by external Unity Editor instance, not code issue). All actionable work complete.",
+        "note": "S001 session completed. 197/197 tasks complete (100%). 255 tests PASS, 7 SKIP. Boot.unity and BuildScript.cs created. Runtime verification passed (partial - PlayMode/build blocked by external Unity Editor instance, not code issue). All actionable work complete. Fixed runtime_verify.py path quoting bug for Windows.",
     },
     "quality_blocker_reason": {
         "blocked_by": [],
