@@ -118,7 +118,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 82096285}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a4a4a4a4a4a4a4a4a4a4a4a4a4a4a4a4, type: 3}
+  m_Script: {fileID: 0}
   m_Name: GameBootstrap
   m_EditorClassIdentifier: Contra3D.Runtime.GameBootstrap
   TargetFps: 60
@@ -167,7 +167,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 123456789}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b4b4b4b4b4b4b4b4b4b4b4b4b4b4b4b4, type: 3}
+  m_Script: {fileID: 0}
   m_Name: CameraRigBootstrap
   m_EditorClassIdentifier: Contra3D.Runtime.CameraRigBootstrap
   FovDeg: 60
@@ -180,7 +180,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 123456789}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c4c4c4c4c4c4c4c4c4c4c4c4c4c4c4c4, type: 3}
+  m_Script: {fileID: 0}
   m_Name: CrosshairUI
   m_EditorClassIdentifier: Contra3D.Runtime.CrosshairUI
   crosshairRoot: {fileID: 0}
