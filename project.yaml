@@ -101,6 +101,15 @@ validation_protocols:
     expected_systems:
       - stage_traversal
       - combat_balanced
+  runtime:
+    enabled: true
+    timeout_seconds: 120
+    blocking: true
+    thresholds:
+      crash_count_max: 0
+      error_count_warn: 10
+      fps_min: 30
+      memory_mb_max: 1024
 
 # 自治循环参数
 autonomy:
