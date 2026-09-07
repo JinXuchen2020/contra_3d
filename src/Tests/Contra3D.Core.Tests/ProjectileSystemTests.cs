@@ -330,13 +330,12 @@ namespace Contra3D.Core.Tests
             }
             Assert.Equal(5, ps.ActiveCount);
 
-            // When: advance to reach 2m target
-            ps.Update(0.05f);
+            // When: advance to reach 2m target (passed targets for collision)
+            ps.Update(0.05f, targets);
             allHits.AddRange(ps.HitEvents);
 
-            // Then: at close range (2m), verify projectiles advanced correctly
-            // Note: collision detection requires ICollisionTargetProvider which is not injected in this test
-            Assert.True(ps.ActiveCount >= 1, $"Expected at least 1 active projectile, got {ps.ActiveCount}");
+            // Then: at close range (2m), direct-hit pellets should register collision
+            Assert.True(ps.HitEvents.Count >= 1, $"Expected at least 1 hit event, got {ps.HitEvents.Count}");
         }
 
         [Fact]
@@ -360,6 +359,8 @@ namespace Contra3D.Core.Tests
 
             // Then: system processes both without error; faction check is implementation detail
             // (current impl checks all targets; real BDD requires ownerTag-aware filtering)
+            psPlayer.Update(0.2f, targets);
+            psEnemy.Update(0.2f, targets);
             Assert.True(psPlayer.HitEvents != null);
             Assert.True(psEnemy.HitEvents != null);
         }
@@ -370,7 +371,7 @@ namespace Contra3D.Core.Tests
             // Given: freshly created system
             var def = new ProjectileDefinition(speed: 50f, radius: 0.1f, damage: 10f);
             var ps = new ProjectileSystem(def);
-            int initialFree = ProjectileSystemConfig.MaxProjectiles - ps.ActiveCount;
+            int initialFree = ProjectileSystemConfig.Default.MaxProjectiles - ps.ActiveCount;
 
             // When: spawn and then let timeout recycle
             ps.SpawnProjectile(Vector3.Zero, Vector3.UnitX, "player");
@@ -380,7 +381,7 @@ namespace Contra3D.Core.Tests
             Assert.Equal(0, ps.ActiveCount);
 
             // Then: pool slot restored
-            int currentFree = ProjectileSystemConfig.MaxProjectiles - ps.ActiveCount;
+            int currentFree = ProjectileSystemConfig.Default.MaxProjectiles - ps.ActiveCount;
             Assert.Equal(initialFree, currentFree);
         }
 
@@ -401,6 +402,81 @@ namespace Contra3D.Core.Tests
             for (int i = 0; i < 5; i++) ps.Update(0.016f);
             // Both still active (0.16s total << 10s lifetime)
             Assert.Equal(2, ps.ActiveCount);
+        }
+
+        [Fact]
+        public void Collision_TargetInjection_DetectsHit_BDD_T_BDD_ADOPT_c2o4l6()
+        {
+            // Given: projectile moving along X axis, enemy at (5, 0, 0) with radius 1
+            var def = new ProjectileDefinition(speed: 50f, radius: 0.5f, damage: 10f, lifetime: 5f, maxDistance: 500f);
+            var ps = new ProjectileSystem(def);
+            ps.SpawnProjectile(Vector3.Zero, Vector3.UnitX, "player");
+            var targets = new List<(string Id, Vector3 Position, float Radius)>
+            {
+                ("enemy1", new Vector3(5f, 0f, 0f), 1f)
+            };
+
+            // When: advance past enemy position with target list injected
+            ps.Update(0.2f, targets);
+
+            // Then: HitEvent produced for direct hit
+            Assert.True(ps.HitEvents.Count >= 1, $"Expected ≥1 hit, got {ps.HitEvents.Count}");
+            var hit = ps.HitEvents[0];
+            Assert.Equal("enemy1", hit.TargetId);
+            Assert.Equal(10f, hit.Damage);
+            Assert.True(hit.HitPoint.X > 0 && hit.HitPoint.X < 10);
+        }
+
+        [Fact]
+        public void Collision_NullTargets_NoError_BDD_T_BDD_ADOPT_m3i5s7()
+        {
+            // Given: projectile with no target list (null injection)
+            var def = new ProjectileDefinition(speed: 50f, radius: 0.5f, damage: 10f, lifetime: 10f, maxDistance: 500f);
+            var ps = new ProjectileSystem(def);
+            ps.SpawnProjectile(Vector3.Zero, Vector3.UnitX, "player");
+
+            // When: Update called without targets (null)
+            ps.Update(1f, null);
+
+            // Then: no crash, projectile remains active (no collision registered)
+            Assert.Equal(1, ps.ActiveCount);
+            Assert.Empty(ps.HitEvents);
+        }
+
+        [Fact]
+        public void Collision_YamlConfig_LoadsFromYaml_BDD_T_BDD_ADOPT_y3a6m9()
+        {
+            // Given: YAML config string
+            var yaml = @"
+max_projectiles: 500
+collision_tolerance_multiplier: 2.0
+out_of_bounds_distance: 1000
+default_lifetime: 10
+";
+
+            // When: LoadFromYaml parses the config
+            var cfg = ProjectileSystemConfig.LoadFromYaml(yaml);
+
+            // Then: all values loaded correctly
+            Assert.Equal(500, cfg.MaxProjectiles);
+            Assert.Equal(2.0f, cfg.CollisionToleranceMultiplier);
+            Assert.Equal(1000f, cfg.OutOfBoundsDistance);
+            Assert.Equal(10f, cfg.DefaultLifetime);
+        }
+
+        [Fact]
+        public void Collision_YamlConfig_NullReturnsDefault_BDD_T_BDD_ADOPT_z8x5w2()
+        {
+            // Given: null/empty YAML input
+            // When: LoadFromYaml called with null and empty string
+            var cfgNull = ProjectileSystemConfig.LoadFromYaml(null);
+            var cfgEmpty = ProjectileSystemConfig.LoadFromYaml("");
+            var cfgWhitespace = ProjectileSystemConfig.LoadFromYaml("   ");
+
+            // Then: all return Default instance
+            Assert.Same(ProjectileSystemConfig.Default, cfgNull);
+            Assert.Same(ProjectileSystemConfig.Default, cfgEmpty);
+            Assert.Same(ProjectileSystemConfig.Default, cfgWhitespace);
         }
     }
 }

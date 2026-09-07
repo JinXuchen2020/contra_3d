@@ -2,12 +2,14 @@
 # 覆盖 4 种 ai_type：patrol / chase / sniper / rusher，外加 1 个精英怪（混合行为）
 # drop_table: 击杀掉落概率表，weapon_box 引用 weapons.yaml 中的 weapon_id
 # speed: 米/秒; health 以默认步枪 damage=12 为基准（几发死）设计
+# score: 击杀得分（由 CombatSystem.SetScoreTable 加载）
 
 enemies:
   - enemy_id: grunt_soldier
     name: 亡灵步兵
     health: 24            # 2 发步枪死，炮灰级
     speed: 2.0
+    score: 100
     ai_type: patrol       # 沿路线巡逻，发现玩家后短暂追击
     weapons:
       - rifle_default     # 低频单发，威胁小
@@ -24,6 +26,7 @@ enemies:
     name: 冲锋变异体
     health: 36            # 3 发死，但逼近速度快
     speed: 4.5            # 明显快于玩家步行，逼迫走位
+    score: 200
     ai_type: rusher       # 直线扑脸，近身自爆式压制
     weapons: []           # 不射击，纯近战冲撞
     drop_table:
@@ -36,6 +39,7 @@ enemies:
     name: 狙击哨兵
     health: 30
     speed: 0.0            # 固定点位，不动
+    score: 150
     ai_type: sniper       # 远距离瞄准，带激光预警线后开火
     weapons:
       - laser_beam        # 高伤单发，给玩家预警窗口
@@ -50,6 +54,7 @@ enemies:
     name: 追猎猎犬
     health: 18            # 1~2 发死，成群出现
     speed: 5.0            # 全场最快，用走位与跳跃甩开
+    score: 75
     ai_type: chase        # 锁定玩家持续追击
     weapons: []
     drop_table:
@@ -62,6 +67,7 @@ enemies:
     name: 精英重装兵
     health: 180           # 15 发步枪死，阶段感 Boss 前小头目
     speed: 1.8
+    score: 500
     ai_type: chase        # 主行为追击压制；引擎可叠加短距冲刺换位
     weapons:
       - heavy_machinegun  # 弹幕扫射制造走位压力

@@ -61,6 +61,16 @@ namespace Contra3D.Combat
             _scoreTable = new Dictionary<string, int>();
             _random = randomProvider ?? new DefaultRandomProvider();
             _enemyWeaponSystem = enemyWeaponSystem;
+            // 从 enemies.yaml 加载默认分数表（若文件不存在则使用空表， ComputeScore 回退至默认值）
+            try
+            {
+                var result = EnemyLoader.Load(EnemyLoader.EnemiesYamlPath);
+                SetScoreTable(result.ScoreTable);
+            }
+            catch
+            {
+                // 文件缺失或解析失败时保持空表，ComputeScore 将回退到 DefaultScore (50)
+            }
         }
 
         // ──────────────────────────────────────────────────────────────────────
@@ -268,7 +278,7 @@ namespace Contra3D.Combat
 
         private int ComputeScore(string enemyId)
         {
-            return _scoreTable.TryGetValue(enemyId, out var score) ? score : 50;
+            return _scoreTable.TryGetValue(enemyId, out var score) ? score : EnemyLoader.DefaultScore;
         }
 
         private void BuildTargetList()
