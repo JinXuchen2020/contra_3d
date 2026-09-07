@@ -5143,7 +5143,8 @@ tasks:
   id: ARCH-P2-027
   milestone: quality_block
   priority: P2
-  status: todo
+  result: WeaponLoader File.ReadAllLines marked LOAD-TIME ONLY.
+  status: completed
   title: '[P2] Arch: WeaponLoader.cs'
   type: refactor
 - _arch_key: P2:src/Combat/CombatSystem.cs
