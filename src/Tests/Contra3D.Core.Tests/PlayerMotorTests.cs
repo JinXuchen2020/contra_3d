@@ -10,7 +10,7 @@ namespace Contra3D.Core.Tests
     /// </summary>
     public class PlayerMotorTests
     {
-        private static readonly MotorConfig Cfg = MotorConfig.Default();
+        private static readonly MotorConfig Cfg = MotorConfig.Default;
         private const float Dt = 0.01f; // 100Hz 固定步长，确定性
 
         private static MotorState Run(MotorState s, MotorInput input, float dt = Dt)

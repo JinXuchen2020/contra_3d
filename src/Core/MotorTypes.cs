@@ -75,7 +75,7 @@ namespace Contra3D.Core
         /// </summary>
         public static MotorConfig LoadFromYaml(string yamlContent)
         {
-            var c = Default();  // 先获取默认值，避免递归
+            var c = Default;  // 先获取默认值，避免递归
             if (string.IsNullOrWhiteSpace(yamlContent)) return c;
 
             foreach (var line in yamlContent.Split('\n'))
