@@ -117,7 +117,7 @@ namespace Contra3D.Core
                 _ => WeaponType.Hitscan
             };
 
-            return new WeaponDefinition(id, name, type, damage, fireRate, magazine, reloadTime, spread);
+            return new WeaponDefinition(id, name, type, damage, fireRate, magazine, reloadTime, spread, minFireInterval, switchCooldown);
         }
     }
 }

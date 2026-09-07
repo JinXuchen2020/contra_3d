@@ -57,7 +57,7 @@ namespace Contra3D.Core
             if (!_weapons.TryGetValue(weaponId, out var def))
                 throw new ArgumentException($"Unknown weapon for enemy {enemyId}: {weaponId}");
 
-            float fireInterval = Math.Max(1.0f / fireRate, WeaponSystemConfig.MinFireIntervalS);
+            float fireInterval = Math.Max(1.0f / fireRate, def?.MinFireInterval ?? WeaponSystemConfig.MinFireIntervalS);
             _states[enemyId] = new EnemyWeaponState(enemyId, weaponId, fireInterval);
         }
 

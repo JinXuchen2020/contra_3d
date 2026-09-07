@@ -49,6 +49,12 @@ namespace Contra3D.Core
         /// <summary>散布角（度，半角）。必须 &gt;= 0。</summary>
         public float Spread { get; }
 
+        /// <summary>最小射击间隔（秒），防止射速过高。必须 &gt;= 0。</summary>
+        public float MinFireInterval { get; }
+
+        /// <summary>武器切换冷却时间（秒）。必须 &gt;= 0。</summary>
+        public float SwitchCooldown { get; }
+
         /// <summary>
         /// 创建武器定义并做 fail-fast 参数校验。
         /// </summary>
@@ -61,7 +67,9 @@ namespace Contra3D.Core
             float fireRate,
             int magazineSize,
             float reloadTime,
-            float spread)
+            float spread,
+            float minFireInterval = 0.08f,
+            float switchCooldown = 0.5f)
         {
             if (string.IsNullOrWhiteSpace(id))
             {
@@ -98,6 +106,16 @@ namespace Contra3D.Core
                 throw new ArgumentException($"Spread must be >= 0, got {spread}.", nameof(spread));
             }
 
+            if (minFireInterval < 0f)
+            {
+                throw new ArgumentException($"MinFireInterval must be >= 0, got {minFireInterval}.", nameof(minFireInterval));
+            }
+
+            if (switchCooldown < 0f)
+            {
+                throw new ArgumentException($"SwitchCooldown must be >= 0, got {switchCooldown}.", nameof(switchCooldown));
+            }
+
             Id = id;
             Name = name;
             Type = type;
@@ -106,6 +124,8 @@ namespace Contra3D.Core
             MagazineSize = magazineSize;
             ReloadTime = reloadTime;
             Spread = spread;
+            MinFireInterval = minFireInterval;
+            SwitchCooldown = switchCooldown;
         }
     }
 }

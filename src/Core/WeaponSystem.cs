@@ -18,6 +18,7 @@ namespace Contra3D.Core
         private bool _isReloading;
         private string _reloadingSlot;
         private float _switchCooldownTimer;
+        private readonly string _defaultWeaponId;
 
         public string PrimaryId => _primaryId;
         public string SecondaryId => _secondaryId;
@@ -25,10 +26,11 @@ namespace Contra3D.Core
         public int PrimaryAmmo => _ammo.TryGetValue(_primaryId, out var a) ? a : 0;
         public int SecondaryAmmo => _secondaryId != null && _ammo.TryGetValue(_secondaryId, out var sa) ? sa : 0;
 
-        public WeaponSystem(Dictionary<string, WeaponDefinition> weapons, string primaryId = null)
+        public WeaponSystem(Dictionary<string, WeaponDefinition> weapons, string primaryId = null, string defaultWeaponId = null)
         {
             _weapons = weapons ?? throw new ArgumentException("Weapons dict must not be null.");
             _primaryId = primaryId ?? WeaponSystemConfig.DefaultWeaponId;
+            _defaultWeaponId = defaultWeaponId ?? WeaponSystemConfig.DefaultWeaponId;
             if (!_weapons.TryGetValue(_primaryId, out var primaryDef))
                 throw new ArgumentException($"Unknown primary weapon: {_primaryId}");
 
@@ -109,7 +111,7 @@ namespace Contra3D.Core
                 _ammo[targetId] = ammo - 1;
 
             // Set cooldown (max of 1/fire_rate and min interval)
-            float fireInterval = Math.Max(1.0f / def.FireRate, WeaponSystemConfig.MinFireIntervalS);
+            float fireInterval = Math.Max(1.0f / def.FireRate, def.MinFireInterval);
             _cooldownTimer[targetId] = fireInterval;
 
             var evt = new FireEvent(targetId, def.Damage, def.Spread, def.Type == WeaponType.Hitscan, def.FireRate, def.MagazineSize);
@@ -128,6 +130,10 @@ namespace Contra3D.Core
             if (targetId == _primaryId)
                 return (WeaponActionResult.Success, new SwitchEvent(_primaryId, _primaryId));
 
+            // Get switch cooldown from target weapon definition
+            _weapons.TryGetValue(targetId, out var switchDef);
+            float switchCooldown = switchDef?.SwitchCooldown ?? WeaponSystemConfig.SwitchCooldownS;
+
             // Swap primary and secondary
             string prevPrimary = _primaryId;
             _primaryId = targetId;
@@ -139,7 +145,7 @@ namespace Contra3D.Core
             if (!_cooldownTimer.ContainsKey(_primaryId))
                 _cooldownTimer[_primaryId] = 0f;
 
-            _switchCooldownTimer = WeaponSystemConfig.SwitchCooldownS;
+            _switchCooldownTimer = switchCooldown;
             return (WeaponActionResult.Success, new SwitchEvent(prevPrimary, targetId));
         }
 
@@ -170,7 +176,7 @@ namespace Contra3D.Core
         public void OnDeathReset()
         {
             _secondaryId = null;
-            _primaryId = WeaponSystemConfig.DefaultWeaponId;
+            _primaryId = _defaultWeaponId;
             _ammo.Clear();
             _cooldownTimer.Clear();
             _reloadTimer.Clear();

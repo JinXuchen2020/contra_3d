@@ -52,6 +52,10 @@ namespace Contra3D.Core
                     current["reload_time"] = trimmed.Substring("reload_time:".Length).Trim();
                 else if (trimmed.StartsWith("spread:"))
                     current["spread"] = trimmed.Substring("spread:".Length).Trim();
+                else if (trimmed.StartsWith("min_fire_interval:"))
+                    current["min_fire_interval"] = trimmed.Substring("min_fire_interval:".Length).Trim();
+                else if (trimmed.StartsWith("switch_cooldown:"))
+                    current["switch_cooldown"] = trimmed.Substring("switch_cooldown:".Length).Trim();
             }
 
             // Last entry
@@ -75,6 +79,8 @@ namespace Contra3D.Core
             if (!int.TryParse(fields.TryGetValue("magazine_size", out var mag) ? mag : "30", out var magazine)) magazine = 30;
             if (!float.TryParse(fields.TryGetValue("reload_time", out var rt) ? rt : "0", out var reloadTime)) reloadTime = 0f;
             if (!float.TryParse(fields.TryGetValue("spread", out var sp) ? sp : "0", out var spread)) spread = 0f;
+            if (!float.TryParse(fields.TryGetValue("min_fire_interval", out var mfi) ? mfi : "0.08", out var minFireInterval)) minFireInterval = 0.08f;
+            if (!float.TryParse(fields.TryGetValue("switch_cooldown", out var sc) ? sc : "0.5", out var switchCooldown)) switchCooldown = 0.5f;
 
             WeaponType type = typeStr switch
             {
@@ -83,7 +89,7 @@ namespace Contra3D.Core
                 _ => WeaponType.Hitscan
             };
 
-            return new WeaponDefinition(id, name, type, damage, fireRate, magazine, reloadTime, spread);
+            return new WeaponDefinition(id, name, type, damage, fireRate, magazine, reloadTime, spread, minFireInterval, switchCooldown);
         }
     }
 }
