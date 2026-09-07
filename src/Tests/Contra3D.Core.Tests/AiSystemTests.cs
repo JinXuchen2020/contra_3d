@@ -856,5 +856,48 @@ namespace Contra3D.Core.Tests
             // Phase computed from recovered health would be 2, but one-way rule holds:
             Assert.Equal(3f, lowestPhaseReached);
         }
+
+        // ── EnemyDefinition Builder ───────────────────────────────────────────
+
+        [Fact]
+        public void EnemyDefinition_Builder_CreatesEquivalentInstance()
+        {
+            var built = EnemyDefinition.CreateBuilder("grunt", "Grunt")
+                .Health(24f)
+                .Speed(2f)
+                .AiType(AiType.Patrol)
+                .VisionRange(15f)
+                .AttackRange(5f)
+                .AlertThreshold(60f)
+                .ComprehensionThreshold(100f)
+                .Build();
+
+            var manual = new EnemyDefinition("grunt", "Grunt", 24f, 2f, AiType.Patrol,
+                visionRange: 15f, attackRange: 5f, alertThreshold: 60f, comprehensionThreshold: 100f);
+
+            Assert.Equal(built.Id, manual.Id);
+            Assert.Equal(built.Health, manual.Health);
+            Assert.Equal(built.Speed, manual.Speed);
+            Assert.Equal(built.AiType, manual.AiType);
+            Assert.Equal(built.VisionRange, manual.VisionRange);
+            Assert.Equal(built.AttackRange, manual.AttackRange);
+            Assert.Equal(built.AlertThreshold, manual.AlertThreshold);
+            Assert.Equal(built.ComprehensionThreshold, manual.ComprehensionThreshold);
+        }
+
+        [Fact]
+        public void EnemyDefinition_Builder_UsesDefaults()
+        {
+            var built = EnemyDefinition.CreateBuilder("test", "Test").Build();
+
+            Assert.Equal(24f, built.Health);
+            Assert.Equal(2f, built.Speed);
+            Assert.Equal(AiType.Patrol, built.AiType);
+            Assert.Equal(15f, built.VisionRange);
+            Assert.Equal(5f, built.AttackRange);
+            Assert.Equal(60f, built.AlertThreshold);
+            Assert.Equal(100f, built.ComprehensionThreshold);
+            Assert.Empty(built.Weapons);
+        }
     }
 }

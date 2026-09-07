@@ -148,6 +148,7 @@ namespace Contra3D.AI
         {
             float distToPlayer = Vector3.Distance(state.Position, _playerPosition);
             bool playerInSight = distToPlayer <= def.VisionRange;
+            bool playerInAttackRange = distToPlayer <= def.AttackRange;
 
             // Update vigilance
             if (playerInSight)
@@ -155,10 +156,10 @@ namespace Contra3D.AI
             else
                 state.Vigilance = Math.Max(0f, state.Vigilance - def.VigilanceDecayPerSecond * dt);
 
-            // Stagger recovery
+            // Stagger recovery: recover to previous state (prefer Combat over Idle for continuity)
             if (state.State == AiState.Staggered)
             {
-                state.State = state.StaggerPrevState;
+                state.State = state.StaggerPrevState != AiState.Idle ? state.StaggerPrevState : AiState.Combat;
                 state.StaggerPrevState = AiState.Idle;
             }
 
@@ -166,9 +167,9 @@ namespace Contra3D.AI
             switch (def.AiType)
             {
                 case AiType.Patrol: UpdatePatrol(state, def, dt, playerInSight, distToPlayer); break;
-                case AiType.Chase: UpdateChase(state, def, dt, playerInSight, distToPlayer); break;
-                case AiType.Sniper: UpdateSniper(state, def, dt, playerInSight, distToPlayer); break;
-                case AiType.Rusher: UpdateRusher(state, def, dt, playerInSight, distToPlayer); break;
+                case AiType.Chase: UpdateChase(state, def, dt, playerInSight, distToPlayer, playerInAttackRange); break;
+                case AiType.Sniper: UpdateSniper(state, def, dt, playerInSight, distToPlayer, playerInAttackRange); break;
+                case AiType.Rusher: UpdateRusher(state, def, dt, playerInSight, distToPlayer, playerInAttackRange); break;
             }
         }
 
@@ -203,7 +204,7 @@ namespace Contra3D.AI
             }
         }
 
-        private void UpdateChase(EnemyAIState state, EnemyDefinition def, float dt, bool playerInSight, float distToPlayer)
+        private void UpdateChase(EnemyAIState state, EnemyDefinition def, float dt, bool playerInSight, float distToPlayer, bool playerInAttackRange)
         {
             switch (state.State)
             {
@@ -218,7 +219,7 @@ namespace Contra3D.AI
                     }
                     Vector3 dir = Vector3.Normalize(_playerPosition - state.Position);
                     state.Position += dir * def.Speed * dt;
-                    if (distToPlayer <= def.AttackRange) state.State = AiState.Combat;
+                    if (playerInAttackRange) state.State = AiState.Combat;
                     break;
                 case AiState.Combat:
                     if (!playerInSight || distToPlayer > def.AttackRange * 1.5f)
@@ -227,7 +228,7 @@ namespace Contra3D.AI
             }
         }
 
-        private void UpdateSniper(EnemyAIState state, EnemyDefinition def, float dt, bool playerInSight, float distToPlayer)
+        private void UpdateSniper(EnemyAIState state, EnemyDefinition def, float dt, bool playerInSight, float distToPlayer, bool playerInAttackRange)
         {
             switch (state.State)
             {
@@ -241,7 +242,7 @@ namespace Contra3D.AI
                         state.State = AiState.Idle;
                         return;
                     }
-                    if (distToPlayer < def.AttackRange * 0.5f)
+                    if (playerInAttackRange)
                         state.State = AiState.Combat;
                     break;
                 case AiState.Combat:
@@ -253,7 +254,7 @@ namespace Contra3D.AI
             }
         }
 
-        private void UpdateRusher(EnemyAIState state, EnemyDefinition def, float dt, bool playerInSight, float distToPlayer)
+        private void UpdateRusher(EnemyAIState state, EnemyDefinition def, float dt, bool playerInSight, float distToPlayer, bool playerInAttackRange)
         {
             switch (state.State)
             {
@@ -268,7 +269,7 @@ namespace Contra3D.AI
                     }
                     Vector3 rushDir = Vector3.Normalize(_playerPosition - state.Position);
                     state.Position += rushDir * def.Speed * dt;
-                    if (distToPlayer <= def.AttackRange)
+                    if (playerInAttackRange)
                     {
                         // Explode/Strike
                         state.State = AiState.Dead;
