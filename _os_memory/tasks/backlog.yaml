@@ -4893,12 +4893,22 @@ tasks:
   title: '[P1] Arch: src/Core/CombatSystem.cs'
   type: refactor
 - _arch_key: P1:src/Core/ProjectileTypes.cs:226
+  acceptance_criteria:
+  - ProjectileSystem.Update() accepts target list via IReadOnlyList injection
+  - CheckCollision() performs sphere-sweep collision detection (prevents tunneling)
+  - HitEvents generated for projectile impacts
+  - ProjectileSystemConfig supports YAML loading via LoadFromYaml()
+  - All tests pass
+  completed_at: '2026-09-07T15:30:00+08:00'
   depends_on: []
+  description: CheckCollision is stub with comment "no target list injected". Projectiles never hit enemies in Core layer. Inject target registry or provide ICollisionTargetProvider. Also: ProjectileSystemConfig constants hardcoded (MaxProjectiles=200, etc.). Should be loadable from YAML.
   estimated_effort: M
   id: ARCH-P1-005
   milestone: quality_block
   priority: P1
-  status: todo
+  result: Implemented sphere-sweep CheckCollision with target injection via Update(targets); converted ProjectileSystemConfig from static class to configurable sealed class with LoadFromYaml(); fixed YAML parser to handle integer values for float fields; added 4 new tests covering collision detection, null-target safety, and YAML config loading. Tests: 280 PASS, 7 SKIP.
+  source: arch_scan_full
+  status: completed
   title: '[P1] Arch: src/Core/ProjectileTypes.cs'
   type: refactor
 - _arch_key: P1:src/Core/WeaponSystem.cs:112
