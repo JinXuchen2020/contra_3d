@@ -5116,7 +5116,8 @@ tasks:
   id: ARCH-P2-025
   milestone: quality_block
   priority: P2
-  status: todo
+  result: Homing verified: manual per-component lerp with normalization, zero Vector3.Lerp allocations.
+  status: completed
   title: '[P2] Arch: ProjectileTypes.cs'
   type: refactor
 - _arch_key: P2:src/Core/MapLoader.cs
