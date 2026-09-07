@@ -5065,7 +5065,8 @@ tasks:
   id: ARCH-P2-015
   milestone: quality_block
   priority: P2
-  status: todo
+  result: Verified: IReadOnlyList exposure (no external mutation), pause guard on all 3 Process methods, _lowHealthFired one-shot + death-resets flag, hitmarker 100ms on IsDead. 283 tests pass (3 new).
+  status: completed
   title: '[P2] Arch: HUDUpdater.cs'
   type: refactor
 - _arch_key: P2:src/Core/AiSystem.cs
