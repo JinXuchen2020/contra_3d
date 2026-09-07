@@ -5049,12 +5049,14 @@ tasks:
   title: '[P2] Arch: CombatSystem.cs'
   type: refactor
 - _arch_key: P2:src/Core/HealthDamageSystem.cs
+  completed_at: '2026-09-06T12:00:00+08:00'
   depends_on: []
   estimated_effort: S
   id: ARCH-P2-014
   milestone: quality_block
   priority: P2
-  status: todo
+  result: Verified per-frame clear design correct. Events accumulated via ProcessHit(), cleared at end of Update(). All 280 tests pass.
+  status: completed
   title: '[P2] Arch: HealthDamageSystem.cs'
   type: refactor
 - _arch_key: P2:src/Core/HUDUpdater.cs
