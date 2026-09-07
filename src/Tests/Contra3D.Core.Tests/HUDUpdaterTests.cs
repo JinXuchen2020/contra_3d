@@ -532,5 +532,68 @@ namespace Contra3D.Core.Tests
             Assert.Equal("spread_shot", stateD.CurrentWeaponId);
             Assert.Equal(500, stateD.Score);
         }
+
+        // ─── ARCH-P2-015: pause/resume low-health flag persistence ─────────────
+
+        [Fact]
+        public void ARCH_P2_015_LowHealthFlag_ResetsOnPauseResume()
+        {
+            // given: player in low health, flag set
+            var updater = new HUDUpdater(InitialState);
+            updater.Process(new HealthChangeEvent("player", 10f, 20f, false));
+            Assert.True(updater.State.LowHealth);
+            Assert.Single(updater.GeneratedLowHealthEvents);
+
+            // when: pause → Resume via Reset (both clear _lowHealthFired and event lists)
+            updater.Reset(updater.State.WithIsPaused(true));
+            Assert.True(updater.State.IsPaused);
+            Assert.Empty(updater.GeneratedLowHealthEvents); // Reset clears events
+
+            updater.Reset(updater.State.WithIsPaused(false));
+            Assert.False(updater.State.IsPaused);
+            Assert.True(updater.State.LowHealth); // health unchanged
+
+            // then: flag was cleared by Reset, so next low-health entry fires again
+            updater.Process(new HealthChangeEvent("player", 5f, 15f, false));
+            Assert.Single(updater.GeneratedLowHealthEvents); // fires once for this entry
+
+            // recovery does not re-fire
+            updater.Process(new HealthChangeEvent("player", 0f, 60f, false));
+            Assert.False(updater.State.LowHealth);
+            Assert.Single(updater.GeneratedLowHealthEvents); // still 1, no duplicate on recovery
+        }
+
+        // ─── ARCH-P2-015: hitmarker exact timing ───────────────────────────────
+
+        [Fact]
+        public void ARCH_P2_015_HitMarker_Exactly100msOnPlayerDeath()
+        {
+            var updater = new HUDUpdater(InitialState);
+            updater.Process(new HealthChangeEvent("player", 100f, 0f, true));
+            Assert.True(updater.State.HitMarker);
+            Assert.Equal(100f, updater.State.HitMarkerDuration);
+        }
+
+        // ─── ARCH-P2-015: post-death low-health re-trigger (intermediate death) ──
+
+        [Fact]
+        public void ARCH_P2_015_LowHealthReTriggersAfterIntermediateDeath()
+        {
+            // given: player damaged to low health, then loses a life (not game over)
+            var updater = new HUDUpdater(InitialState);
+            updater.Process(new HealthChangeEvent("player", 80f, 20f, false));
+            Assert.True(updater.State.LowHealth);
+            Assert.Single(updater.GeneratedLowHealthEvents);
+
+            updater.Process(new DeathEvent("player", "boss", "loot"));
+            Assert.Equal(InitialLives - 1, updater.State.Lives);
+            Assert.Equal(20f, updater.State.Health); // health preserved on non-final death
+            Assert.True(updater.State.LowHealth); // health still 20%, but _lowHealthFired cleared
+
+            // when: player takes damage again while still alive
+            updater.Process(new HealthChangeEvent("player", 10f, 10f, false));
+            Assert.True(updater.State.LowHealth);
+            Assert.Equal(2, updater.GeneratedLowHealthEvents.Count); // re-fires after death reset
+        }
     }
 }
