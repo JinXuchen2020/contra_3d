@@ -13,6 +13,7 @@ namespace Contra3D.Combat
     /// <summary>
     /// 战斗系统 — 纯逻辑协调层，零 UnityEngine 依赖。
     /// 接收玩家射击请求，路由到 WeaponSystem → ProjectileSystem/HitDetection → HealthDamageSystem。
+    /// 同时处理敌人射击请求，将敌方弹体/命中导向玩家。
     /// </summary>
     public class CombatSystem
     {
@@ -22,10 +23,17 @@ namespace Contra3D.Combat
         private readonly Dictionary<string, TargetEntry> _targetRegistry;
         private readonly List<(string TargetId, Vector3 Position, float Radius)> _targetListCache;
         private readonly IRandomProvider _random;
+        private readonly EnemyWeaponSystem _enemyWeaponSystem;
 
         // 计分与掉落
         public int Score { get; private set; }
         public int Kills { get; private set; }
+
+        /// <summary>敌人武器系统（可为 null，向后兼容）。</summary>
+        public EnemyWeaponSystem EnemyWeaponSystem => _enemyWeaponSystem;
+
+        /// <summary>Expose internal HealthDamageSystem for PlaytestSession use.</summary>
+        public HealthDamageSystem GetHealthDamageSystem() => _healthDamageSystem;
         public IReadOnlyList<DeathEvent> RecentDeaths => _recentDeaths;
 
         private readonly List<DeathEvent> _recentDeaths = new();
@@ -42,14 +50,17 @@ namespace Contra3D.Combat
             WeaponSystem weaponSystem,
             ProjectileSystem projectileSystem,
             HealthDamageSystem healthDamageSystem,
-            IRandomProvider randomProvider = null)
+            IRandomProvider randomProvider = null,
+            EnemyWeaponSystem enemyWeaponSystem = null)
         {
             _weaponSystem = weaponSystem ?? throw new ArgumentNullException(nameof(weaponSystem));
             _projectileSystem = projectileSystem ?? throw new ArgumentNullException(nameof(projectileSystem));
             _healthDamageSystem = healthDamageSystem ?? throw new ArgumentNullException(nameof(healthDamageSystem));
             _targetRegistry = new Dictionary<string, TargetEntry>();
             _targetListCache = new List<(string, Vector3, float)>();
+            _scoreTable = new Dictionary<string, int>();
             _random = randomProvider ?? new DefaultRandomProvider();
+            _enemyWeaponSystem = enemyWeaponSystem;
         }
 
         // ──────────────────────────────────────────────────────────────────────
@@ -172,7 +183,8 @@ namespace Contra3D.Combat
         /// <summary>推进弹体（由 GameLoop 每帧调用）。</summary>
         public void UpdateProjectiles(float dt)
         {
-            _projectileSystem.Update(dt);
+            BuildTargetList();
+            _projectileSystem.Update(dt, _targetListCache);
             ProcessHitEvents();
         }
 
@@ -200,14 +212,27 @@ namespace Contra3D.Combat
             return ids;
         }
 
+        /// <summary>
+        /// 获取所有已注册目标的完整信息（ID、位置、半径）。
+        /// 供 PlaytestSession 等测试框架使用，替代反射访问私有字段。
+        /// </summary>
+        public IReadOnlyList<(string Id, Vector3 Pos, float Radius)> GetTargets()
+        {
+            BuildTargetList();
+            return _targetListCache;
+        }
+
         // ──────────────────────────────────────────────────────────────────────
         // 内部实现
         // ──────────────────────────────────────────────────────────────────────
 
+        /// <summary>默认 hitscan 最大射程（米），可由外部覆盖。</summary>
+        public float HitscanMaxDistance { get; set; } = 200f;
+
         private HitEvent? HitscanShoot(Vector3 origin, Vector3 direction, float damage)
         {
             BuildTargetList();
-            var (result, hit) = _projectileSystem.HitscanDetect(origin, direction, _targetListCache, maxDistance: 200f);
+            var (result, hit) = _projectileSystem.HitscanDetect(origin, direction, _targetListCache, maxDistance: HitscanMaxDistance);
             if (!hit.HasValue) return null;
             ConsumeHit(hit.Value, "default");
             return hit;
@@ -228,14 +253,18 @@ namespace Contra3D.Combat
             }
         }
 
-        private readonly Dictionary<string, int> _scoreTable = new()
+        private readonly Dictionary<string, int> _scoreTable;
+
+        /// <summary>
+        /// 外部化分数表：允许通过构造函数注入自定义分数映射。
+        /// </summary>
+        public void SetScoreTable(Dictionary<string, int> scoreTable)
         {
-            ["grunt_soldier"] = 100,
-            ["charger_mutant"] = 200,
-            ["turret_sniper"] = 150,
-            ["hound_runner"] = 120,
-            ["elite_gunner"] = 500
-        };
+            _scoreTable.Clear();
+            if (scoreTable != null)
+                foreach (var kvp in scoreTable)
+                    _scoreTable[kvp.Key] = kvp.Value;
+        }
 
         private int ComputeScore(string enemyId)
         {

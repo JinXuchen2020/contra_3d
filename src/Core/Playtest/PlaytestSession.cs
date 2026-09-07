@@ -12,22 +12,36 @@ namespace Contra3D.Core.Playtest
     public class PlaytestSession
     {
         private const float FrameDt = 0.016f;
+        private const float DefaultEnemyHealth = 100f;
         private readonly HeadlessPlaytestAgent _agent;
         private readonly CombatSystem _combat;
+        private readonly HealthDamageSystem _healthDamage;
         private readonly int _maxFrames;
 
         private int _totalShots;
         private int _hitsOnTarget;
-        private int _kills;
+        private int _playerDeaths;
         private float _elapsed;
 
         public PlaytestSession(
             HeadlessPlaytestAgent agent,
             CombatSystem combat,
             int maxFrames = 9000)
+            : this(agent, combat, null, maxFrames)
+        {
+        }
+
+        public PlaytestSession(
+            HeadlessPlaytestAgent agent,
+            CombatSystem combat,
+            HealthDamageSystem healthDamage,
+            int maxFrames = 9000)
         {
             _agent = agent ?? throw new ArgumentNullException(nameof(agent));
             _combat = combat ?? throw new ArgumentNullException(nameof(combat));
+            // Use combat's internal HealthDamageSystem if no separate one provided
+            // This ensures RegisterEnemy + ConsumeHit use the SAME entity registry
+            _healthDamage = healthDamage ?? combat.GetHealthDamageSystem();
             _maxFrames = maxFrames;
         }
 
@@ -39,7 +53,7 @@ namespace Contra3D.Core.Playtest
         {
             _totalShots = 0;
             _hitsOnTarget = 0;
-            _kills = 0;
+            _playerDeaths = 0;
             _elapsed = 0f;
 
             for (int frame = 0; frame < _maxFrames; frame++)
@@ -48,6 +62,12 @@ namespace Contra3D.Core.Playtest
                 var (moveDir, wantsFire, aimDir) = _agent.Update(aliveTargets);
 
                 _agent.AdvancePosition(moveDir, HeadlessPlaytestAgent.ForwardSpeed, FrameDt);
+
+                // Advance combat timers (weapon cooldowns, etc.)
+                _combat.Update(FrameDt);
+
+                // Advance projectiles and process collision hits
+                _combat.UpdateProjectiles(FrameDt);
 
                 // Fire at configured rate
                 if (wantsFire && aliveTargets.Count > 0)
@@ -64,7 +84,13 @@ namespace Contra3D.Core.Playtest
                 if (_elapsed >= 120f) break; // cap at 2 minutes
             }
 
-            return new PlaytestMetrics(_totalShots, _hitsOnTarget, _kills, 0, _elapsed);
+            // Count player deaths from health damage events where killer is not "player"
+            foreach (var death in _healthDamage.Deaths)
+            {
+                if (death.KillerId != "player")
+                    _playerDeaths++;
+            }
+            return new PlaytestMetrics(_totalShots, _hitsOnTarget, _combat.Kills, _playerDeaths, _elapsed);
         }
 
         /// <summary>
@@ -74,33 +100,13 @@ namespace Contra3D.Core.Playtest
         public string RegisterEnemy(string entityId, Vector3 position, float radius = 1.5f)
         {
             _combat.RegisterTarget(entityId, position, radius);
+            _healthDamage.RegisterEntity(entityId, DefaultEnemyHealth);
             return entityId;
         }
 
-        private List<(string Id, Vector3 Pos, float Radius)> GetAliveTargets()
+        private IReadOnlyList<(string Id, Vector3 Pos, float Radius)> GetAliveTargets()
         {
-            // CombatSystem exposes no public target list API;
-            // we iterate via the internal target registry using the field name.
-            // TargetEntry is a private struct in CombatSystem, so we read raw entries.
-            var field = typeof(CombatSystem).GetField("_targetRegistry",
-                System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-            if (field == null) return new List<(string, Vector3, float)>();
-
-            var registry = (System.Collections.Generic.Dictionary<string, object>)field.GetValue(_combat);
-            if (registry == null) return new List<(string, Vector3, float)>();
-
-            var result = new List<(string, Vector3, float)>();
-            foreach (var kvp in registry)
-            {
-                var entry = kvp.Value;
-                var posProp = entry.GetType().GetProperty("Position");
-                var radiusProp = entry.GetType().GetProperty("Radius");
-                if (posProp == null || radiusProp == null) continue;
-                var pos = (Vector3)posProp.GetValue(entry);
-                var radius = (float)radiusProp.GetValue(entry);
-                result.Add((kvp.Key, pos, radius));
-            }
-            return result;
+            return _combat.GetTargets();
         }
     }
 }

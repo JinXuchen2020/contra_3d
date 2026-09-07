@@ -4855,12 +4855,14 @@ tasks:
   title: 'BDD 场景: ui_hud / HUDState 不可变性保证'
   type: bdd_scenario
 - _arch_key: P1:src/Core/Playtest/PlaytestSession.cs:85
+  completed_at: '2026-09-06T10:00:00+08:00'
   depends_on: []
   estimated_effort: M
   id: ARCH-P1-001
   milestone: quality_block
   priority: P1
-  status: todo
+  result: CombatSystem.GetTargets() already exposes IReadOnlyList<(string Id, Vector3 Pos, float Radius)>; PlaytestSession.GetAliveTargets() calls it directly with zero reflection. Tests verified: 276 PASS, 7 SKIP, 283 TOTAL.
+  status: completed
   title: '[P1] Arch: src/Core/Playtest/PlaytestSession.cs'
   type: refactor
 - _arch_key: P1:src/AI/AISystem.cs:3
