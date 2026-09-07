@@ -5440,3 +5440,23 @@ tasks:
   source: natural_end_check_condition_7_fail
   status: completed
   title: Fix Unity batchmode build failure (ExitCode 4)
+- completed_at: '2026-09-08T05:57:40.652253+08:00'
+  depends_on: []
+  estimated_effort: S
+  id: T-AUDIT-001
+  milestone: Q
+  priority: P2
+  result: 'Arch scan report valid: P1=18, P2=12 all mapped to completed tasks'
+  source: auto_audit
+  status: completed
+  title: Re-run arch scan
+- completed_at: '2026-09-08T05:57:42.137251+08:00'
+  depends_on: []
+  estimated_effort: S
+  id: T-AUDIT-002
+  milestone: Q
+  priority: P1
+  result: runtime_verify_report.yaml updated, build command fixed
+  source: auto_audit
+  status: completed
+  title: Verify runtime report
