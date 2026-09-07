@@ -384,7 +384,7 @@ namespace Contra3D.Core
                         state.State = AiState.Idle;
                         break;
                     }
-                    if (distToPlayer < def.AttackRange * 0.5f)
+                    if (playerInAttackRange)
                         state.State = AiState.Combat; // Reposition
                     // Aim logic: wait for clear shot
                     break;
