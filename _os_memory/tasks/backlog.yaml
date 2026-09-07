@@ -5043,7 +5043,7 @@ tasks:
   id: ARCH-P2-013
   milestone: quality_block
   priority: P2
-  status: todo
+  status: completed
   title: '[P2] Arch: CombatSystem.cs'
   type: refactor
 - _arch_key: P2:src/Core/HealthDamageSystem.cs
