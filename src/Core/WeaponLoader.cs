@@ -34,7 +34,7 @@ namespace Contra3D.Core
                 throw new FileNotFoundException($"Weapons YAML not found: {path}");
 
             var weapons = new Dictionary<string, WeaponDefinition>();
-            // LOAD-TIME ONLY: File.ReadAllLines + per-line allocations below; never in hot paths.
+            // LOAD-TIME ONLY - not in hot path
             string[] lines = File.ReadAllLines(path);
             var current = new Dictionary<string, string>();
             string firstWeaponId = null;
