@@ -78,6 +78,7 @@ namespace Contra3D.Core
         private static List<ParsedMap> ParseMaps(string yamlContent)
         {
             var result = new List<ParsedMap>();
+            // LOAD-TIME ONLY - not in hot path
             string[] lines = yamlContent.Split('\n');
 
             bool inMaps = false;

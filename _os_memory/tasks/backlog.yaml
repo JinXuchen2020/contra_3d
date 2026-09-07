@@ -5134,9 +5134,11 @@ tasks:
   id: ARCH-P2-026
   milestone: quality_block
   priority: P2
-  status: todo
+  status: completed
   title: '[P2] Arch: MapLoader.cs'
   type: refactor
+  completed_at: '2026-09-07T17:45:00+08:00'
+  result: MapLoader string.Split marked LOAD-TIME ONLY.
 - _arch_key: P2:src/Core/WeaponLoader.cs
   depends_on: []
   estimated_effort: S
