@@ -5091,7 +5091,8 @@ tasks:
   id: ARCH-P2-022
   milestone: quality_block
   priority: P2
-  status: todo
+  result: GetCommand checks alive status and attack range consistently in Core and AI layers.
+  status: completed
   title: '[P2] Arch: AISystem.cs'
   type: refactor
 - _arch_key: P2:src/Combat/CombatSystem.cs
