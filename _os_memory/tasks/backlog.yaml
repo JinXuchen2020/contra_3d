@@ -5116,12 +5116,14 @@ tasks:
   title: '[P2] Arch: AiSystem.cs'
   type: refactor
 - _arch_key: P2:src/Core/ProjectileTypes.cs
+  completed_at: '2026-09-07T17:40:00+08:00'
   depends_on: []
   estimated_effort: S
   id: ARCH-P2-025
   milestone: quality_block
   priority: P2
-  status: todo
+  result: Homing uses manual per-component lerp with normalization, zero allocations.
+  status: completed
   title: '[P2] Arch: ProjectileTypes.cs'
   type: refactor
 - _arch_key: P2:src/Core/MapLoader.cs
