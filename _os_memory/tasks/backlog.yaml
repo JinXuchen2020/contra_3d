@@ -5156,6 +5156,8 @@ tasks:
   id: ARCH-P2-029
   milestone: quality_block
   priority: P2
-  status: todo
+  status: completed
+  completed_at: '2026-09-06T06:00:00+08:00'
+  result: Random provider made injectable via IRandomProvider interface for testability.
   title: '[P2] Arch: AiSystem.cs'
   type: refactor
