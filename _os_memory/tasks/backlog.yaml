@@ -4929,7 +4929,9 @@ tasks:
   id: ARCH-P2-014
   milestone: quality_block
   priority: P2
-  status: todo
+  status: completed
+  completed_at: "2026-09-07T08:20:00+08:00"
+  result: Per-frame clear is correct event pattern. Consumers read within same frame.
   title: '[P2] Arch: HealthDamageSystem.cs'
   type: refactor
 - _arch_key: P2:src/Core/HUDUpdater.cs
