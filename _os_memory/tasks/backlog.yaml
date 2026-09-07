@@ -5107,7 +5107,8 @@ tasks:
   id: ARCH-P2-024
   milestone: quality_block
   priority: P2
-  status: todo
+  result: Vigilance update verified: clamped 0-100, TimeSinceLastStimulus incremented correctly.
+  status: completed
   title: '[P2] Arch: AiSystem.cs'
   type: refactor
 - _arch_key: P2:src/Core/ProjectileTypes.cs
