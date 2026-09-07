@@ -1,4 +1,4 @@
-﻿tasks:
+tasks:
 - depends_on: []
   estimated_effort: L
   id: T-SYS-001
@@ -4938,7 +4938,8 @@
   id: ARCH-P2-015
   milestone: quality_block
   priority: P2
-  status: todo
+  result: IReadOnlyList exposure, pause guard, one-shot triggering all verified correct.
+  status: completed
   title: '[P2] Arch: HUDUpdater.cs'
   type: refactor
 - _arch_key: P2:src/Core/AiSystem.cs
@@ -4947,7 +4948,8 @@
   id: ARCH-P2-021
   milestone: quality_block
   priority: P2
-  status: todo
+  result: 'Sniper handler uses playerInAttackRange param consistently with AI layer'
+  status: completed
   title: '[P2] Arch: AiSystem.cs'
   type: refactor
 - _arch_key: P2:src/AI/AISystem.cs
