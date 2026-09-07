@@ -4871,7 +4871,8 @@ tasks:
   id: ARCH-P1-002
   milestone: quality_block
   priority: P1
-  status: todo
+  status: completed
+  result: "Verified no duplicate type definitions in src/AI/AISystem.cs; all five types (AiType, AiState, EnemyDefinition, EnemyAIState, AICommand) are defined solely in Contra3D.Core and referenced via using Contra3D.Core. Committed enrichment of Core AiSystem with Builder pattern, Weapons support, EnemyFireRequest, and fire-cooldown APIs; aligned AISystem logic (playerInAttackRange, stagger-recovery fix). Tests: 280 PASS, 7 SKIP."
   title: '[P1] Arch: src/AI/AISystem.cs'
   type: refactor
 - _arch_key: P2:src/Runtime/PlayerController.cs:26
@@ -4928,7 +4929,7 @@ tasks:
   id: ARCH-P1-007
   milestone: quality_block
   priority: P1
-  status: todo
+  status: completed
   title: '[P1] Arch: src/AI/AISystem.cs'
   type: refactor
 - _arch_key: P1:src/Core/AiSystem.cs:244
