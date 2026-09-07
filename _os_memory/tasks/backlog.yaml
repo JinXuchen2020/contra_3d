@@ -5138,15 +5138,16 @@ tasks:
   title: '[P2] Arch: WeaponLoader.cs'
   type: refactor
 - _arch_key: P2:src/Combat/CombatSystem.cs
+  completed_at: '2026-09-07T16:30:00+08:00'
   depends_on: []
   estimated_effort: S
   id: ARCH-P2-028
   milestone: quality_block
   priority: P2
+  result: 'ConsumeHit verified: processes death events, updates Score/Kills, unregisters targets. No architectural debt.'
   status: completed
   title: '[P2] Arch: CombatSystem.cs'
   type: refactor
-  result: ConsumeHit (line 251-264) verified — correctly processes death events (killerId="player" hardcoded), updates Score via ComputeScore(entityId) with default fallback, increments Kills, tracks recent deaths in bounded _recentDeaths list, and unregisters dead target. No architectural debt: private method, proper event flow through HealthDamageSystem, no temporal coupling, score table loaded from enemies.yaml with graceful fallback. All 290 tests pass (283 pass, 7 skip).
 - _arch_key: P2:src/Core/AiSystem.cs
   depends_on: []
   estimated_effort: S
