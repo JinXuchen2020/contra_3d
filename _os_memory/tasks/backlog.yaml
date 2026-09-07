@@ -5150,12 +5150,14 @@ tasks:
   title: '[P2] Arch: WeaponLoader.cs'
   type: refactor
 - _arch_key: P2:src/Combat/CombatSystem.cs
+  completed_at: '2026-09-07T17:55:00+08:00'
   depends_on: []
   estimated_effort: S
   id: ARCH-P2-028
   milestone: quality_block
   priority: P2
-  status: todo
+  result: ConsumeHit correctly processes death events and updates score/kills.
+  status: completed
   title: '[P2] Arch: CombatSystem.cs'
   type: refactor
 - _arch_key: P2:src/Core/AiSystem.cs
