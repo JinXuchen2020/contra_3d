@@ -31,8 +31,7 @@ autonomy:
 commands:
   asset_generation: ''
   asset_placeholder: ''
-  build: C:/Program Files/Unity/Hub/Editor/6000.6.0f1/Editor/Unity.exe -batchmode
-    -quit -projectPath . -executeMethod BuildScript.BuildWindows -logFile -
+  build: 'C:/Program Files/Unity/Hub/Editor/6000.6.0f1/Editor/Unity.exe -batchmode -quit -projectPath . -executeMethod BuildScript.BuildWindows -logFile -'
   check: dotnet build src/contra_3d.sln -v q --nologo
   check_hardcoded: python adapter/tools/check_hardcoded.py --src-dir src/
   check_warnings: python adapter/tools/check_warnings.py --build-command 'dotnet build

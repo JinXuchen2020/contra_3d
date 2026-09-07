@@ -52,3 +52,22 @@ assets_external/
 # Build logs
 build.log
 *.log
+
+# Unity src/ 构建产物
+src/Core/bin/
+src/Core/obj/
+src/Runtime/bin/
+src/Runtime/obj/
+src/Tests/bin/
+src/Tests/obj/
+
+# Results 目录（构建/测试结果）
+Results/
+
+# Assembly-CSharp 是 Unity 自动生成的，非手写
+Assembly-CSharp.csproj
+Assembly-CSharp-Editor.csproj
+contra_3d.sln
+
+# UserSettings（本地编辑器偏好）
+UserSettings/
