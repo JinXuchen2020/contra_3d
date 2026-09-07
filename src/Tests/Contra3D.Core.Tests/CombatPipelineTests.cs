@@ -176,7 +176,7 @@ namespace Contra3D.Core.Tests
             // Given: projectile speed >= 30 m/s, sweep uses 1.0–1.5× single-frame displacement
             const float speed = 100f;        // m/s
             const float dt = 1f / 60f;       // ≈ 0.01667 s per frame
-            const float collisionToleranceMultiplier = ProjectileSystemConfig.CollisionToleranceMultiplier; // 1.5f
+            float collisionToleranceMultiplier = ProjectileSystemConfig.Default.CollisionToleranceMultiplier; // 1.5f
 
             // Single-frame displacement
             float displacement = speed * dt;
@@ -260,13 +260,13 @@ namespace Contra3D.Core.Tests
             var spawnOrigin = new Vector3(0, 0, 0);
             var direction = Vector3.UnitZ;
 
-            for (int i = 0; i < ProjectileSystemConfig.MaxProjectiles; i++)
+            for (int i = 0; i < ProjectileSystemConfig.Default.MaxProjectiles; i++)
             {
                 var (result, _) = projSys.SpawnProjectile(spawnOrigin, direction);
                 Assert.Equal(ProjectileActionResult.Success, result);
             }
 
-            Assert.Equal(ProjectileSystemConfig.MaxProjectiles, projSys.ActiveCount);
+            Assert.Equal(ProjectileSystemConfig.Default.MaxProjectiles, projSys.ActiveCount);
 
             // One more spawn should be rejected (pool exhausted)
             var (resultNext, _) = projSys.SpawnProjectile(spawnOrigin, direction);

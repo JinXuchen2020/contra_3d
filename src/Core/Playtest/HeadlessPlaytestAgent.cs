@@ -33,7 +33,7 @@ namespace Contra3D.Core.Playtest
         /// Advance the agent one frame. Chooses a new move direction periodically
         /// and fires toward the nearest valid target if cooldown is ready.
         /// </summary>
-        public (Vector3 moveDir, bool wantsFire, Vector3 aimDir) Update(List<(string Id, Vector3 Pos, float Radius)> aliveTargets)
+        public (Vector3 moveDir, bool wantsFire, Vector3 aimDir) Update(IReadOnlyList<(string Id, Vector3 Pos, float Radius)> aliveTargets)
         {
             _moveTimer += FrameDt;
             _fireTimer += FrameDt;
@@ -62,7 +62,7 @@ namespace Contra3D.Core.Playtest
             return (_currentMoveDir, wantsFire, aimDir);
         }
 
-        private (string, Vector3, float)? FindNearestTarget(List<(string Id, Vector3 Pos, float Radius)> targets)
+        private (string, Vector3, float)? FindNearestTarget(IReadOnlyList<(string Id, Vector3 Pos, float Radius)> targets)
         {
             (string, Vector3, float) closest = default;
             float closestDist = float.MaxValue;

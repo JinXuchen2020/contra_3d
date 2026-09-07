@@ -18,11 +18,14 @@ namespace Contra3D.Core
 
         public HUDState State => _state;
 
-        /// <summary>订阅到的 ExtraLifeEvent 列表（Process 产生，供外部消费）。</summary>
-        public List<ExtraLifeEvent> GeneratedExtraLifeEvents { get; }
+        private readonly List<ExtraLifeEvent> _extraLifeEvents = new();
+        private readonly List<LowHealthEvent> _lowHealthEvents = new();
 
-        /// <summary>订阅到的 LowHealthEvent 列表（Process 产生，供外部消费）。</summary>
-        public List<LowHealthEvent> GeneratedLowHealthEvents { get; }
+        /// <summary>订阅到的 ExtraLifeEvent 列表（Process 产生，供外部消费，只读）。</summary>
+        public IReadOnlyList<ExtraLifeEvent> GeneratedExtraLifeEvents => _extraLifeEvents;
+
+        /// <summary>订阅到的 LowHealthEvent 列表（Process 产生，供外部消费，只读）。</summary>
+        public IReadOnlyList<LowHealthEvent> GeneratedLowHealthEvents => _lowHealthEvents;
 
         public HUDUpdater(HUDState initialState)
         {
@@ -31,8 +34,6 @@ namespace Contra3D.Core
             _state = initialState;
             _nextThresholdIndex = 0;
             _lowHealthFired = false;
-            GeneratedExtraLifeEvents = new List<ExtraLifeEvent>();
-            GeneratedLowHealthEvents = new List<LowHealthEvent>();
         }
 
         /// <summary>处理生命值变化事件。</summary>
@@ -46,7 +47,7 @@ namespace Contra3D.Core
             if (newState.LowHealth && !_lowHealthFired)
             {
                 _lowHealthFired = true;
-                GeneratedLowHealthEvents.Add(new LowHealthEvent(newState.Health / newState.MaxHealth));
+                _lowHealthEvents.Add(new LowHealthEvent(newState.Health / newState.MaxHealth));
             }
             else if (!newState.LowHealth)
             {
@@ -94,7 +95,7 @@ namespace Contra3D.Core
                 _nextThresholdIndex++;
                 int bonusLife = _state.Lives + 1;
                 _state = _state.WithLives(bonusLife);
-                GeneratedExtraLifeEvents.Add(new ExtraLifeEvent(bonusLife));
+                _extraLifeEvents.Add(new ExtraLifeEvent(bonusLife));
             }
 
             // 得分变化不影响低血量判断
@@ -116,8 +117,8 @@ namespace Contra3D.Core
             _state = initialState;
             _nextThresholdIndex = 0;
             _lowHealthFired = false;
-            GeneratedExtraLifeEvents.Clear();
-            GeneratedLowHealthEvents.Clear();
+            _extraLifeEvents.Clear();
+            _lowHealthEvents.Clear();
         }
     }
 }

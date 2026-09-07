@@ -54,20 +54,58 @@ namespace Contra3D.Core
         public float LookSensitivity;
 
         /// <summary>默认配置（player_movement.md 量化参数表基准值）。</summary>
-        public static MotorConfig Default()
+        public static readonly MotorConfig Default = new MotorConfig
         {
-            MotorConfig c = new MotorConfig();
-            c.MaxSpeed = 7f;
-            c.GroundAccel = 40f;
-            c.GroundDecel = 60f;
-            c.AirControlMult = 0.6f;
-            c.JumpHeight = 2.2f;
-            c.Airtime = 0.85f;
-            c.FallGravityMult = 1.5f;
-            c.VariableJumpRetain = 0.5f;
-            c.CoyoteTime = 0.120f;
-            c.InputBuffer = 0.150f;
-            c.LookSensitivity = 0.002f;
+            MaxSpeed = 7f,
+            GroundAccel = 40f,
+            GroundDecel = 60f,
+            AirControlMult = 0.6f,
+            JumpHeight = 2.2f,
+            Airtime = 0.85f,
+            FallGravityMult = 1.5f,
+            VariableJumpRetain = 0.5f,
+            CoyoteTime = 0.120f,
+            InputBuffer = 0.150f,
+            LookSensitivity = 0.002f,
+        };
+
+        /// <summary>
+        /// 从 YAML 字符串加载配置。null 或空字符串时回退到内置默认值。
+        /// 格式：每行 "key: value"，支持的 key 见属性注释。
+        /// </summary>
+        public static MotorConfig LoadFromYaml(string yamlContent)
+        {
+            var c = Default();  // 先获取默认值，避免递归
+            if (string.IsNullOrWhiteSpace(yamlContent)) return c;
+
+            foreach (var line in yamlContent.Split('\n'))
+            {
+                var trimmed = line.Trim();
+                if (string.IsNullOrEmpty(trimmed) || trimmed.StartsWith("#")) continue;
+
+                var parts = trimmed.Split(':', 2);
+                if (parts.Length != 2) continue;
+
+                var key = parts[0].Trim();
+                var val = parts[1].Trim();
+                if (float.TryParse(val, out float fv))
+                {
+                    switch (key)
+                    {
+                        case "max_speed": c.MaxSpeed = fv; break;
+                        case "ground_accel": c.GroundAccel = fv; break;
+                        case "ground_decel": c.GroundDecel = fv; break;
+                        case "air_control_mult": c.AirControlMult = fv; break;
+                        case "jump_height": c.JumpHeight = fv; break;
+                        case "airtime": c.Airtime = fv; break;
+                        case "fall_gravity_mult": c.FallGravityMult = fv; break;
+                        case "variable_jump_retain": c.VariableJumpRetain = fv; break;
+                        case "coyote_time": c.CoyoteTime = fv; break;
+                        case "input_buffer": c.InputBuffer = fv; break;
+                        case "look_sensitivity": c.LookSensitivity = fv; break;
+                    }
+                }
+            }
             return c;
         }
 

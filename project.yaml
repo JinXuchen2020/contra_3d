@@ -1,211 +1,180 @@
-# Project: Contra 3D (魂斗罗3d) — 接入 Universal_AI_OS
-# Schema v2: 匹配 os_launcher.md Phase 0.1 要求的格式
-# 由 OS Phase 1 自动生成（模板: shooter_contra / 类型: shooter / 语言: csharp / 框架: unity）
-
-# ============================================================
-# 必须字段
-# ============================================================
-
-project:
-  name: "contra_3d"
-  type: "shooter"
-  template: "shooter_contra"
-  language: "csharp"
-
-framework:
-  name: "unity"
-  version: "2022.3.62f3c1"          # 目标版本（Unity 6 LTS）；Unity Hub 安装后以 ProjectSettings/ProjectVersion.txt 实际值为准
-  version_lock: "strict"
-  lock_file: "ProjectSettings/ProjectVersion.txt"   # Unity 项目版本锁定文件（Unity 创建工程后生成）
-  build_file: "src/contra_3d.sln"          # Unity 生成的 C# 工程文件（Unity 创建工程后生成）
-
-commands:
-  # 构建命令（Unity 适配；★ Unity Editor 已安装: C:/Program Files/Unity/Hub/Editor/6000.6.0f1/Editor/Unity.exe）
-  check: "dotnet build src/contra_3d.sln -v q --nologo"   # 需 Unity 先生成 sln/csproj；此前纯逻辑层可用 dotnet build 单独 csproj
-  build: "C:/Program Files/Unity/Hub/Editor/6000.6.0f1/Editor/Unity.exe -batchmode -quit -projectPath . -executeMethod BuildScript.BuildWindows -logFile -"
-  release: "C:/Program Files/Unity/Hub/Editor/6000.6.0f1/Editor/Unity.exe -batchmode -quit -projectPath . -executeMethod BuildScript.BuildWindowsRelease -logFile -"
-  demo: ""
-  wasm: ""
-  test: "C:/Program Files/Unity/Hub/Editor/6000.6.0f1/Editor/Unity.exe -batchmode -projectPath . -runTests -testPlatform EditMode -testResults Results/editmode.xml -logFile -"
-  run: "C:/Program Files/Unity/Hub/Editor/6000.6.0f1/Editor/Unity.exe -projectPath ."
-  # 质量与指标采集
-  metrics: "python adapter/tools/collect_metrics.py --dashboard --project-root F:/AI_Projects/projects/contra_3d"
-  asset_generation: ""
-  asset_placeholder: ""
-  visual_verify: ""
-  check_warnings: "python adapter/tools/check_warnings.py --build-command 'dotnet build src/contra_3d.sln -v q' --module-priority P0"
-  check_hardcoded: "python adapter/tools/check_hardcoded.py --src-dir src/"
-
-paths:
-   # ★★★ OS 路径不写入 project.yaml——由 os_launcher Phase 2.1 从 pwd 自动探测 → session.json ★★★
-   # ★★★ project_root 由 template_registry.yaml 推导: OS_path/../projects/{name} ★★★
-   project_root: "E:/Freelancer/AI_Projects/projects/contra_3d"
-
-game:
-  core_systems:                       # 游戏核心系统 (从 shooter scaffold 自动填充)
-    - {name: "rendering", status: "not_started"}
-    - {name: "player_movement", status: "not_started"}
-    - {name: "weapon_system", status: "not_started"}
-    - {name: "projectile_system", status: "not_started"}
-    - {name: "enemy_ai", status: "not_started"}
-    - {name: "health_damage", status: "not_started"}
-    - {name: "map_loading", status: "not_started"}
-    - {name: "ui_hud", status: "not_started"}
-
-# ============================================================
-# Architecture Review — 结构质量门控阈值
-# ============================================================
 architecture_review:
   enabled: true
-  max_file_lines: 500
-  forbid_glob_reexport: true
   forbid_allow_dead_code_without_future: true
-  max_plugins_per_file: 5
-  forbid_empty_plugin_impl: true
-  max_pub_types_per_non_api_module: 5
-  require_prelude_module: false      # C#/Unity 无 Rust prelude 概念
   forbid_back_edge_in_dependency: true
-
+  forbid_empty_plugin_impl: true
+  forbid_glob_reexport: true
+  max_file_lines: 500
+  max_plugins_per_file: 5
+  max_pub_types_per_non_api_module: 5
+  require_prelude_module: false
+asset_config:
+  asset_dirs:
+  - assets/models/
+  - assets/textures/
+  - assets/audio/music/
+  - assets/audio/sfx/
+  - assets/animations/
+  asset_ext: glb
+  battle_state_query: game_snapshot.combat.is_battling
+  collider_half: 0.3
+  collision_bound_x: 25.0
+  format: glb
+  simulation_scripts_dir: _os_state/simulation_scripts
+autonomy:
+  creative_expansion: false
+  max_creative_cycles: 20
+  max_micro_loops: 20
+  max_rounds: null
+  stop_on_blocked: true
+  stop_on_idle: true
+commands:
+  asset_generation: ''
+  asset_placeholder: ''
+  build: C:/Program Files/Unity/Hub/Editor/6000.6.0f1/Editor/Unity.exe -batchmode
+    -quit -projectPath . -executeMethod BuildScript.BuildWindows -logFile -
+  check: dotnet build src/contra_3d.sln -v q --nologo
+  check_hardcoded: python adapter/tools/check_hardcoded.py --src-dir src/
+  check_warnings: python adapter/tools/check_warnings.py --build-command 'dotnet build
+    src/contra_3d.sln -v q' --module-priority P0
+  demo: ''
+  metrics: python adapter/tools/collect_metrics.py --dashboard --project-root F:/AI_Projects/projects/contra_3d
+  release: C:/Program Files/Unity/Hub/Editor/6000.6.0f1/Editor/Unity.exe -batchmode
+    -quit -projectPath . -executeMethod BuildScript.BuildWindowsRelease -logFile -
+  run: C:/Program Files/Unity/Hub/Editor/6000.6.0f1/Editor/Unity.exe -projectPath
+    .
+  test: C:/Program Files/Unity/Hub/Editor/6000.6.0f1/Editor/Unity.exe -batchmode -projectPath
+    . -runTests -testPlatform EditMode -testResults Results/editmode.xml -logFile
+    -
+  visual_verify: ''
+  wasm: ''
+data_flow: []
+directories:
+  assets: assets/
+  data: data/
+  source: src/
+  tests: src/Tests/
+ecs_registry:
+  components: []
+  events: []
+  states: []
+  systems: []
+env: claude
+external_loop:
+  run_cmd: python ..\..\Universal-AI-OS\src\adapter\env\dsh_loop.py
+framework:
+  build_file: src/contra_3d.sln
+  lock_file: ProjectSettings/ProjectVersion.txt
+  name: unity
+  version: 2022.3.62f3c1
+  version_lock: strict
+game:
+  core_systems:
+  - name: rendering
+    status: not_started
+  - name: player_movement
+    status: not_started
+  - name: weapon_system
+    status: not_started
+  - name: projectile_system
+    status: not_started
+  - name: enemy_ai
+    status: not_started
+  - name: health_damage
+    status: not_started
+  - name: map_loading
+    status: not_started
+  - name: ui_hud
+    status: not_started
+paths:
+  project_root: E:/Freelancer/AI_Projects/projects/contra_3d
+project:
+  language: csharp
+  name: contra_3d
+  template: shooter_contra
+  type: shooter
+qa:
+  enabled: true
+  enabled_categories:
+  - compilation
+  - style
+  - complexity
+  - data
+  - logic
+  - test
+  - documentation
+  - security
+  - maintainability
+  - performance
+  - architecture
+  - architecture_consistency
+  - internationalization
+  severity_threshold: P1
+  tool_configs:
+    complexity:
+      max_complexity: 15
+      max_file_size: 500
+    performance:
+      async_loading: true
+      benchmark_threshold: 2.0
+    test_coverage:
+      min_percentage: 80
 quality_gate:
-  dead_code_max: 0
-  event_closure_ratio_min: 1.0
-  test_count_min: 0
+  blocking_enabled: true
+  blocking_priorities:
+  - P0
   contract_coverage_min: 0.0
   cross_module_refs_valid_min: 1
+  dead_code_max: 0
+  event_closure_ratio_min: 1.0
   simulation_coverage_min: 0.0
-  blocking_enabled: true
-  blocking_priorities: ["P0"]
-
-# ============================================================
-# 验证协议声明（Shooter 适配的 expected_systems）
-# ============================================================
+  test_count_min: 0
+release:
+  artifacts:
+    windows:
+      output_pattern: contra_3d_{version}_windows.zip
+      source: Builds/Windows/contra_3d.exe
+release_platforms:
+- windows
+schema:
+  content_types: []
+  shooter_types:
+  - weapon
+  - enemy
+  - map
+  - pickup
+  - boss
+system_dependency_graph: {}
+templates:
+  base: shooter_contra
 validation_protocols:
-  max_draft_per_scan: 3
   bdd:
+    blocking_priority: P1
     enabled: true
-    feature: "os-autopilot"          # C#/Unity 适配层解释为条件编译符号 UNITY_INCLUDE_TESTS / OS_AUTOPILOT
-    blocking_priority: "P1"
+    expected_systems:
+    - combat
+    - weapon_system
+    - enemy_ai
+    - save_load
+    - ui_system
+    feature: os-autopilot
     min_e2e_per_system: 2
-    expected_systems:
-      - combat
-      - weapon_system
-      - enemy_ai
-      - save_load
-      - ui_system
+  max_draft_per_scan: 3
   playtest:
-    enabled: true
-    feature: "playtest-metrics"
-    win_rate_min: 0.5
-    fun_score_min: 0.6
     blocking: false
-    expected_systems:
-      - stage_traversal
-      - combat_balanced
-  runtime:
     enabled: true
-    timeout_seconds: 120
+    expected_systems:
+    - stage_traversal
+    - combat_balanced
+    feature: playtest-metrics
+    fun_score_min: 0.6
+    win_rate_min: 0.5
+  runtime:
     blocking: true
+    enabled: true
     thresholds:
       crash_count_max: 0
       error_count_warn: 10
       fps_min: 30
       memory_mb_max: 1024
-
-# 自治循环参数
-autonomy:
-  max_rounds: null
-  max_micro_loops: 20
-  stop_on_idle: true
-  stop_on_blocked: true
-  creative_expansion: false
-  max_creative_cycles: 20
-
-# 外部循环驱动器配置（留空 = 不自动启动 external_shell_loop）
-external_loop:
-  run_cmd: ""
-
-# ============================================================
-# QA Agent 15 维检查配置
-# ============================================================
-qa:
-  enabled: true
-  enabled_categories:
-    - compilation
-    - style
-    - complexity
-    - data
-    - logic
-    - test
-    - documentation
-    - security
-    - maintainability
-    - performance
-    - architecture
-    - architecture_consistency
-    - internationalization
-  severity_threshold: "P1"
-  tool_configs:
-    complexity:
-      max_complexity: 15
-      max_file_size: 500
-    test_coverage:
-      min_percentage: 80
-    performance:
-      benchmark_threshold: 2.0
-      async_loading: true
-
-# 发布平台清单
-release_platforms:
-  - windows
-
-# 发布产物配置
-release:
-  artifacts:
-    windows:
-      source: "Builds/Windows/contra_3d.exe"
-      output_pattern: "contra_3d_{version}_windows.zip"
-
-# 资产配置
-asset_config:
-  format: "glb"            # 3D 项目: glb
-  asset_ext: "glb"
-  asset_dirs: ["assets/models/", "assets/textures/", "assets/audio/music/", "assets/audio/sfx/", "assets/animations/"]
-  simulation_scripts_dir: "_os_state/simulation_scripts"
-  collision_bound_x: 25.0
-  collider_half: 0.3
-  battle_state_query: "game_snapshot.combat.is_battling"
-
-# ============================================================
-# ECS / 依赖 / 数据流 / schema（Boot 后由 Architect Agent 填充；此处为合法空结构，保证工具可读）
-# ============================================================
-ecs_registry:
-  components: []
-  systems: []
-  events: []
-  states: []
-
-system_dependency_graph: {}
-
-data_flow: []
-
-schema:
-  content_types: []
-  shooter_types:
-    - weapon
-    - enemy
-    - map
-    - pickup
-    - boss
-
-templates:
-  base: "shooter_contra"
-
-directories:
-  source: "src/"
-  data: "data/"
-  assets: "assets/"
-  tests: "src/Tests/"
-
-
-
-
+    timeout_seconds: 120

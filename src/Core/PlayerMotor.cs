@@ -117,10 +117,7 @@ namespace Contra3D.Core
             if (s.Pitch < -PitchLimitRad) s.Pitch = -PitchLimitRad;
 
             // --- 9. 位置积分（y 由外部碰撞修正，Core 保持运动学一致） ---
-            s.Position = new Vector3(
-                s.Position.X + s.Velocity.X * dt,
-                s.Position.Y + s.Velocity.Y * dt,
-                s.Position.Z + s.Velocity.Z * dt);
+            s.Position += s.Velocity * dt;
 
             return s;
         }
