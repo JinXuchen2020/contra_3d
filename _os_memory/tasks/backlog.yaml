@@ -4968,7 +4968,7 @@ tasks:
   id: ARCH-P1-011
   milestone: quality_block
   priority: P1
-  status: todo
+  status: done
   title: '[P1] Arch: src/Core/ProjectileTypes.cs'
   type: refactor
 - _arch_key: P2:src/Core/PlayerMotor.cs:120
