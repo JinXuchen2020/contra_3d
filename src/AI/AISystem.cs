@@ -166,14 +166,14 @@ namespace Contra3D.AI
             // State transitions
             switch (def.AiType)
             {
-                case AiType.Patrol: UpdatePatrol(state, def, dt, playerInSight, distToPlayer); break;
+                case AiType.Patrol: UpdatePatrol(state, def, dt, playerInSight, distToPlayer, playerInAttackRange); break;
                 case AiType.Chase: UpdateChase(state, def, dt, playerInSight, distToPlayer, playerInAttackRange); break;
                 case AiType.Sniper: UpdateSniper(state, def, dt, playerInSight, distToPlayer, playerInAttackRange); break;
                 case AiType.Rusher: UpdateRusher(state, def, dt, playerInSight, distToPlayer, playerInAttackRange); break;
             }
         }
 
-        private void UpdatePatrol(EnemyAIState state, EnemyDefinition def, float dt, bool playerInSight, float distToPlayer)
+        private void UpdatePatrol(EnemyAIState state, EnemyDefinition def, float dt, bool playerInSight, float distToPlayer, bool playerInAttackRange)
         {
             switch (state.State)
             {

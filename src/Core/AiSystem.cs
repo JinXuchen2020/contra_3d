@@ -295,7 +295,7 @@ namespace Contra3D.Core
             switch (def.AiType)
             {
                 case AiType.Patrol:
-                    UpdatePatrol(state, def, dt, playerInSight, distToPlayer);
+                    UpdatePatrol(state, def, dt, playerInSight, distToPlayer, playerInAttackRange);
                     break;
                 case AiType.Chase:
                     UpdateChase(state, def, dt, playerInSight, distToPlayer, playerInAttackRange);
@@ -309,7 +309,7 @@ namespace Contra3D.Core
             }
         }
 
-        private void UpdatePatrol(EnemyAIState state, EnemyDefinition def, float dt, bool playerInSight, float distToPlayer)
+        private void UpdatePatrol(EnemyAIState state, EnemyDefinition def, float dt, bool playerInSight, float distToPlayer, bool playerInAttackRange)
         {
             switch (state.State)
             {
