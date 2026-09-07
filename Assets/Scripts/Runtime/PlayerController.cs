@@ -22,7 +22,7 @@ namespace Contra3D.Runtime
         private void Awake()
         {
             _characterController = GetComponent<CharacterController>();
-            _config = MotorConfig.Default();
+            _config = MotorConfig.Default;
             _state = MotorState.Initial(transform.eulerAngles.y * Mathf.Deg2Rad);
             if (_pitchCamera == null)
             {

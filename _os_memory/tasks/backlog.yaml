@@ -5020,58 +5020,48 @@ tasks:
   title: '[P1] Arch: PlaytestSession.cs'
   type: refactor
 - _arch_key: P2:src/Runtime/PlayerController.cs
-  completed_at: '2026-09-07T16:00:00+08:00'
   depends_on: []
   estimated_effort: S
   id: ARCH-P2-003
   milestone: quality_block
   priority: P2
-  result: MotorConfig.Default() converted to static readonly field; PlayerController uses MotorConfig.Default directly.
-  status: completed
+  status: todo
   title: '[P2] Arch: PlayerController.cs'
   type: refactor
 - _arch_key: P2:src/Core/PlayerMotor.cs
-  completed_at: '2026-09-07T16:00:00+08:00'
   depends_on: []
   estimated_effort: S
   id: ARCH-P2-012
   milestone: quality_block
   priority: P2
-  result: Position integration already uses s.Position += s.Velocity * dt with Vector3 operator overloads.
-  status: completed
+  status: todo
   title: '[P2] Arch: PlayerMotor.cs'
   type: refactor
 - _arch_key: P2:src/Combat/CombatSystem.cs
-  completed_at: '2026-09-07T16:00:00+08:00'
   depends_on: []
   estimated_effort: S
   id: ARCH-P2-013
   milestone: quality_block
   priority: P2
-  result: ProcessReloadRequest correctly delegates to WeaponSystem; architecturally sound facade pattern.
-  status: completed
+  status: todo
   title: '[P2] Arch: CombatSystem.cs'
   type: refactor
 - _arch_key: P2:src/Core/HealthDamageSystem.cs
-  completed_at: '2026-09-07T16:00:00+08:00'
   depends_on: []
   estimated_effort: S
   id: ARCH-P2-014
   milestone: quality_block
   priority: P2
-  result: HealthChanges/Deaths per-frame clear is correct design; consumers read within same frame.
-  status: completed
+  status: todo
   title: '[P2] Arch: HealthDamageSystem.cs'
   type: refactor
 - _arch_key: P2:src/Core/HUDUpdater.cs
-  completed_at: '2026-09-07T16:00:00+08:00'
   depends_on: []
   estimated_effort: S
   id: ARCH-P2-015
   milestone: quality_block
   priority: P2
-  result: HUDUpdater uses IReadOnlyList; pause guard, low-health one-shot, hitmarker timing all verified.
-  status: completed
+  status: todo
   title: '[P2] Arch: HUDUpdater.cs'
   type: refactor
 - _arch_key: P2:src/Core/AiSystem.cs
@@ -5107,8 +5097,7 @@ tasks:
   id: ARCH-P2-024
   milestone: quality_block
   priority: P2
-  result: Vigilance update verified: clamped 0-100, TimeSinceLastStimulus incremented correctly.
-  status: completed
+  status: todo
   title: '[P2] Arch: AiSystem.cs'
   type: refactor
 - _arch_key: P2:src/Core/ProjectileTypes.cs
@@ -5117,8 +5106,7 @@ tasks:
   id: ARCH-P2-025
   milestone: quality_block
   priority: P2
-  result: Homing verified: manual per-component lerp with normalization, zero Vector3.Lerp allocations.
-  status: completed
+  status: todo
   title: '[P2] Arch: ProjectileTypes.cs'
   type: refactor
 - _arch_key: P2:src/Core/MapLoader.cs
@@ -5140,14 +5128,12 @@ tasks:
   title: '[P2] Arch: WeaponLoader.cs'
   type: refactor
 - _arch_key: P2:src/Combat/CombatSystem.cs
-  completed_at: '2026-09-07T16:30:00+08:00'
   depends_on: []
   estimated_effort: S
   id: ARCH-P2-028
   milestone: quality_block
   priority: P2
-  result: 'ConsumeHit verified: processes death events, updates Score/Kills, unregisters targets. No architectural debt.'
-  status: completed
+  status: todo
   title: '[P2] Arch: CombatSystem.cs'
   type: refactor
 - _arch_key: P2:src/Core/AiSystem.cs
@@ -5156,8 +5142,6 @@ tasks:
   id: ARCH-P2-029
   milestone: quality_block
   priority: P2
-  status: completed
-  completed_at: '2026-09-06T06:00:00+08:00'
-  result: Random provider made injectable via IRandomProvider interface for testability.
+  status: todo
   title: '[P2] Arch: AiSystem.cs'
   type: refactor
