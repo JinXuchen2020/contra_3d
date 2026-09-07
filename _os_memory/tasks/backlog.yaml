@@ -4889,7 +4889,9 @@ tasks:
   id: ARCH-P1-004
   milestone: quality_block
   priority: P1
-  status: todo
+  status: completed
+  completed_at: '2026-09-07T15:35:00+08:00'
+  result: Combat score table externalized to data-driven config. Added EnemyLoader.cs to parse enemies.yaml score fields. CombatSystem constructor now calls SetScoreTable(EnemyLoader.Load(...)). Scores in enemies.yaml: grunt_soldier=100, charger_mutant=200, turret_sniper=150, hound_runner=75, elite_gunner=500. Default fallback is EnemyLoader.DefaultScore (50). 280 tests pass (0 fail, 7 skip).
   title: '[P1] Arch: src/Core/CombatSystem.cs'
   type: refactor
 - _arch_key: P1:src/Core/ProjectileTypes.cs:226
