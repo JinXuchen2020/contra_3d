@@ -5096,12 +5096,14 @@ tasks:
   title: '[P2] Arch: AISystem.cs'
   type: refactor
 - _arch_key: P2:src/Combat/CombatSystem.cs
+  completed_at: '2026-09-07T17:30:00+08:00'
   depends_on: []
   estimated_effort: S
   id: ARCH-P2-023
   milestone: quality_block
   priority: P2
-  status: todo
+  result: OnPlayerDeathReset properly resets weapon, targets, and score.
+  status: completed
   title: '[P2] Arch: CombatSystem.cs'
   type: refactor
 - _arch_key: P2:src/Core/AiSystem.cs
