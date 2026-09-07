@@ -5036,7 +5036,7 @@ tasks:
   id: ARCH-P2-012
   milestone: quality_block
   priority: P2
-  status: todo
+  status: completed
   title: '[P2] Arch: PlayerMotor.cs'
   type: refactor
 - _arch_key: P2:src/Combat/CombatSystem.cs
