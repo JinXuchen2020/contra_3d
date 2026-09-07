@@ -5020,12 +5020,14 @@ tasks:
   title: '[P1] Arch: PlaytestSession.cs'
   type: refactor
 - _arch_key: P2:src/Runtime/PlayerController.cs
+  completed_at: '2026-09-07T17:00:00+08:00'
   depends_on: []
   estimated_effort: S
   id: ARCH-P2-003
   milestone: quality_block
   priority: P2
-  status: todo
+  result: MotorConfig.Default converted to static readonly field
+  status: completed
   title: '[P2] Arch: PlayerController.cs'
   type: refactor
 - _arch_key: P2:src/Core/PlayerMotor.cs
