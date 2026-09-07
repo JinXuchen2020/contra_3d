@@ -4854,3 +4854,294 @@ tasks:
   task_id: T-BDD-ADOPT-f9c88f
   title: 'BDD 场景: ui_hud / HUDState 不可变性保证'
   type: bdd_scenario
+- _arch_key: P1:src/Core/Playtest/PlaytestSession.cs
+  completed_at: '2026-09-07T09:00:00+08:00'
+  depends_on: []
+  estimated_effort: M
+  id: ARCH-P1-001
+  milestone: quality_block
+  priority: P1
+  result: 'Completed: Add public GetTargets(), remove reflection'
+  status: completed
+  title: '[P1] Arch: PlaytestSession.cs'
+  type: refactor
+- _arch_key: P1:src/AI/AISystem.cs
+  completed_at: '2026-09-07T09:00:00+08:00'
+  depends_on: []
+  estimated_effort: M
+  id: ARCH-P1-002
+  milestone: quality_block
+  priority: P1
+  result: 'Completed: Remove duplicate types, reference Core'
+  status: completed
+  title: '[P1] Arch: AISystem.cs'
+  type: refactor
+- _arch_key: P1:src/Combat/CombatSystem.cs
+  completed_at: '2026-09-07T09:00:00+08:00'
+  depends_on: []
+  estimated_effort: M
+  id: ARCH-P1-004
+  milestone: quality_block
+  priority: P1
+  result: 'Completed: Externalize score table to YAML'
+  status: completed
+  title: '[P1] Arch: CombatSystem.cs'
+  type: refactor
+- _arch_key: P1:src/Core/ProjectileTypes.cs
+  completed_at: '2026-09-07T09:00:00+08:00'
+  depends_on: []
+  estimated_effort: M
+  id: ARCH-P1-005
+  milestone: quality_block
+  priority: P1
+  result: 'Completed: Implement CheckCollision + YAML config'
+  status: completed
+  title: '[P1] Arch: ProjectileTypes.cs'
+  type: refactor
+- _arch_key: P1:src/Core/WeaponSystem.cs
+  completed_at: '2026-09-07T09:00:00+08:00'
+  depends_on: []
+  estimated_effort: M
+  id: ARCH-P1-006
+  milestone: quality_block
+  priority: P1
+  result: 'Completed: Externalize weapon constants to YAML'
+  status: completed
+  title: '[P1] Arch: WeaponSystem.cs'
+  type: refactor
+- _arch_key: P1:src/AI/AISystem.cs
+  completed_at: '2026-09-07T09:00:00+08:00'
+  depends_on: []
+  estimated_effort: M
+  id: ARCH-P1-007
+  milestone: quality_block
+  priority: P1
+  result: 'Completed: Spawn caps to SpawnConfig data class'
+  status: completed
+  title: '[P1] Arch: AISystem.cs'
+  type: refactor
+- _arch_key: P1:src/Core/AiSystem.cs
+  completed_at: '2026-09-07T09:00:00+08:00'
+  depends_on: []
+  estimated_effort: M
+  id: ARCH-P1-008
+  milestone: quality_block
+  priority: P1
+  result: 'Completed: Vigilance + EnemyDefinition builder'
+  status: completed
+  title: '[P1] Arch: AiSystem.cs'
+  type: refactor
+- _arch_key: P1:src/AI/AISystem.cs
+  completed_at: '2026-09-07T09:00:00+08:00'
+  depends_on: []
+  estimated_effort: M
+  id: ARCH-P1-009
+  milestone: quality_block
+  priority: P1
+  result: 'Completed: playerInAttackRange to all handlers'
+  status: completed
+  title: '[P1] Arch: AISystem.cs'
+  type: refactor
+- _arch_key: P1:src/Combat/CombatSystem.cs
+  completed_at: '2026-09-07T09:00:00+08:00'
+  depends_on: []
+  estimated_effort: M
+  id: ARCH-P1-010
+  milestone: quality_block
+  priority: P1
+  result: 'Completed: Score table SetScoreTable integration'
+  status: completed
+  title: '[P1] Arch: CombatSystem.cs'
+  type: refactor
+- _arch_key: P1:src/Core/ProjectileTypes.cs
+  completed_at: '2026-09-07T09:00:00+08:00'
+  depends_on: []
+  estimated_effort: M
+  id: ARCH-P1-011
+  milestone: quality_block
+  priority: P1
+  result: 'Completed: Manual lerp, no Vector3.Lerp allocations'
+  status: completed
+  title: '[P1] Arch: ProjectileTypes.cs'
+  type: refactor
+- _arch_key: P1:src/Core/WeaponSystem.cs
+  completed_at: '2026-09-07T09:00:00+08:00'
+  depends_on: []
+  estimated_effort: M
+  id: ARCH-P1-016
+  milestone: quality_block
+  priority: P1
+  result: 'Completed: WeaponSystemConfig externalized'
+  status: completed
+  title: '[P1] Arch: WeaponSystem.cs'
+  type: refactor
+- _arch_key: P1:src/Core/AiSystem.cs
+  completed_at: '2026-09-07T09:00:00+08:00'
+  depends_on: []
+  estimated_effort: M
+  id: ARCH-P1-017
+  milestone: quality_block
+  priority: P1
+  result: 'Completed: EnemyDefinition Builder pattern'
+  status: completed
+  title: '[P1] Arch: AiSystem.cs'
+  type: refactor
+- _arch_key: P1:src/Core/MotorTypes.cs
+  completed_at: '2026-09-07T09:00:00+08:00'
+  depends_on: []
+  estimated_effort: M
+  id: ARCH-P1-018
+  milestone: quality_block
+  priority: P1
+  result: 'Completed: MotorConfig.LoadFromYaml()'
+  status: completed
+  title: '[P1] Arch: MotorTypes.cs'
+  type: refactor
+- _arch_key: P1:src/Core/ProjectileTypes.cs
+  completed_at: '2026-09-07T09:00:00+08:00'
+  depends_on: []
+  estimated_effort: M
+  id: ARCH-P1-019
+  milestone: quality_block
+  priority: P1
+  result: 'Completed: ProjectileSystemConfig YAML loading'
+  status: completed
+  title: '[P1] Arch: ProjectileTypes.cs'
+  type: refactor
+- _arch_key: P1:src/Core/Playtest/PlaytestSession.cs
+  completed_at: '2026-09-07T09:00:00+08:00'
+  depends_on: []
+  estimated_effort: M
+  id: ARCH-P1-020
+  milestone: quality_block
+  priority: P1
+  result: 'Completed: Death tracking fixed'
+  status: completed
+  title: '[P1] Arch: PlaytestSession.cs'
+  type: refactor
+- _arch_key: P2:src/Runtime/PlayerController.cs
+  depends_on: []
+  estimated_effort: S
+  id: ARCH-P2-003
+  milestone: quality_block
+  priority: P2
+  status: todo
+  title: '[P2] Arch: PlayerController.cs'
+  type: refactor
+- _arch_key: P2:src/Core/PlayerMotor.cs
+  depends_on: []
+  estimated_effort: S
+  id: ARCH-P2-012
+  milestone: quality_block
+  priority: P2
+  status: todo
+  title: '[P2] Arch: PlayerMotor.cs'
+  type: refactor
+- _arch_key: P2:src/Combat/CombatSystem.cs
+  depends_on: []
+  estimated_effort: S
+  id: ARCH-P2-013
+  milestone: quality_block
+  priority: P2
+  status: todo
+  title: '[P2] Arch: CombatSystem.cs'
+  type: refactor
+- _arch_key: P2:src/Core/HealthDamageSystem.cs
+  depends_on: []
+  estimated_effort: S
+  id: ARCH-P2-014
+  milestone: quality_block
+  priority: P2
+  status: todo
+  title: '[P2] Arch: HealthDamageSystem.cs'
+  type: refactor
+- _arch_key: P2:src/Core/HUDUpdater.cs
+  depends_on: []
+  estimated_effort: S
+  id: ARCH-P2-015
+  milestone: quality_block
+  priority: P2
+  status: todo
+  title: '[P2] Arch: HUDUpdater.cs'
+  type: refactor
+- _arch_key: P2:src/Core/AiSystem.cs
+  depends_on: []
+  estimated_effort: S
+  id: ARCH-P2-021
+  milestone: quality_block
+  priority: P2
+  status: todo
+  title: '[P2] Arch: AiSystem.cs'
+  type: refactor
+- _arch_key: P2:src/AI/AISystem.cs
+  depends_on: []
+  estimated_effort: S
+  id: ARCH-P2-022
+  milestone: quality_block
+  priority: P2
+  status: todo
+  title: '[P2] Arch: AISystem.cs'
+  type: refactor
+- _arch_key: P2:src/Combat/CombatSystem.cs
+  depends_on: []
+  estimated_effort: S
+  id: ARCH-P2-023
+  milestone: quality_block
+  priority: P2
+  status: todo
+  title: '[P2] Arch: CombatSystem.cs'
+  type: refactor
+- _arch_key: P2:src/Core/AiSystem.cs
+  depends_on: []
+  estimated_effort: S
+  id: ARCH-P2-024
+  milestone: quality_block
+  priority: P2
+  status: todo
+  title: '[P2] Arch: AiSystem.cs'
+  type: refactor
+- _arch_key: P2:src/Core/ProjectileTypes.cs
+  depends_on: []
+  estimated_effort: S
+  id: ARCH-P2-025
+  milestone: quality_block
+  priority: P2
+  status: todo
+  title: '[P2] Arch: ProjectileTypes.cs'
+  type: refactor
+- _arch_key: P2:src/Core/MapLoader.cs
+  depends_on: []
+  estimated_effort: S
+  id: ARCH-P2-026
+  milestone: quality_block
+  priority: P2
+  status: todo
+  title: '[P2] Arch: MapLoader.cs'
+  type: refactor
+- _arch_key: P2:src/Core/WeaponLoader.cs
+  depends_on: []
+  estimated_effort: S
+  id: ARCH-P2-027
+  milestone: quality_block
+  priority: P2
+  status: todo
+  title: '[P2] Arch: WeaponLoader.cs'
+  type: refactor
+- _arch_key: P2:src/Combat/CombatSystem.cs
+  depends_on: []
+  estimated_effort: S
+  id: ARCH-P2-028
+  milestone: quality_block
+  priority: P2
+  status: todo
+  title: '[P2] Arch: CombatSystem.cs'
+  type: refactor
+- _arch_key: P2:src/Core/AiSystem.cs
+  depends_on: []
+  estimated_effort: S
+  id: ARCH-P2-029
+  milestone: quality_block
+  priority: P2
+  status: todo
+  title: '[P2] Arch: AiSystem.cs'
+  type: refactor
