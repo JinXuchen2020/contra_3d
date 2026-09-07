@@ -5020,52 +5020,57 @@ tasks:
   title: '[P1] Arch: PlaytestSession.cs'
   type: refactor
 - _arch_key: P2:src/Runtime/PlayerController.cs
+  completed_at: '2026-09-07T16:00:00+08:00'
   depends_on: []
   estimated_effort: S
   id: ARCH-P2-003
   milestone: quality_block
   priority: P2
+  result: MotorConfig.Default() converted to static readonly field; PlayerController uses MotorConfig.Default directly.
   status: completed
   title: '[P2] Arch: PlayerController.cs'
   type: refactor
-  result: MotorConfig.Default made static readonly; PlayerController and all call sites updated, 280 tests pass.
-  completed_at: '2026-09-06T03:05:00+08:00'
 - _arch_key: P2:src/Core/PlayerMotor.cs
+  completed_at: '2026-09-07T16:00:00+08:00'
   depends_on: []
   estimated_effort: S
   id: ARCH-P2-012
   milestone: quality_block
   priority: P2
+  result: Position integration already uses s.Position += s.Velocity * dt with Vector3 operator overloads.
   status: completed
   title: '[P2] Arch: PlayerMotor.cs'
   type: refactor
 - _arch_key: P2:src/Combat/CombatSystem.cs
+  completed_at: '2026-09-07T16:00:00+08:00'
   depends_on: []
   estimated_effort: S
   id: ARCH-P2-013
   milestone: quality_block
   priority: P2
+  result: ProcessReloadRequest correctly delegates to WeaponSystem; architecturally sound facade pattern.
   status: completed
   title: '[P2] Arch: CombatSystem.cs'
   type: refactor
 - _arch_key: P2:src/Core/HealthDamageSystem.cs
-  completed_at: '2026-09-06T12:00:00+08:00'
+  completed_at: '2026-09-07T16:00:00+08:00'
   depends_on: []
   estimated_effort: S
   id: ARCH-P2-014
   milestone: quality_block
   priority: P2
-  result: Verified per-frame clear design correct. Events accumulated via ProcessHit(), cleared at end of Update(). All 280 tests pass.
+  result: HealthChanges/Deaths per-frame clear is correct design; consumers read within same frame.
   status: completed
   title: '[P2] Arch: HealthDamageSystem.cs'
   type: refactor
 - _arch_key: P2:src/Core/HUDUpdater.cs
+  completed_at: '2026-09-07T16:00:00+08:00'
   depends_on: []
   estimated_effort: S
   id: ARCH-P2-015
   milestone: quality_block
   priority: P2
-  result: Verified: IReadOnlyList exposure (no external mutation), pause guard on all 3 Process methods, _lowHealthFired one-shot + death-resets flag, hitmarker 100ms on IsDead. 283 tests pass (3 new).
+  result: HUDUpdater uses IReadOnlyList; pause guard, low-health one-shot, hitmarker timing all verified.
   status: completed
   title: '[P2] Arch: HUDUpdater.cs'
   type: refactor
