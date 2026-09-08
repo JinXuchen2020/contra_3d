@@ -5214,7 +5214,7 @@ tasks:
   milestone: quality_block
   priority: P0
   status: todo
-  title: '[P0] Arch: 双路径同步 - Unity Assets/Scripts/Core/ 与 src/Core/ 已分叉 3 天'
+  title: '[P0] Arch: 双路径同步 - 9 个文件 src/ 与 Assets/Scripts/Core/ 已分叉'
   type: refactor
 - _arch_key: P0:vector3_lerp_unity
   depends_on:
@@ -5224,7 +5224,7 @@ tasks:
   milestone: quality_block
   priority: P0
   status: todo
-  title: '[P0] Arch: 修复 Unity 路径 - Vector3.Lerp (P1-011 仅修了 src/)'
+  title: '[P0] Arch: 修复 Unity 路径 - ProjectileTypes Vector3.Lerp (P1-011 仅修 src/)'
   type: refactor
 - _arch_key: P0:sniper_bug_unity
   depends_on:
@@ -5234,7 +5234,7 @@ tasks:
   milestone: quality_block
   priority: P0
   status: todo
-  title: '[P0] Arch: 修复 Unity 路径 - Sniper bug (P2-021 仅修了 src/)'
+  title: '[P0] Arch: 修复 Unity 路径 - AiSystem Sniper bug (P2-021 仅修 src/)'
   type: refactor
 - _arch_key: P0:sync_mechanism
   depends_on:
@@ -5243,6 +5243,7 @@ tasks:
   id: ARCH-P2-034
   milestone: quality_block
   priority: P0
+  result: 'Recommended: Option A - delete src/, compile dotnet from Assets/Scripts/Core/ (zero UnityEngine deps).'
   status: todo
-  title: '[P0] Arch: 建立 src/ 到 Assets/Scripts/ 的同步机制'
+  title: '[P0] Arch: 建立 src/→Assets/Scripts/ 同步机制或迁移到单源码库'
   type: refactor
