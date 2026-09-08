@@ -1,4 +1,4 @@
-﻿architecture_review:
+architecture_review:
   csharp:
     forbid_public_in_internal_ns: true
     forbid_source_path_divergence: true
@@ -41,11 +41,10 @@ commands:
   asset_placeholder: ''
   build: C:/Program Files/Unity/Hub/Editor/6000.6.0f1/Editor/Unity.exe -batchmode -quit -projectPath . -executeMethod BuildScript.BuildWindows
     -logFile -
-  check: dotnet build src/contra_3d.sln -v q --nologo
-  check_hardcoded: python adapter/tools/check_hardcoded.py --src-dir src/
+  check: dotnet build Assets/contra_3d.sln -v q --nologo
+  check_hardcoded: python adapter/tools/check_hardcoded.py --src-dir Assets/Scripts/
   check_source_divergence: python adapter/tools/check_source_path_divergence.py --project-root . --output _os_state/source_divergence_report.yaml
-  check_warnings: python adapter/tools/check_warnings.py --build-command 'dotnet build Assets/contra_3d.sln -v q' -v q' --module-priority
-    P0
+  check_warnings: python adapter/tools/check_warnings.py --build-command 'dotnet build Assets/contra_3d.sln -v q' --module-priority P0
   demo: ''
   metrics: python adapter/tools/collect_metrics.py --dashboard --project-root F:/AI_Projects/projects/contra_3d
   release: C:/Program Files/Unity/Hub/Editor/6000.6.0f1/Editor/Unity.exe -batchmode -quit -projectPath . -executeMethod BuildScript.BuildWindowsRelease
@@ -59,8 +58,8 @@ data_flow: []
 directories:
   assets: assets/
   data: data/
-  source: src/
-  tests: src/Tests/
+  source: Assets/Scripts/
+  tests: Assets/Scripts/Core/Tests/
 ecs_registry:
   components: []
   events: []
@@ -70,7 +69,7 @@ env: claude
 external_loop:
   run_cmd: python ..\..\Universal-AI-OS\src\adapter\env\dsh_loop.py
 framework:
-  build_file: src/contra_3d.sln
+  build_file: Assets/contra_3d.sln
   lock_file: ProjectSettings/ProjectVersion.txt
   name: unity
   version: 2022.3.62f3c1
