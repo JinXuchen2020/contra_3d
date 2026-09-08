@@ -4,9 +4,11 @@
 
 using UnityEditor;
 using UnityEngine;
-using UnityEditor.Build.Reporting;  // 关键：BuildResult 定义在此命名空间
+using UnityEditor.Build.Reporting;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 
 /// <summary>
 /// 构建脚本 — 由 OS runtime_verify 协议调用
@@ -28,7 +30,6 @@ public static class BuildScript
         
         if (scenes.Length == 0)
         {
-            // 默认返回 Boot.unity
             return new[] { "Assets/Scenes/Boot.unity" };
         }
         
@@ -41,6 +42,7 @@ public static class BuildScript
     [MenuItem("Build/Build Windows")]
     public static void BuildWindows()
     {
+        CleanBeeRspReferences();
         BuildPlayerOptions options = new BuildPlayerOptions
         {
             scenes = GetEnabledScenes(),
@@ -58,6 +60,7 @@ public static class BuildScript
     [MenuItem("Build/Build Windows Release")]
     public static void BuildWindowsRelease()
     {
+        CleanBeeRspReferences();
         BuildPlayerOptions options = new BuildPlayerOptions
         {
             scenes = GetEnabledScenes(),
@@ -75,6 +78,7 @@ public static class BuildScript
     [MenuItem("Build/Build Mac")]
     public static void BuildMac()
     {
+        CleanBeeRspReferences();
         BuildPlayerOptions options = new BuildPlayerOptions
         {
             scenes = GetEnabledScenes(),
@@ -92,6 +96,7 @@ public static class BuildScript
     [MenuItem("Build/Build Linux")]
     public static void BuildLinux()
     {
+        CleanBeeRspReferences();
         BuildPlayerOptions options = new BuildPlayerOptions
         {
             scenes = GetEnabledScenes(),
@@ -105,21 +110,18 @@ public static class BuildScript
 
     private static void BuildPlayer(BuildPlayerOptions options)
     {
-        // 确保输出目录存在
         var outputDir = Path.GetDirectoryName(options.locationPathName);
         if (!string.IsNullOrEmpty(outputDir))
         {
             Directory.CreateDirectory(outputDir);
         }
 
-        // Unity 6000.6.0f1 API: BuildPipeline.BuildPlayer returns BuildReport
         var report = BuildPipeline.BuildPlayer(options);
         
         Debug.Log("[BuildScript] Build completed!");
         Debug.Log("[BuildScript] Output: " + options.locationPathName);
         Debug.Log("[BuildScript] Status: " + report.summary.result);
         
-        // BuildResult 在 UnityEditor.Build.Reporting 命名空间中
         if (report.summary.result != BuildResult.Succeeded)
         {
             Debug.LogError("[BuildScript] Build failed with " + report.summary.totalErrors + " errors");
@@ -130,5 +132,106 @@ public static class BuildScript
             Debug.Log("[BuildScript] Total time: " + report.summary.totalTime + " seconds");
             Debug.Log("[BuildScript] Total size: " + report.summary.totalSize + " bytes");
         }
+    }
+
+    /// <summary>
+    /// Cleans Unity Bee .rsp files before compilation:
+    /// 1. Removes Contra3D.Core.dll references from non-asmdef assemblies
+    ///    to prevent CS0104 ambiguous Vector3 reference.
+    /// 2. Removes Tests/ DLL and source references from non-Editor, non-test assemblies
+    ///    to prevent CS0579 duplicate attribute errors.
+    /// </summary>
+    private static void CleanBeeRspReferences()
+    {
+        string artifactsDir = Path.Combine(Directory.GetCurrentDirectory(), "Library", "Bee", "artifacts");
+        if (!Directory.Exists(artifactsDir)) return;
+
+        // Assembly names produced by Contra3D asmdef files — these keep the Core DLL ref
+        HashSet<string> contra3DAsmdefNames = new HashSet<string>
+        {
+            "Contra3D.Core",
+            "Contra3D.Runtime",
+            "Contra3D.Core.Playtest"
+        };
+
+        // Assembly names that are Editor assemblies — keep Tests refs
+        HashSet<string> editorAssemblyNames = new HashSet<string>
+        {
+            "Assembly-CSharp-Editor",
+            "UnityEditor.TestRunner",
+            "UnityEngine.TestRunner"
+        };
+
+        // Assembly names that are test assemblies — keep Tests refs
+        HashSet<string> testAssemblyNames = new HashSet<string>
+        {
+            "Contra3D.Core.Tests",
+            "Unity.Collections.Tests.CoreCLR.InternalJobNestedPrivate",
+            "Unity.Collections.Tests.CoreCLR.PrivateJobNested",
+            "Unity.Collections.Tests.CoreCLR.ProtectedJobNested",
+            "Unity.Collections.Tests.CoreCLR.PublicJobPrivateGeneric",
+            "Unity.InputSystem.TestFramework"
+        };
+
+        int cleaned = 0;
+        foreach (string rspFile in Directory.GetFiles(artifactsDir, "*.rsp", SearchOption.AllDirectories))
+        {
+            string content = File.ReadAllText(rspFile);
+            string before = content;
+
+            // Determine the assembly name from the rsp filename
+            string rspBase = Path.GetFileNameWithoutExtension(rspFile);
+            if (rspBase.EndsWith(".dll.mvfrm"))
+                rspBase = rspBase.Substring(0, rspBase.Length - ".dll.mvfrm".Length);
+
+            bool isContra3DAsmdef = contra3DAsmdefNames.Contains(rspBase);
+            bool isEditorAssembly = editorAssemblyNames.Contains(rspBase);
+            bool isTestAssembly = testAssemblyNames.Contains(rspBase);
+
+            // Remove -r: lines referencing Tests/ directories from non-Editor, non-test assemblies
+            if (!isEditorAssembly && !isTestAssembly)
+            {
+                content = Regex.Replace(content,
+                    @"^-r:""[^""]*[/\\]Tests[/\\].*$\r?\n?",
+                    string.Empty,
+                    RegexOptions.Multiline);
+            }
+
+            // Remove source file lines referencing Tests/ directories from non-Editor, non-test assemblies
+            if (!isEditorAssembly && !isTestAssembly)
+            {
+                content = Regex.Replace(content,
+                    @"""Assets/Scripts/(Core/)?Tests/[^""]*\.cs""\r?\n?",
+                    string.Empty,
+                    RegexOptions.Multiline);
+            }
+
+            // Remove AssemblyInfo lines from test projects from non-Editor, non-test assemblies
+            if (!isEditorAssembly && !isTestAssembly)
+            {
+                content = Regex.Replace(content,
+                    @"""Assets/Scripts/(Core/)?Tests/[^""]*AssemblyInfo\.cs""\r?\n?",
+                    string.Empty,
+                    RegexOptions.Multiline);
+            }
+
+            // Remove Contra3D.Core.dll reference from non-asmdef assemblies
+            if (!isContra3DAsmdef)
+            {
+                content = Regex.Replace(content,
+                    @"^-r:""[^""]*Contra3D\.Core\.dll""\r?\n?",
+                    string.Empty,
+                    RegexOptions.Multiline);
+            }
+
+            if (content != before)
+            {
+                File.WriteAllText(rspFile, content);
+                cleaned++;
+            }
+        }
+
+        if (cleaned > 0)
+            Debug.Log("[BuildScript] Cleaned " + cleaned + " Bee rsp file(s).");
     }
 }

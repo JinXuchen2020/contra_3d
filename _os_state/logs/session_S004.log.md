@@ -56,3 +56,21 @@ env_id: dsh
 [11:00:05] [TASK] T-FIX-003 (P1): Unity Bee includes Tests/ source files in Contra3D.Core.dll compilation
 [11:00:06] [NATURAL_END] C1✓ C2✗ C3✓ C4✓ C5✓ C6✗ C7✗ — T-FIX-002/003 P1 remain
 [11:00:07] [COMMIT] b7a7da3 fix(os): T-FIX-001 apply — GenerateAssemblyInfo=false, delete Playtest/Playtest/ dupes
+
+## Loop 5 — T-FIX-003 Vector3 ambiguity
+
+### Diagnosis
+- Tests moved to project root Tests/ (outside Assets/)
+- dotnet build/test: PASS (283/290)
+- Unity batchmode: FAIL — CS0104 Vector3 ambiguity in Assembly-CSharp
+- Root cause: Assembly-CSharp.rsp references pre-built Contra3D.Core.dll
+- When PlayerController.cs (using Contra3D.Core) compiles into Assembly-CSharp,
+  both Contra3D.Core.Vector3 and UnityEngine.Vector3 are in scope → ambiguous
+- Previously hidden: tests inside Assets/ were compiled by Bee into Core assembly,
+  and Assembly-CSharp did NOT reference the pre-built Core DLL
+- Moving tests outside exposed the pre-built Core DLL ref in Assembly-CSharp.rsp
+
+### Fix Strategy
+- Modify BuildScript.cs CleanBeeRspTestReferences() to also strip
+  -r:Contra3D.Core.dll from Assembly-CSharp.rsp (keep it in Contra3D.Runtime.rsp)
+- Delegated to Developer Agent subagent for execution

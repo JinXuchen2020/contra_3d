@@ -69,3 +69,9 @@ S004 Boot Phase 0-6 执行完成。contra_3d 是 Unity/C# shooter 项目（非 R
 - 方案C: 修改 Core asmdef 添加 explicit includeAssets 限制范围（需验证 Bee 行为）
 - 方案D: 临时禁用 Unity.Services.Core.Editor 包（解决 AotHelper）
 **教训**：asmdef 的"目录范围"不等于"编译范围"——Bee 会扫描 asmdef 目录下所有 .cs 文件，不区分测试/生产代码。dotnet 和 Unity Bee 是两个独立的编译系统，各自有不同的文件发现和引用逻辑。
+## #7 — 2026-09-09 | S004-vector3-ambiguity | critical
+**问题**：将 Tests 移到项目根目录（Assets/ 之外）后，Unity batchmode 构建报 CS0104：Vector3 在 Contra3D.Core.Vector3 和 UnityEngine.Vector3 之间歧义。
+**根因**：Assembly-CSharp.rsp 包含 `-r:"Assets/Scripts/Core/bin/Debug/netstandard2.1/Contra3D.Core.dll"` 引用。当 PlayerController.cs（有 `using Contra3D.Core;`）编译到 Assembly-CSharp 时，两个 Vector3 类型同时可见。
+**为什么之前没暴露**：Tests 在 Assets/ 内部时，Bee 直接从源编译 Core（不引用预编译 DLL），Assembly-CSharp 不引用 Contra3D.Core.dll。Tests 移出后，dotnet build 正常生成 Core DLL，Bee 将其加入 Assembly-CSharp.rsp。
+**修复**：修改 BuildScript.cs CleanBeeRspTestReferences()，在清理 rsp 时同时从 Assembly-CSharp.rsp 移除 Contra3D.Core.dll 引用（保留在 Contra3D.Runtime.rsp 等 asmdef 程序集中）。
+**教训**：dotnet build 成功 ≠ Unity batchmode 成功。dotnet 只编译 csproj 定义的源文件，Unity Bee 根据 asmdef 和 rsp 编译，两者机制不同。Tests 位置变化会影响 Bee 生成的 rsp 内容。

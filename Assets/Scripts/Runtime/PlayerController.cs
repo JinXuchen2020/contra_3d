@@ -50,10 +50,10 @@ namespace Contra3D.Runtime
             _state = PlayerMotor.Simulate(_state, input, _config, dt);
 
             // 位移交由 CharacterController 碰撞解算；解算后的实际位置回填 state（外部 y 修正通道）
-            Vector3 displacement = new Vector3(_state.Velocity.X, _state.Velocity.Y, _state.Velocity.Z) * dt;
+            UnityEngine.Vector3 displacement = new UnityEngine.Vector3(_state.Velocity.X, _state.Velocity.Y, _state.Velocity.Z) * dt;
             _characterController.Move(displacement);
-            Vector3 actual = transform.position;
-            _state.Position = new System.Numerics.Vector3(actual.x, actual.y, actual.z);
+            UnityEngine.Vector3 actual = transform.position;
+            _state.Position = new Contra3D.Core.Vector3(actual.x, actual.y, actual.z);
 
             // 朝向：yaw 驱动本体，pitch 驱动子相机（弧度 → 欧拉角）
             transform.rotation = Quaternion.Euler(0f, _state.Yaw * Mathf.Rad2Deg, 0f);

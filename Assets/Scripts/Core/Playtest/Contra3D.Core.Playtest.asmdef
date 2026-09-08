@@ -1,0 +1,14 @@
+{
+    "name": "Contra3D.Core.Playtest",
+    "rootNamespace": "Contra3D.Core.Playtest",
+    "references": ["Contra3D.Core", "Contra3D.Runtime"],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": false,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": true
+}

@@ -13,7 +13,8 @@ tasks:
   id: T-SYS-001-V
   milestone: M1
   priority: P1
-  result: Unity Editor 已安装 (6000.6.0f1), BLK-001 已解除. Visual verification task completed via dotnet tests.
+  result: Unity Editor 已安装 (6000.6.0f1), BLK-001 已解除. Visual verification task completed
+    via dotnet tests.
   status: completed
   title: Editor 内视觉验收 (BLK-001 解除后)
 - depends_on:
@@ -139,12 +140,14 @@ tasks:
 
     source 锚点: templates/system_design/combat_system.md#数据流（单次射击）
 
-    given: [''玩家持有 rifle_default (伤害12, 射速7/s)'', ''敌人 grunt_soldier (health=24) 在视线内无遮挡'', ''武器冷却与弹药均满足'']
+    given: [''玩家持有 rifle_default (伤害12, 射速7/s)'', ''敌人 grunt_soldier (health=24) 在视线内无遮挡'',
+    ''武器冷却与弹药均满足'']
 
     when: [''玩家开火 2 发且全部命中敌人躯干'']
 
-    then: [''weapon_system 校验通过并产出射击事件 (起点/方向/武器参数)'', ''projectile_system 生成弹体并按弹道推进'', ''hit_detection 报告命中事件并携带伤害参数'',
-    ''health_damage 将敌人生命从 24 结算至 0'', ''广播死亡事件, 掉落表/积分/刷兵计数均联动'', ''生命值变更只发生在 health_damage (无旁路写入)'']
+    then: [''weapon_system 校验通过并产出射击事件 (起点/方向/武器参数)'', ''projectile_system 生成弹体并按弹道推进'',
+    ''hit_detection 报告命中事件并携带伤害参数'', ''health_damage 将敌人生命从 24 结算至 0'', ''广播死亡事件,
+    掉落表/积分/刷兵计数均联动'', ''生命值变更只发生在 health_damage (无旁路写入)'']
 
     注: 场景锚定真实需求/spec/现有测试, 禁止自由发挥。'
   estimated_effort: 0.5-2 小时
@@ -330,13 +333,15 @@ tasks:
 
     when: [''敌人生命归零, health_damage 广播死亡事件'']
 
-    then: [''按掉落概率表结算掉落 (health_pack_small/weapon_box/none)'', ''积分系统计入击杀分'', ''刷兵配额计数递减并释放'', ''实体被销毁/回收, 战斗系统不感知下游细节'']
+    then: [''按掉落概率表结算掉落 (health_pack_small/weapon_box/none)'', ''积分系统计入击杀分'', ''刷兵配额计数递减并释放'',
+    ''实体被销毁/回收, 战斗系统不感知下游细节'']
 
     注: 场景锚定真实需求/spec/现有测试, 禁止自由发挥。'
   estimated_effort: 0.5-2 小时
   location: bdd 协议 / system=combat (step 实现在对应模块)
   priority: P1
-  result: DeathEvent_DownstreamCascade + Combat_DeathEventDownstreamCascade tests pass (2/2)
+  result: DeathEvent_DownstreamCascade + Combat_DeathEventDownstreamCascade tests
+    pass (2/2)
   source: templates/system_design/combat_system.md#系统间依赖
   status: completed
   task_id: T-BDD-ADOPT-8856a7
@@ -357,12 +362,14 @@ tasks:
 
     source 锚点: templates/system_design/ai_system.md#感知系统
 
-    given: [''grunt_soldier (ai_type=patrol, health=24, speed=2.0) 沿路径巡逻'', ''视距 15m, 朝向扇形 90°–120°, 警觉值 0–100'']
+    given: [''grunt_soldier (ai_type=patrol, health=24, speed=2.0) 沿路径巡逻'', ''视距 15m,
+    朝向扇形 90°–120°, 警觉值 0–100'']
 
     when: [''玩家进入视距且在扇形内 (警觉值 +20/s 累计至 ≥60, 再达 100)'', ''玩家随后将其击杀'']
 
-    then: [''警觉值 ≥60 进入 Alert, =100 确认目标进入 Combat'', ''Combat 中按 weapons (rifle_default) 低频开火'', ''玩家死亡或脱离追击范围且警觉值归零后回 Patrol'',
-    ''被击杀时广播死亡事件, 刷兵配额释放并按 drop_table 结算'', ''视线被障碍阻断时不累计视觉警觉值'']
+    then: [''警觉值 ≥60 进入 Alert, =100 确认目标进入 Combat'', ''Combat 中按 weapons (rifle_default)
+    低频开火'', ''玩家死亡或脱离追击范围且警觉值归零后回 Patrol'', ''被击杀时广播死亡事件, 刷兵配额释放并按 drop_table 结算'',
+    ''视线被障碍阻断时不累计视觉警觉值'']
 
     注: 场景锚定真实需求/spec/现有测试, 禁止自由发挥。'
   estimated_effort: 0.5-2 小时
@@ -389,12 +396,13 @@ tasks:
 
     source 锚点: templates/system_design/ai_system.md#状态机定义
 
-    given: [''charger_mutant (ai_type=rusher, health=36, speed=4.5) 生成'', ''视距 12m, 接近全向感知'']
+    given: [''charger_mutant (ai_type=rusher, health=36, speed=4.5) 生成'', ''视距 12m,
+    接近全向感知'']
 
     when: [''玩家进入感知范围, rusher 感知到玩家方向并直冲'', ''进入接触判定半径'']
 
-    then: [''状态机走 Spawn → Rush → Explode/Strike → Death'', ''接触判定对玩家造成伤害 (经 health_damage 结算)'', ''rusher 自身进入 Death, 死亡事件驱动掉落与配额回收'',
-    ''同屏 rusher 数量 ≤ 4'']
+    then: [''状态机走 Spawn → Rush → Explode/Strike → Death'', ''接触判定对玩家造成伤害 (经 health_damage
+    结算)'', ''rusher 自身进入 Death, 死亡事件驱动掉落与配额回收'', ''同屏 rusher 数量 ≤ 4'']
 
     注: 场景锚定真实需求/spec/现有测试, 禁止自由发挥。'
   estimated_effort: 0.5-2 小时
@@ -421,11 +429,13 @@ tasks:
 
     source 锚点: templates/system_design/ai_system.md#状态机定义
 
-    given: [''turret_sniper (ai_type=sniper, speed=0.0, 视距 35m) 固守点位'', ''武器 laser_beam (高伤单发)'']
+    given: [''turret_sniper (ai_type=sniper, speed=0.0, 视距 35m) 固守点位'', ''武器 laser_beam
+    (高伤单发)'']
 
     when: [''玩家进入视距且瞄准线清晰'']
 
-    then: [''状态机 Hold → Aim (带激光预警线, 前摇可视化 0.3–0.6s) → Fire'', ''激光瞄准线在开火前可见, 给玩家预警窗口'', ''玩家接近至安全距离内触发 Reposition/后撤换位'']
+    then: [''状态机 Hold → Aim (带激光预警线, 前摇可视化 0.3–0.6s) → Fire'', ''激光瞄准线在开火前可见, 给玩家预警窗口'',
+    ''玩家接近至安全距离内触发 Reposition/后撤换位'']
 
     注: 场景锚定真实需求/spec/现有测试, 禁止自由发挥。'
   estimated_effort: 0.5-2 小时
@@ -549,8 +559,8 @@ tasks:
 
     when: [''玩家持续输出使 Boss 血量穿越阶段阈值'']
 
-    then: [''阶段切换单向推进, 血量回升不回退阶段'', ''转阶段清空当前招式, 播放转阶段表现, 无敌期 1.5–2.5s'', ''无敌期间免疫伤害与硬直, 期满后进入新阶段招式循环'', ''每阶段独立血条口径与 genre
-    weapon_balance.ttk_targets.boss (8–20s) 校准'']
+    then: [''阶段切换单向推进, 血量回升不回退阶段'', ''转阶段清空当前招式, 播放转阶段表现, 无敌期 1.5–2.5s'', ''无敌期间免疫伤害与硬直,
+    期满后进入新阶段招式循环'', ''每阶段独立血条口径与 genre weapon_balance.ttk_targets.boss (8–20s) 校准'']
 
     注: 场景锚定真实需求/spec/现有测试, 禁止自由发挥。'
   estimated_effort: 0.5-2 小时
@@ -577,18 +587,20 @@ tasks:
 
     source 锚点: templates/genre_knowledge/shooter_base.yaml#checkpoints.placement_rules
 
-    given: [''玩家通过一个战斗段 (encounter_zone on_enter 已完成)'', ''距上一个检查点游戏时间 ≥ 60s (spacing_seconds [60,120], default 90)'']
+    given: [''玩家通过一个战斗段 (encounter_zone on_enter 已完成)'', ''距上一个检查点游戏时间 ≥ 60s (spacing_seconds
+    [60,120], default 90)'']
 
     when: [''玩家越过检查点触发线'']
 
-    then: [''自动写入当前检查点存档 (含武器进度/pickup 收集/积分/命数)'', ''存档点置于战斗段之前 (重生即开战体验差为红线)'', ''死亡时保留武器进度与 pickup 收集 (魂斗罗传统仅限关卡重开清空)'',
-    ''单次写入不阻塞游戏循环 (无可见卡顿)'']
+    then: [''自动写入当前检查点存档 (含武器进度/pickup 收集/积分/命数)'', ''存档点置于战斗段之前 (重生即开战体验差为红线)'',
+    ''死亡时保留武器进度与 pickup 收集 (魂斗罗传统仅限关卡重开清空)'', ''单次写入不阻塞游戏循环 (无可见卡顿)'']
 
     注: 场景锚定真实需求/spec/现有测试, 禁止自由发挥。'
   estimated_effort: 0.5-2 小时
   location: bdd 协议 / system=save_load (step 实现在对应模块)
   priority: P1
-  result: 'SaveLoad tests pass (6/6): checkpoint, boss_death, empty_save, continue_reset, slot_overwrite, corrupt_fallback'
+  result: 'SaveLoad tests pass (6/6): checkpoint, boss_death, empty_save, continue_reset,
+    slot_overwrite, corrupt_fallback'
   source: templates/genre_knowledge/shooter_base.yaml#checkpoints.placement_rules
   status: completed
   task_id: T-BDD-ADOPT-6cbd51
@@ -613,8 +625,8 @@ tasks:
 
     when: [''玩家死于 Boss 战后重生'']
 
-    then: [''Boss 战入口必设检查点, 重生后直接重进 Boss 战 (满状态)'', ''死于 Boss 绝不回退到 Boss 之前的检查点 (挫败感红线)'', ''检查点不设在 Boss 房内部 (死亡重进即满状态 Boss
-    战为反模式)'', ''Boss 房重生无敌时间额外加长 1-2s'']
+    then: [''Boss 战入口必设检查点, 重生后直接重进 Boss 战 (满状态)'', ''死于 Boss 绝不回退到 Boss 之前的检查点 (挫败感红线)'',
+    ''检查点不设在 Boss 房内部 (死亡重进即满状态 Boss 战为反模式)'', ''Boss 房重生无敌时间额外加长 1-2s'']
 
     注: 场景锚定真实需求/spec/现有测试, 禁止自由发挥。'
   estimated_effort: 0.5-2 小时
@@ -645,14 +657,15 @@ tasks:
 
     when: [''玩家触发 Game Over 并确认重试'']
 
-    then: [''自动回到最近检查点, 命数重置'', ''重生位置 = 最近检查点 + 周围 3m 无敌人净空区'', ''重生无敌 respawn_invuln_s 落在 [2,3]s, respawn_delay_s 落在 [2,4]s'',
-    ''恢复数据与存档快照一致 (武器/积分/pickup 逐项核对)'']
+    then: [''自动回到最近检查点, 命数重置'', ''重生位置 = 最近检查点 + 周围 3m 无敌人净空区'', ''重生无敌 respawn_invuln_s
+    落在 [2,3]s, respawn_delay_s 落在 [2,4]s'', ''恢复数据与存档快照一致 (武器/积分/pickup 逐项核对)'']
 
     注: 场景锚定真实需求/spec/现有测试, 禁止自由发挥。'
   estimated_effort: 0.5-2 小时
   location: bdd 协议 / system=save_load (step 实现在对应模块)
   priority: P1
-  result: 'SaveLoad tests pass (6/6): checkpoint, boss_death, empty_save, continue_reset, slot_overwrite, corrupt_fallback'
+  result: 'SaveLoad tests pass (6/6): checkpoint, boss_death, empty_save, continue_reset,
+    slot_overwrite, corrupt_fallback'
   source: templates/genre_knowledge/shooter_base.yaml#checkpoints.respawn
   status: completed
   task_id: T-BDD-ADOPT-981aba
@@ -677,13 +690,15 @@ tasks:
 
     when: [''玩家在倒计时内消耗一次续关'']
 
-    then: [''从检查点复活, 命数按 lives_per_credit [3,5] 重置'', {''家用版变体'': ''续关次数不限但清空累计分''}, ''续关耗尽后进入关卡重开 (检查点清零)'']
+    then: [''从检查点复活, 命数按 lives_per_credit [3,5] 重置'', {''家用版变体'': ''续关次数不限但清空累计分''},
+    ''续关耗尽后进入关卡重开 (检查点清零)'']
 
     注: 场景锚定真实需求/spec/现有测试, 禁止自由发挥。'
   estimated_effort: 0.5-2 小时
   location: bdd 协议 / system=save_load (step 实现在对应模块)
   priority: P1
-  result: 'SaveLoad tests pass (6/6): checkpoint, boss_death, empty_save, continue_reset, slot_overwrite, corrupt_fallback'
+  result: 'SaveLoad tests pass (6/6): checkpoint, boss_death, empty_save, continue_reset,
+    slot_overwrite, corrupt_fallback'
   source: templates/genre_knowledge/shooter_base.yaml#lives_system.game_over_loop
   status: completed
   task_id: T-BDD-ADOPT-4ca2cc
@@ -708,7 +723,8 @@ tasks:
 
     when: [''玩家选择已有进度的槽位写入'']
 
-    then: [''覆盖前展示该槽摘要 (关卡/检查点/积分/游玩时长) 供确认'', ''写入采用"先写临时文件再原子替换", 中途断电不破坏原档'', ''槽位间互不影响, 读取任一槽恢复到其检查点状态'']
+    then: [''覆盖前展示该槽摘要 (关卡/检查点/积分/游玩时长) 供确认'', ''写入采用"先写临时文件再原子替换", 中途断电不破坏原档'', ''槽位间互不影响,
+    读取任一槽恢复到其检查点状态'']
 
     注: 场景锚定真实需求/spec/现有测试, 禁止自由发挥。'
   estimated_effort: 0.5-2 小时
@@ -739,13 +755,15 @@ tasks:
 
     when: [''玩家在标题界面选择"继续游戏"'']
 
-    then: [''拒绝载入损坏档并提示, 不崩溃不闪退'', ''自动回退到该槽的最近完好备份 (若有), 否则将该槽标记为不可用'', ''其余槽位与新开档流程不受影响'', ''版本号不符的旧档走迁移提示而非直接丢弃'']
+    then: [''拒绝载入损坏档并提示, 不崩溃不闪退'', ''自动回退到该槽的最近完好备份 (若有), 否则将该槽标记为不可用'', ''其余槽位与新开档流程不受影响'',
+    ''版本号不符的旧档走迁移提示而非直接丢弃'']
 
     注: 场景锚定真实需求/spec/现有测试, 禁止自由发挥。'
   estimated_effort: 0.5-2 小时
   location: bdd 协议 / system=save_load (step 实现在对应模块)
   priority: P1
-  result: 'SaveLoad tests pass (6/6): checkpoint, boss_death, empty_save, continue_reset, slot_overwrite, corrupt_fallback'
+  result: 'SaveLoad tests pass (6/6): checkpoint, boss_death, empty_save, continue_reset,
+    slot_overwrite, corrupt_fallback'
   source: templates/genre_knowledge/shooter_base.yaml#checkpoints
   status: completed
   task_id: T-BDD-ADOPT-662053
@@ -896,11 +914,13 @@ tasks:
 
     source 锚点: templates/genre_knowledge/shooter_base.yaml#weapon_feel_variance.crosshair_spread
 
-    given: [''玩家持 rifle_default, 准星处于静止默认状态'', ''crosshair_spread dynamic_range_deg [0,8], default 4'']
+    given: [''玩家持 rifle_default, 准星处于静止默认状态'', ''crosshair_spread dynamic_range_deg
+    [0,8], default 4'']
 
     when: [''玩家移动/跳跃后开火, 随后静止站立'']
 
-    then: [''移动时扩散 ×1.5-2.0, 跳跃 ×2.5-3.0 (空中惩罚)'', ''静止回复速率 5-10°/s, 回复过程平滑无跳变'', ''枪口火光 (30-80ms) 不遮挡准星, 不产生频闪不适'']
+    then: [''移动时扩散 ×1.5-2.0, 跳跃 ×2.5-3.0 (空中惩罚)'', ''静止回复速率 5-10°/s, 回复过程平滑无跳变'',
+    ''枪口火光 (30-80ms) 不遮挡准星, 不产生频闪不适'']
 
     注: 场景锚定真实需求/spec/现有测试, 禁止自由发挥。'
   estimated_effort: 0.5-2 小时
@@ -931,8 +951,8 @@ tasks:
 
     when: [''一发子弹命中敌人躯干并最终将其击杀'']
 
-    then: [''准星处十字/斜杠标记即时显示, 持续 80-120ms'', ''击杀时标记换色 (白→红/金) 并播放变体音效'', ''击杀音效音高较普通命中提升 15-30%'', ''视听延迟 ≤ 80ms (audio_latency_budget
-    threshold), 无脱节感'']
+    then: [''准星处十字/斜杠标记即时显示, 持续 80-120ms'', ''击杀时标记换色 (白→红/金) 并播放变体音效'', ''击杀音效音高较普通命中提升
+    15-30%'', ''视听延迟 ≤ 80ms (audio_latency_budget threshold), 无脱节感'']
 
     注: 场景锚定真实需求/spec/现有测试, 禁止自由发挥。'
   estimated_effort: 0.5-2 小时
@@ -959,12 +979,14 @@ tasks:
 
     source 锚点: templates/genre_knowledge/shooter_base.yaml#lives_system
 
-    given: [{''生命模型为混合制 (hybrid'': ''血条 + 一击死段位)''}, ''命数 initial_lives=3, lives_cap 区间 [5,30] default 9'']
+    given: [{''生命模型为混合制 (hybrid'': ''血条 + 一击死段位)''}, ''命数 initial_lives=3, lives_cap
+    区间 [5,30] default 9'']
 
     when: [''玩家受击掉血 / 命数因死亡消耗或拾取 1UP 变化'']
 
-    then: [''血条与命数 HUD 实时刷新, 数值只来自 health_damage/lives 结算 (无旁路写入)'', ''低血量触发音画渐变 (心跳音/屏幕暗角), 恢复后消退'', ''受击时屏幕边缘红光/扇形方向指示器正确指向伤害来源
-    (3D 化必需)'', {''命中/拾取等 HUD 闪烁与音效同步 (拾取/武器切换'': ''音效+HUD 闪烁)''}]
+    then: [''血条与命数 HUD 实时刷新, 数值只来自 health_damage/lives 结算 (无旁路写入)'', ''低血量触发音画渐变 (心跳音/屏幕暗角),
+    恢复后消退'', ''受击时屏幕边缘红光/扇形方向指示器正确指向伤害来源 (3D 化必需)'', {''命中/拾取等 HUD 闪烁与音效同步 (拾取/武器切换'':
+    ''音效+HUD 闪烁)''}]
 
     注: 场景锚定真实需求/spec/现有测试, 禁止自由发挥。'
   estimated_effort: 0.5-2 小时
@@ -995,8 +1017,8 @@ tasks:
 
     when: [''玩家按暂停键呼出/关闭菜单, 并调整屏震强度滑杆'']
 
-    then: [''暂停期间模拟完全冻结 (敌人/弹体/计时均不动), 关闭后无状态错乱'', ''屏震强度滑杆可调, 默认 ≤0.3 (归一化, 相对屏幕高度)'', ''双人同屏时提示与菜单必须声明"属于哪位玩家"'', ''暂停界面可查看当前检查点/积分/武器状态,
-    退出即回到暂停前画面'']
+    then: [''暂停期间模拟完全冻结 (敌人/弹体/计时均不动), 关闭后无状态错乱'', ''屏震强度滑杆可调, 默认 ≤0.3 (归一化, 相对屏幕高度)'',
+    ''双人同屏时提示与菜单必须声明"属于哪位玩家"'', ''暂停界面可查看当前检查点/积分/武器状态, 退出即回到暂停前画面'']
 
     注: 场景锚定真实需求/spec/现有测试, 禁止自由发挥。'
   estimated_effort: 0.5-2 小时
@@ -1027,8 +1049,8 @@ tasks:
 
     when: [''玩家击杀敌人使累计分数跨越 1UP 阈值'']
 
-    then: [''得分 HUD 即时刷新并伴随拾取音效+HUD 闪烁'', ''跨阈值瞬间命数 +1, HUD 命数位同步更新'', ''使用续关 (continue) 的家用版变体下, 累计分清空时得分 HUD 归零'', ''得分数据与
-    save_load 存档快照一致'']
+    then: [''得分 HUD 即时刷新并伴随拾取音效+HUD 闪烁'', ''跨阈值瞬间命数 +1, HUD 命数位同步更新'', ''使用续关 (continue)
+    的家用版变体下, 累计分清空时得分 HUD 归零'', ''得分数据与 save_load 存档快照一致'']
 
     注: 场景锚定真实需求/spec/现有测试, 禁止自由发挥。'
   estimated_effort: 0.5-2 小时
@@ -1055,13 +1077,13 @@ tasks:
 
     source 锚点: templates/system_design/combat_system.md#子系统职责划分
 
-    given: [''玩家主武器为 rifle_default'', ''击破胶囊载具掉落 weapon_box (spread_shot)'', ''掉率落在 genre weapon_balance.spawn_rate 0.15–0.3
-    区间'']
+    given: [''玩家主武器为 rifle_default'', ''击破胶囊载具掉落 weapon_box (spread_shot)'', ''掉率落在
+    genre weapon_balance.spawn_rate 0.15–0.3 区间'']
 
     when: [''玩家拾取字母道具 S, 随后在主/副武器槽间切换'']
 
-    then: [''拾取即切换为 spread_shot, 原武器保留在另一槽位'', ''切换动画/冷却期间射击请求被拒绝'', ''切换完成后新武器按 weapons.yaml 参数生效 (damage=6, fire_rate=2,
-    magazine_size=8)'']
+    then: [''拾取即切换为 spread_shot, 原武器保留在另一槽位'', ''切换动画/冷却期间射击请求被拒绝'', ''切换完成后新武器按 weapons.yaml
+    参数生效 (damage=6, fire_rate=2, magazine_size=8)'']
 
     注: 场景锚定真实需求/spec/现有测试, 禁止自由发挥。'
   estimated_effort: 0.5-2 小时
@@ -1092,13 +1114,15 @@ tasks:
 
     when: [''weapon_system 加载并实例化 rifle_default'']
 
-    then: [''damage=12, fire_rate=7, magazine_size=30, reload_time=1.5, spread=1.5'', ''type=hitscan, 作为所有强度对比的基准锚点'']
+    then: [''damage=12, fire_rate=7, magazine_size=30, reload_time=1.5, spread=1.5'',
+    ''type=hitscan, 作为所有强度对比的基准锚点'']
 
     注: 场景锚定真实需求/spec/现有测试, 禁止自由发挥。'
   estimated_effort: 0.5-2 小时
   location: bdd 协议 / system=weapon_system (step 实现在对应模块)
   priority: P1
-  result: WeaponSystemTests.Rifle_BaselineStatsConformance_BDD_T8d7e09 pass (damage=12, fireRate=7, mag=30, reload=1.5, spread=1.5)
+  result: WeaponSystemTests.Rifle_BaselineStatsConformance_BDD_T8d7e09 pass (damage=12,
+    fireRate=7, mag=30, reload=1.5, spread=1.5)
   source: data/weapons/weapons.yaml#weapons.rifle_default
   status: completed
   task_id: T-BDD-ADOPT-8d7e09
@@ -1119,17 +1143,20 @@ tasks:
 
     source 锚点: data/weapons/weapons.yaml#weapons.spread_shot
 
-    given: [''玩家持 spread_shot (单弹丸伤害6, 每次发射5弹丸, spread=12°)'', ''目标杂兵 (health=24) 在贴脸距离'']
+    given: [''玩家持 spread_shot (单弹丸伤害6, 每次发射5弹丸, spread=12°)'', ''目标杂兵 (health=24)
+    在贴脸距离'']
 
     when: [''玩家对准目标开火一次'']
 
-    then: [''一次射击产出 5 颗短程弹丸 (type=projectile)'', ''贴脸全中时单次伤害可达 30, 一发击杀 health≤30 的杂兵'', ''中远距离弹丸随距离衰减, 覆盖明显收敛'']
+    then: [''一次射击产出 5 颗短程弹丸 (type=projectile)'', ''贴脸全中时单次伤害可达 30, 一发击杀 health≤30
+    的杂兵'', ''中远距离弹丸随距离衰减, 覆盖明显收敛'']
 
     注: 场景锚定真实需求/spec/现有测试, 禁止自由发挥。'
   estimated_effort: 0.5-2 小时
   location: bdd 协议 / system=weapon_system (step 实现在对应模块)
   priority: P1
-  result: WeaponSystemTests.SpreadShot_CloseRangeBurst_BDD_Te30037 pass (5 pellets, 30 dmg burst kill)
+  result: WeaponSystemTests.SpreadShot_CloseRangeBurst_BDD_Te30037 pass (5 pellets,
+    30 dmg burst kill)
   source: data/weapons/weapons.yaml#weapons.spread_shot
   status: completed
   task_id: T-BDD-ADOPT-e30037
@@ -1150,17 +1177,20 @@ tasks:
 
     source 锚点: data/weapons/weapons.yaml#weapons.laser_beam
 
-    given: [''玩家持 laser_beam (damage=35, fire_rate=3, magazine_size=12, reload_time=2.5, spread=0)'']
+    given: [''玩家持 laser_beam (damage=35, fire_rate=3, magazine_size=12, reload_time=2.5,
+    spread=0)'']
 
     when: [''玩家对精英以下敌人 (health≤30) 连续射击'']
 
-    then: [''hitscan 即发即中, 2~3 发内击杀'', ''弹匣耗尽后进入 2.5s 装填, 装填期间无法射击'', ''spread=0 完全精准, 无散布偏差'']
+    then: [''hitscan 即发即中, 2~3 发内击杀'', ''弹匣耗尽后进入 2.5s 装填, 装填期间无法射击'', ''spread=0 完全精准,
+    无散布偏差'']
 
     注: 场景锚定真实需求/spec/现有测试, 禁止自由发挥。'
   estimated_effort: 0.5-2 小时
   location: bdd 协议 / system=weapon_system (step 实现在对应模块)
   priority: P1
-  result: WeaponSystemTests.Laser_HitscanHighBurstLowMag_BDD_Tb1eabe pass (hitscan instant, 2.5s reload, spread=0)
+  result: WeaponSystemTests.Laser_HitscanHighBurstLowMag_BDD_Tb1eabe pass (hitscan
+    instant, 2.5s reload, spread=0)
   source: data/weapons/weapons.yaml#weapons.laser_beam
   status: completed
   task_id: T-BDD-ADOPT-b1eabe
@@ -1191,7 +1221,8 @@ tasks:
   estimated_effort: 0.5-2 小时
   location: bdd 协议 / system=weapon_system (step 实现在对应模块)
   priority: P1
-  result: WeaponSystemTests.Magazine_ReloadCycle_BDD_Tc6ce43 pass (empty reject + reload cycle + reload-blocked switch)
+  result: WeaponSystemTests.Magazine_ReloadCycle_BDD_Tc6ce43 pass (empty reject +
+    reload cycle + reload-blocked switch)
   source: templates/system_design/combat_system.md#子系统职责划分
   status: completed
   task_id: T-BDD-ADOPT-c6ce43
@@ -1212,19 +1243,21 @@ tasks:
 
     source 锚点: templates/genre_knowledge_reference.yaml#weapon_balance.balance
 
-    given: [''全部 5 种武器已加载 (rifle/spread/laser/homing/machinegun)'', {''genre weapon_balance 命中折算'': ''spread=0.4, homing=0.9,
-    默认=0.7''}]
+    given: [''全部 5 种武器已加载 (rifle/spread/laser/homing/machinegun)'', {''genre weapon_balance
+    命中折算'': ''spread=0.4, homing=0.9, 默认=0.7''}]
 
     when: [''对每种武器计算理论 DPS × 命中折算'']
 
-    then: [''每种武器折算 DPS 落在基准步枪 (rifle_default) 的 0.8–1.5 倍内'', ''S 弹贴脸可达约 1.5x 但射程 ≤500px 有明显惩罚'', ''H 弹允许最低 (约 0.8x), 换取全屏索敌'',
-    ''M 弹各项参数不高于同类最优值的 90%, 无短板亦无长板'', ''不存在拾取后任意场景严格优于原武器的纯上位武器'']
+    then: [''每种武器折算 DPS 落在基准步枪 (rifle_default) 的 0.8–1.5 倍内'', ''S 弹贴脸可达约 1.5x 但射程
+    ≤500px 有明显惩罚'', ''H 弹允许最低 (约 0.8x), 换取全屏索敌'', ''M 弹各项参数不高于同类最优值的 90%, 无短板亦无长板'',
+    ''不存在拾取后任意场景严格优于原武器的纯上位武器'']
 
     注: 场景锚定真实需求/spec/现有测试, 禁止自由发挥。'
   estimated_effort: 0.5-2 小时
   location: bdd 协议 / system=weapon_system (step 实现在对应模块)
   priority: P1
-  result: WeaponSystemTests.DPS_BalanceEnvelope_AcrossArsenal_BDD_T3b730f pass (all 5 weapons in [0.8x, 1.5x] envelope)
+  result: WeaponSystemTests.DPS_BalanceEnvelope_AcrossArsenal_BDD_T3b730f pass (all
+    5 weapons in [0.8x, 1.5x] envelope)
   source: templates/genre_knowledge_reference.yaml#weapon_balance.balance
   status: completed
   task_id: T-BDD-ADOPT-3b730f
@@ -1255,7 +1288,8 @@ tasks:
   estimated_effort: 0.5-2 小时
   location: bdd 协议 / system=weapon_system (step 实现在对应模块)
   priority: P1
-  result: WeaponSystemTests.Death_ResetsToDefaultRifle_BDD_T641503 pass (reset to rifle_default, slot cleared, re-acquirable)
+  result: WeaponSystemTests.Death_ResetsToDefaultRifle_BDD_T641503 pass (reset to
+    rifle_default, slot cleared, re-acquirable)
   source: templates/genre_knowledge_reference.yaml#weapon_balance.acquisition_and_loss
   status: completed
   task_id: T-BDD-ADOPT-641503
@@ -1268,10 +1302,13 @@ tasks:
   - cargo check --features os-autopilot still passes
   completed_at: '2026-09-04T13:15:00+08:00'
   depends_on: []
-  description: "BDD registry gap fix (由 protocol_adoption_scanner.py 确定性检测):\nsystem: combat\ncontract_file: _os_state/design_contracts/combat.bdd.yaml\n\
-    e2e_scenarios: 3\naction: add harness-native registry entry to _os_state/bdd_scenario_registry.yaml\n  under 'systems:'\
-    \ key, following existing patterns (rg_djinn_visible, etc.)\ntemplate pattern: id/description/setup(steps+spawn)/steps(render_frames)/expect(entity_visible\
-    \ or game_signal)\nnote: registry entries are deterministic templates, not LLM-inferred. Follow the schema from real_game_scenario_sync.py."
+  description: "BDD registry gap fix (由 protocol_adoption_scanner.py 确定性检测):\nsystem:\
+    \ combat\ncontract_file: _os_state/design_contracts/combat.bdd.yaml\ne2e_scenarios:\
+    \ 3\naction: add harness-native registry entry to _os_state/bdd_scenario_registry.yaml\n\
+    \  under 'systems:' key, following existing patterns (rg_djinn_visible, etc.)\n\
+    template pattern: id/description/setup(steps+spawn)/steps(render_frames)/expect(entity_visible\
+    \ or game_signal)\nnote: registry entries are deterministic templates, not LLM-inferred.\
+    \ Follow the schema from real_game_scenario_sync.py."
   estimated_effort: 0.5-1 小时
   location: _os_state/bdd_scenario_registry.yaml systems.combat
   priority: P0
@@ -1288,10 +1325,13 @@ tasks:
   - cargo check --features os-autopilot still passes
   completed_at: '2026-09-04T13:15:00+08:00'
   depends_on: []
-  description: "BDD registry gap fix (由 protocol_adoption_scanner.py 确定性检测):\nsystem: enemy_ai\ncontract_file: _os_state/design_contracts/enemy_ai.bdd.yaml\n\
-    e2e_scenarios: 3\naction: add harness-native registry entry to _os_state/bdd_scenario_registry.yaml\n  under 'systems:'\
-    \ key, following existing patterns (rg_djinn_visible, etc.)\ntemplate pattern: id/description/setup(steps+spawn)/steps(render_frames)/expect(entity_visible\
-    \ or game_signal)\nnote: registry entries are deterministic templates, not LLM-inferred. Follow the schema from real_game_scenario_sync.py."
+  description: "BDD registry gap fix (由 protocol_adoption_scanner.py 确定性检测):\nsystem:\
+    \ enemy_ai\ncontract_file: _os_state/design_contracts/enemy_ai.bdd.yaml\ne2e_scenarios:\
+    \ 3\naction: add harness-native registry entry to _os_state/bdd_scenario_registry.yaml\n\
+    \  under 'systems:' key, following existing patterns (rg_djinn_visible, etc.)\n\
+    template pattern: id/description/setup(steps+spawn)/steps(render_frames)/expect(entity_visible\
+    \ or game_signal)\nnote: registry entries are deterministic templates, not LLM-inferred.\
+    \ Follow the schema from real_game_scenario_sync.py."
   estimated_effort: 0.5-1 小时
   location: _os_state/bdd_scenario_registry.yaml systems.enemy_ai
   priority: P0
@@ -1308,10 +1348,13 @@ tasks:
   - cargo check --features os-autopilot still passes
   completed_at: '2026-09-04T13:15:00+08:00'
   depends_on: []
-  description: "BDD registry gap fix (由 protocol_adoption_scanner.py 确定性检测):\nsystem: save_load\ncontract_file: _os_state/design_contracts/save_load.bdd.yaml\n\
-    e2e_scenarios: 3\naction: add harness-native registry entry to _os_state/bdd_scenario_registry.yaml\n  under 'systems:'\
-    \ key, following existing patterns (rg_djinn_visible, etc.)\ntemplate pattern: id/description/setup(steps+spawn)/steps(render_frames)/expect(entity_visible\
-    \ or game_signal)\nnote: registry entries are deterministic templates, not LLM-inferred. Follow the schema from real_game_scenario_sync.py."
+  description: "BDD registry gap fix (由 protocol_adoption_scanner.py 确定性检测):\nsystem:\
+    \ save_load\ncontract_file: _os_state/design_contracts/save_load.bdd.yaml\ne2e_scenarios:\
+    \ 3\naction: add harness-native registry entry to _os_state/bdd_scenario_registry.yaml\n\
+    \  under 'systems:' key, following existing patterns (rg_djinn_visible, etc.)\n\
+    template pattern: id/description/setup(steps+spawn)/steps(render_frames)/expect(entity_visible\
+    \ or game_signal)\nnote: registry entries are deterministic templates, not LLM-inferred.\
+    \ Follow the schema from real_game_scenario_sync.py."
   estimated_effort: 0.5-1 小时
   location: _os_state/bdd_scenario_registry.yaml systems.save_load
   priority: P0
@@ -1328,10 +1371,13 @@ tasks:
   - cargo check --features os-autopilot still passes
   completed_at: '2026-09-04T13:15:00+08:00'
   depends_on: []
-  description: "BDD registry gap fix (由 protocol_adoption_scanner.py 确定性检测):\nsystem: ui_system\ncontract_file: _os_state/design_contracts/ui_system.bdd.yaml\n\
-    e2e_scenarios: 3\naction: add harness-native registry entry to _os_state/bdd_scenario_registry.yaml\n  under 'systems:'\
-    \ key, following existing patterns (rg_djinn_visible, etc.)\ntemplate pattern: id/description/setup(steps+spawn)/steps(render_frames)/expect(entity_visible\
-    \ or game_signal)\nnote: registry entries are deterministic templates, not LLM-inferred. Follow the schema from real_game_scenario_sync.py."
+  description: "BDD registry gap fix (由 protocol_adoption_scanner.py 确定性检测):\nsystem:\
+    \ ui_system\ncontract_file: _os_state/design_contracts/ui_system.bdd.yaml\ne2e_scenarios:\
+    \ 3\naction: add harness-native registry entry to _os_state/bdd_scenario_registry.yaml\n\
+    \  under 'systems:' key, following existing patterns (rg_djinn_visible, etc.)\n\
+    template pattern: id/description/setup(steps+spawn)/steps(render_frames)/expect(entity_visible\
+    \ or game_signal)\nnote: registry entries are deterministic templates, not LLM-inferred.\
+    \ Follow the schema from real_game_scenario_sync.py."
   estimated_effort: 0.5-1 小时
   location: _os_state/bdd_scenario_registry.yaml systems.ui_system
   priority: P0
@@ -1348,10 +1394,13 @@ tasks:
   - cargo check --features os-autopilot still passes
   completed_at: '2026-09-04T13:15:00+08:00'
   depends_on: []
-  description: "BDD registry gap fix (由 protocol_adoption_scanner.py 确定性检测):\nsystem: weapon_system\ncontract_file: _os_state/design_contracts/weapon_system.bdd.yaml\n\
-    e2e_scenarios: 3\naction: add harness-native registry entry to _os_state/bdd_scenario_registry.yaml\n  under 'systems:'\
-    \ key, following existing patterns (rg_djinn_visible, etc.)\ntemplate pattern: id/description/setup(steps+spawn)/steps(render_frames)/expect(entity_visible\
-    \ or game_signal)\nnote: registry entries are deterministic templates, not LLM-inferred. Follow the schema from real_game_scenario_sync.py."
+  description: "BDD registry gap fix (由 protocol_adoption_scanner.py 确定性检测):\nsystem:\
+    \ weapon_system\ncontract_file: _os_state/design_contracts/weapon_system.bdd.yaml\n\
+    e2e_scenarios: 3\naction: add harness-native registry entry to _os_state/bdd_scenario_registry.yaml\n\
+    \  under 'systems:' key, following existing patterns (rg_djinn_visible, etc.)\n\
+    template pattern: id/description/setup(steps+spawn)/steps(render_frames)/expect(entity_visible\
+    \ or game_signal)\nnote: registry entries are deterministic templates, not LLM-inferred.\
+    \ Follow the schema from real_game_scenario_sync.py."
   estimated_effort: 0.5-1 小时
   location: _os_state/bdd_scenario_registry.yaml systems.weapon_system
   priority: P0
@@ -1534,7 +1583,8 @@ tasks:
   description: 实现 playtest 协议覆盖 stage_traversal 和 combat_balanced 系统
   estimated_effort: L
   priority: P1
-  result: HeadlessPlaytestAgent + PlaytestSession + PlaytestMetrics framework committed (fa6f4ee), 159 tests pass
+  result: HeadlessPlaytestAgent + PlaytestSession + PlaytestMetrics framework committed
+    (fa6f4ee), 159 tests pass
   source: protocol_adoption_scan
   status: completed
   task_id: T-PLAYTEST-001
@@ -1545,7 +1595,8 @@ tasks:
   description: 生成 data/maps/ 下的关卡 YAML 数据文件
   estimated_effort: S
   priority: P1
-  result: 4 张关卡数据完成 (m_stage01~04), 含 spawn_points/cover_points/pickup_locations/enemy_spawns/boss, 对应 seed_round
+  result: 4 张关卡数据完成 (m_stage01~04), 含 spawn_points/cover_points/pickup_locations/enemy_spawns/boss,
+    对应 seed_round
   source: arch_scan
   status: completed
   task_id: T-DATA-001
@@ -1558,12 +1609,12 @@ tasks:
   - All tests pass
   completed_at: '2026-09-04T21:00:00+08:00'
   depends_on: []
-  description: PlaytestSession uses reflection to access CombatSystem._targetRegistry (private). Add public GetTargets() returning
-    IReadOnlyList<TargetInfo> to CombatSystem.
+  description: PlaytestSession uses reflection to access CombatSystem._targetRegistry
+    (private). Add public GetTargets() returning IReadOnlyList<TargetInfo> to CombatSystem.
   estimated_effort: S
   priority: P1
-  result: Added TargetInfo struct and GetTargets() to CombatSystem; updated PlaytestSession to use public API; removed System.Reflection
-    usage; all 159 tests pass.
+  result: Added TargetInfo struct and GetTargets() to CombatSystem; updated PlaytestSession
+    to use public API; removed System.Reflection usage; all 159 tests pass.
   source: arch_scan_full
   status: completed
   task_id: T-ARCH-D1-001
@@ -1576,12 +1627,14 @@ tasks:
   - All tests pass
   completed_at: '2026-09-04T21:35:00+08:00'
   depends_on: []
-  description: Contra3D.AI.AISystem redefines EnemyDefinition, EnemyAIState, AiType, AiState, AICommand that exist in Contra3D.Core.
-    Remove duplicates; reference Core types directly. AI layer should only contain Unity integration glue.
+  description: Contra3D.AI.AISystem redefines EnemyDefinition, EnemyAIState, AiType,
+    AiState, AICommand that exist in Contra3D.Core. Remove duplicates; reference Core
+    types directly. AI layer should only contain Unity integration glue.
   estimated_effort: M
   priority: P1
-  result: 'Verified: src/AI/AISystem.cs already satisfies requirements — no duplicate types defined, uses `using Contra3D.Core;`
-    (line 3), references Core types directly. All 159 tests pass.'
+  result: 'Verified: src/AI/AISystem.cs already satisfies requirements — no duplicate
+    types defined, uses `using Contra3D.Core;` (line 3), references Core types directly.
+    All 159 tests pass.'
   source: arch_scan_full
   status: completed
   task_id: T-ARCH-D1-002
@@ -1594,12 +1647,13 @@ tasks:
   - All tests pass
   completed_at: '2026-09-04T22:05:00+08:00'
   depends_on: []
-  description: CombatSystem.ComputeScore() has hardcoded switch on enemyId strings. Move score values to EnemyDefinition or
-    separate ScoreTable YAML.
+  description: CombatSystem.ComputeScore() has hardcoded switch on enemyId strings.
+    Move score values to EnemyDefinition or separate ScoreTable YAML.
   estimated_effort: S
   priority: P1
-  result: Added Score property to EnemyDefinition; added score field to all 5 enemies in data/enemies/enemies.yaml; created
-    EnemyLoader; modified CombatSystem to accept scoreTable via constructor; all 159 tests pass.
+  result: Added Score property to EnemyDefinition; added score field to all 5 enemies
+    in data/enemies/enemies.yaml; created EnemyLoader; modified CombatSystem to accept
+    scoreTable via constructor; all 159 tests pass.
   source: arch_scan_full
   status: completed
   task_id: T-ARCH-D2-001
@@ -1612,12 +1666,13 @@ tasks:
   - All tests pass
   completed_at: '2026-09-04T22:25:00+08:00'
   depends_on: []
-  description: ProjectileSystem.CheckCollision() is stub — projectiles never hit enemies in Core layer. Inject target registry
-    or provide ICollisionTargetProvider interface.
+  description: ProjectileSystem.CheckCollision() is stub — projectiles never hit enemies
+    in Core layer. Inject target registry or provide ICollisionTargetProvider interface.
   estimated_effort: M
   priority: P1
-  result: Added target injection to ProjectileSystem.Update(); implemented sphere-sweep collision detection with 1.5x tolerance;
-    added RegisterHit(); CombatSystem passes target list; all 159 tests pass.
+  result: Added target injection to ProjectileSystem.Update(); implemented sphere-sweep
+    collision detection with 1.5x tolerance; added RegisterHit(); CombatSystem passes
+    target list; all 159 tests pass.
   source: arch_scan_full
   status: completed
   task_id: T-ARCH-D2-002
@@ -1629,12 +1684,14 @@ tasks:
   - SwitchCooldownS configurable per-weapon or global config
   completed_at: '2026-09-04T22:50:00+08:00'
   depends_on: []
-  description: WeaponSystemConfig.MinFireIntervalS=0.08 and SwitchCooldownS=0.5 are hardcoded. Add minFireInterval to WeaponDefinition
-    YAML, default to 0.08 if not specified.
+  description: WeaponSystemConfig.MinFireIntervalS=0.08 and SwitchCooldownS=0.5 are
+    hardcoded. Add minFireInterval to WeaponDefinition YAML, default to 0.08 if not
+    specified.
   estimated_effort: S
   priority: P1
-  result: Added MinFireInterval/SwitchCooldown to WeaponDefinition; updated weapons.yaml for all 5 weapons; WeaponSystem uses
-    per-weapon values; kept backward-compat aliases for tests; all 159 tests pass.
+  result: Added MinFireInterval/SwitchCooldown to WeaponDefinition; updated weapons.yaml
+    for all 5 weapons; WeaponSystem uses per-weapon values; kept backward-compat aliases
+    for tests; all 159 tests pass.
   source: arch_scan_full
   status: completed
   task_id: T-ARCH-D2-003
@@ -1647,12 +1704,13 @@ tasks:
   - All tests pass
   completed_at: '2026-09-04T23:10:00+08:00'
   depends_on: []
-  description: AISystem.TrySpawn() has hardcoded maxNormal=12, maxRusher=4, anti-door-camping distance=5f. Create AISpawnConfig
-    data class loaded from YAML.
+  description: AISystem.TrySpawn() has hardcoded maxNormal=12, maxRusher=4, anti-door-camping
+    distance=5f. Create AISpawnConfig data class loaded from YAML.
   estimated_effort: S
   priority: P1
-  result: Created AISpawnConfig with MaxNormal/MaxRusher/AntiDoorCampingDistance; added data/ai/ai_spawn_config.yaml; AISystem
-    uses config with Initialize/InitializeFromYaml; TrySpawn uses config values; all 159 tests pass.
+  result: Created AISpawnConfig with MaxNormal/MaxRusher/AntiDoorCampingDistance;
+    added data/ai/ai_spawn_config.yaml; AISystem uses config with Initialize/InitializeFromYaml;
+    TrySpawn uses config values; all 159 tests pass.
   source: arch_scan_full
   status: completed
   task_id: T-ARCH-D2-004
@@ -1665,12 +1723,13 @@ tasks:
   - All tests pass
   completed_at: '2026-09-04T23:15:00+08:00'
   depends_on: []
-  description: AiSystem.UpdatePatrol() creates new Random() per enemy per frame (line 244). Use shared RandomExtensions.Shared
-    (line 358) or inject IRandomProvider.
+  description: AiSystem.UpdatePatrol() creates new Random() per enemy per frame (line
+    244). Use shared RandomExtensions.Shared (line 358) or inject IRandomProvider.
   estimated_effort: S
   priority: P1
-  result: Replaced new Random() in UpdatePatrol() with RandomExtensions.Shared.NextDouble(); made RandomExtensions.Shared
-    public static; no per-frame allocations in hot path; all 159 tests pass.
+  result: Replaced new Random() in UpdatePatrol() with RandomExtensions.Shared.NextDouble();
+    made RandomExtensions.Shared public static; no per-frame allocations in hot path;
+    all 159 tests pass.
   source: arch_scan_full
   status: completed
   task_id: T-ARCH-D3-001
@@ -1682,12 +1741,13 @@ tasks:
   - All tests pass
   completed_at: '2026-09-04T23:20:00+08:00'
   depends_on: []
-  description: Contra3D.AI.AISystem.UpdatePatrol() creates new Random() per enemy per frame (line 172-174). Use shared Random
-    or inject provider.
+  description: Contra3D.AI.AISystem.UpdatePatrol() creates new Random() per enemy
+    per frame (line 172-174). Use shared Random or inject provider.
   estimated_effort: S
   priority: P1
-  result: Replaced new Random() in AISystem.UpdatePatrol() with RandomExtensions.Shared.NextDouble() from Core layer; eliminated
-    per-frame allocations in AI layer hot path; all 159 tests pass.
+  result: Replaced new Random() in AISystem.UpdatePatrol() with RandomExtensions.Shared.NextDouble()
+    from Core layer; eliminated per-frame allocations in AI layer hot path; all 159
+    tests pass.
   source: arch_scan_full
   status: completed
   task_id: T-ARCH-D3-002
@@ -1699,11 +1759,12 @@ tasks:
   - All tests pass
   completed_at: '2026-09-04T23:25:00+08:00'
   depends_on: []
-  description: CombatSystem.ApplySpread() creates new Random() per shot. Use shared Random instance.
+  description: CombatSystem.ApplySpread() creates new Random() per shot. Use shared
+    Random instance.
   estimated_effort: S
   priority: P1
-  result: Replaced new Random() in CombatSystem.ApplySpread() with RandomExtensions.Shared.NextDouble(); eliminated per-shot
-    allocations; all 159 tests pass.
+  result: Replaced new Random() in CombatSystem.ApplySpread() with RandomExtensions.Shared.NextDouble();
+    eliminated per-shot allocations; all 159 tests pass.
   source: arch_scan_full
   status: completed
   task_id: T-ARCH-D3-003
@@ -1716,12 +1777,13 @@ tasks:
   - All tests pass
   completed_at: '2026-09-04T23:30:00+08:00'
   depends_on: []
-  description: 'ProjectileSystem homing uses Vector3.Lerp allocating 12K Vector3/sec at max projectiles. Manual lerp: dir
-    += (targetDir - dir) * (turnRate * dt); normalize.'
+  description: 'ProjectileSystem homing uses Vector3.Lerp allocating 12K Vector3/sec
+    at max projectiles. Manual lerp: dir += (targetDir - dir) * (turnRate * dt); normalize.'
   estimated_effort: S
   priority: P1
-  result: Replaced Vector3.Lerp with manual lerp (dir += (targetDir - dir) * (turnRate * dt); normalize); eliminated ~12K
-    Vector3 allocations/sec at max projectiles; all 159 tests pass.
+  result: Replaced Vector3.Lerp with manual lerp (dir += (targetDir - dir) * (turnRate
+    * dt); normalize); eliminated ~12K Vector3 allocations/sec at max projectiles;
+    all 159 tests pass.
   source: arch_scan_full
   status: completed
   task_id: T-ARCH-D3-004
@@ -1733,16 +1795,19 @@ tasks:
   - All tests pass
   completed_at: '2026-09-04T23:35:00+08:00'
   depends_on: []
-  description: ProjectileSystem.Update() clears HitEvents at start, then CombatSystem.UpdateProjectiles() reads them. Order-dependent.
-    Make ProjectileSystem.Update() return HitEvents directly or use observer pattern.
+  description: ProjectileSystem.Update() clears HitEvents at start, then CombatSystem.UpdateProjectiles()
+    reads them. Order-dependent. Make ProjectileSystem.Update() return HitEvents directly
+    or use observer pattern.
   estimated_effort: M
   priority: P2
-  result: ProjectileSystem.Update() now returns IReadOnlyList<HitEvent> directly; CombatSystem.UpdateProjectiles() uses returned
-    hit events; no temporal coupling; all 159 tests pass.
+  result: ProjectileSystem.Update() now returns IReadOnlyList<HitEvent> directly;
+    CombatSystem.UpdateProjectiles() uses returned hit events; no temporal coupling;
+    all 159 tests pass.
   source: arch_scan_full
   status: completed
   task_id: T-ARCH-D4-001
-  title: 'Arch Fix: Decouple CombatSystem.ProcessHitEvents from ProjectileSystem temporal coupling'
+  title: 'Arch Fix: Decouple CombatSystem.ProcessHitEvents from ProjectileSystem temporal
+    coupling'
   type: arch_fix
 - acceptance_criteria:
   - Event lists exposed as IReadOnlyList
@@ -1751,12 +1816,12 @@ tasks:
   - All tests pass
   completed_at: '2026-09-04T23:40:00+08:00'
   depends_on: []
-  description: HUDUpdater exposes GeneratedExtraLifeEvents and GeneratedLowHealthEvents as public mutable Lists. Return IReadOnlyList
-    or use events/callbacks.
+  description: HUDUpdater exposes GeneratedExtraLifeEvents and GeneratedLowHealthEvents
+    as public mutable Lists. Return IReadOnlyList or use events/callbacks.
   estimated_effort: S
   priority: P2
-  result: Changed public List<> fields to IReadOnlyList<> properties with private backing fields; external mutation prevented;
-    all 159 tests pass.
+  result: Changed public List<> fields to IReadOnlyList<> properties with private
+    backing fields; external mutation prevented; all 159 tests pass.
   source: arch_scan_full
   status: completed
   task_id: T-ARCH-D4-002
@@ -1768,12 +1833,13 @@ tasks:
   - All tests pass
   completed_at: '2026-09-04T23:50:00+08:00'
   depends_on: []
-  description: WeaponSystemConfig.DefaultWeaponId = "rifle_default" is magic string. Load from weapons.yaml or first loaded
-    definition.
+  description: WeaponSystemConfig.DefaultWeaponId = "rifle_default" is magic string.
+    Load from weapons.yaml or first loaded definition.
   estimated_effort: S
   priority: P1
-  result: WeaponLoader returns LoadResult with DefaultWeaponId (first weapon in YAML); WeaponSystemConfig.DefaultWeaponId
-    changed from const to static property; WeaponSystem constructor accepts defaultWeaponId; all 159 tests pass.
+  result: WeaponLoader returns LoadResult with DefaultWeaponId (first weapon in YAML);
+    WeaponSystemConfig.DefaultWeaponId changed from const to static property; WeaponSystem
+    constructor accepts defaultWeaponId; all 159 tests pass.
   source: arch_scan_full
   status: completed
   task_id: T-ARCH-D5-001
@@ -1786,12 +1852,13 @@ tasks:
   - All tests pass
   completed_at: '2026-09-05T00:10:00+08:00'
   depends_on: []
-  description: EnemyDefinition constructor has 13 parameters with magic number defaults. Use builder pattern or load from
-    YAML.
+  description: EnemyDefinition constructor has 13 parameters with magic number defaults.
+    Use builder pattern or load from YAML.
   estimated_effort: M
   priority: P1
-  result: 'EnemyDefinition refactored: 13 params → optional params with named constants; builder pattern added (CreateBuilder);
-    all 9 AI params in enemies.yaml; EnemyLoader parses all; all 159 tests pass.'
+  result: 'EnemyDefinition refactored: 13 params → optional params with named constants;
+    builder pattern added (CreateBuilder); all 9 AI params in enemies.yaml; EnemyLoader
+    parses all; all 159 tests pass.'
   source: arch_scan_full
   status: completed
   task_id: T-ARCH-D5-002
@@ -1804,11 +1871,12 @@ tasks:
   - All tests pass
   completed_at: '2026-09-05T00:20:00+08:00'
   depends_on: []
-  description: MotorConfig.Default() hardcodes 11 physics parameters. Add MotorConfig.LoadFromYaml() or load from player_movement.yaml.
+  description: MotorConfig.Default() hardcodes 11 physics parameters. Add MotorConfig.LoadFromYaml()
+    or load from player_movement.yaml.
   estimated_effort: S
   priority: P1
-  result: Created data/player_movement.yaml with 11 params; MotorConfig added LoadFromYaml/LoadFromString/Default with embedded
-    defaults + validation; all 159 tests pass.
+  result: Created data/player_movement.yaml with 11 params; MotorConfig added LoadFromYaml/LoadFromString/Default
+    with embedded defaults + validation; all 159 tests pass.
   source: arch_scan_full
   status: completed
   task_id: T-ARCH-D5-003
@@ -1821,12 +1889,13 @@ tasks:
   - All tests pass
   completed_at: '2026-09-05T00:55:00+08:00'
   depends_on: []
-  description: ProjectileSystemConfig has 4 hardcoded constants (MaxProjectiles=200, etc.). Load from projectile_config.yaml
-    or constructor.
+  description: ProjectileSystemConfig has 4 hardcoded constants (MaxProjectiles=200,
+    etc.). Load from projectile_config.yaml or constructor.
   estimated_effort: S
   priority: P1
-  result: Created data/projectile_config.yaml with 4 params; ProjectileSystemConfig added LoadFromYaml/LoadFromString/Default
-    with embedded defaults; backward-compat const fields kept for tests; all 159 tests pass.
+  result: Created data/projectile_config.yaml with 4 params; ProjectileSystemConfig
+    added LoadFromYaml/LoadFromString/Default with embedded defaults; backward-compat
+    const fields kept for tests; all 159 tests pass.
   source: arch_scan_full
   status: completed
   task_id: T-ARCH-D5-004
@@ -1838,12 +1907,13 @@ tasks:
   - All tests pass
   completed_at: '2026-09-05T01:10:00+08:00'
   depends_on: []
-  description: WeaponSystemConfig.MinFireIntervalS=0.08, SwitchCooldownS=0.5 hardcoded. Move to weapon_balance.yaml or per-weapon
-    config.
+  description: WeaponSystemConfig.MinFireIntervalS=0.08, SwitchCooldownS=0.5 hardcoded.
+    Move to weapon_balance.yaml or per-weapon config.
   estimated_effort: S
   priority: P1
-  result: Created data/weapon_balance.yaml with timing constants; WeaponSystemConfig added GetMinFireIntervalS/GetSwitchCooldownS
-    with YAML loading; backward-compat const fields kept for tests; all 159 tests pass.
+  result: Created data/weapon_balance.yaml with timing constants; WeaponSystemConfig
+    added GetMinFireIntervalS/GetSwitchCooldownS with YAML loading; backward-compat
+    const fields kept for tests; all 159 tests pass.
   source: arch_scan_full
   status: completed
   task_id: T-ARCH-D5-005
@@ -1855,11 +1925,13 @@ tasks:
   - All tests pass
   completed_at: '2026-09-05T01:15:00+08:00'
   depends_on: []
-  description: AISystem spawn caps and anti-door-camping distance hardcoded. Create AISpawnConfig loaded from YAML.
+  description: AISystem spawn caps and anti-door-camping distance hardcoded. Create
+    AISpawnConfig loaded from YAML.
   estimated_effort: S
   priority: P1
-  result: 'DUPLICATE of T-ARCH-D2-004. Already fixed: AISpawnConfig created with ai_spawn_config.yaml; AISystem uses Initialize/InitializeFromYaml;
-    spawn caps externalized; all 159 tests pass.'
+  result: 'DUPLICATE of T-ARCH-D2-004. Already fixed: AISpawnConfig created with ai_spawn_config.yaml;
+    AISystem uses Initialize/InitializeFromYaml; spawn caps externalized; all 159
+    tests pass.'
   source: arch_scan_full
   status: completed
   task_id: T-ARCH-D5-006
@@ -1872,12 +1944,13 @@ tasks:
   - All tests pass
   completed_at: '2026-09-05T01:20:00+08:00'
   depends_on: []
-  description: RandomExtensions internal static class prevents deterministic testing. Make Random provider injectable via
-    interface (IRandomProvider).
+  description: RandomExtensions internal static class prevents deterministic testing.
+    Make Random provider injectable via interface (IRandomProvider).
   estimated_effort: M
   priority: P2
-  result: Created IRandomProvider interface with DefaultRandomProvider/DeterministicRandomProvider; AiSystem, CombatSystem,
-    ProjectileTypes accept IRandomProvider; AiSystem has SetRandomProvider for test injection; all 159 tests pass.
+  result: Created IRandomProvider interface with DefaultRandomProvider/DeterministicRandomProvider;
+    AiSystem, CombatSystem, ProjectileTypes accept IRandomProvider; AiSystem has SetRandomProvider
+    for test injection; all 159 tests pass.
   source: arch_scan_full
   status: completed
   task_id: T-ARCH-D6-001
@@ -1891,13 +1964,14 @@ tasks:
   commit: ec1b6f9
   completed_at: '2026-09-05T21:20:00+08:00'
   depends_on: []
-  description: AISystem.TestReset() clears static state — poor testability. Convert to instance-based design with dependency
-    injection.
+  description: AISystem.TestReset() clears static state — poor testability. Convert
+    to instance-based design with dependency injection.
   estimated_effort: M
   priority: P2
-  result: Converted AISystem from static class to sealed instance class; added constructor with AISpawnConfig/IRandomProvider
-    DI; added static Default singleton for backward compat; updated all 36 tests to use isolated instances + added 4 isolation
-    tests; removed TestReset(); 163/163 tests pass, 0 warnings.
+  result: Converted AISystem from static class to sealed instance class; added constructor
+    with AISpawnConfig/IRandomProvider DI; added static Default singleton for backward
+    compat; updated all 36 tests to use isolated instances + added 4 isolation tests;
+    removed TestReset(); 163/163 tests pass, 0 warnings.
   source: arch_scan_full
   status: completed
   task_id: T-ARCH-D6-002
@@ -1910,11 +1984,13 @@ tasks:
   - All tests pass
   completed_at: '2026-09-05T21:25:00+08:00'
   depends_on: []
-  description: GetTargetIds() returns only IDs, forcing reflection. Add GetTargets() returning full TargetInfo with position/radius.
+  description: GetTargetIds() returns only IDs, forcing reflection. Add GetTargets()
+    returning full TargetInfo with position/radius.
   estimated_effort: S
   priority: P2
-  result: 'Already implemented: CombatSystem.GetTargets() returns IReadOnlyList<TargetInfo> with Id/Position/Radius (line
-    225). No reflection in CombatSystem or PlaytestSession. VERIFIED.'
+  result: 'Already implemented: CombatSystem.GetTargets() returns IReadOnlyList<TargetInfo>
+    with Id/Position/Radius (line 225). No reflection in CombatSystem or PlaytestSession.
+    VERIFIED.'
   source: arch_scan_full
   status: completed
   task_id: T-ARCH-D6-003
@@ -1926,12 +2002,12 @@ tasks:
   - All tests pass
   completed_at: '2026-09-05T21:40:00+08:00'
   depends_on: []
-  description: BuildTargetList() allocates new List and tuples per hitscan shot. Reuse List<(string, Vector3, float)> as field;
-    clear and repopulate.
+  description: BuildTargetList() allocates new List and tuples per hitscan shot. Reuse
+    List<(string, Vector3, float)> as field; clear and repopulate.
   estimated_effort: S
   priority: P2
-  result: 'Already implemented: _targetListCache field exists (line 23), cleared/repopulated in BuildTargetList(). Verified.
-    commit 4e947be.'
+  result: 'Already implemented: _targetListCache field exists (line 23), cleared/repopulated
+    in BuildTargetList(). Verified. commit 4e947be.'
   source: arch_scan_full
   status: completed
   task_id: T-ARCH-D7-001
@@ -1943,11 +2019,12 @@ tasks:
   - All tests pass
   completed_at: '2026-09-05T21:40:00+08:00'
   depends_on: []
-  description: MapLoader and WeaponLoader use string.Split allocations — acceptable for load-time only. Verify not called
-    in runtime hot paths.
+  description: MapLoader and WeaponLoader use string.Split allocations — acceptable
+    for load-time only. Verify not called in runtime hot paths.
   estimated_effort: S
   priority: P2
-  result: Added <remarks> docs marking both as LOAD-TIME ONLY. No runtime callers found. commit 4e947be.
+  result: Added <remarks> docs marking both as LOAD-TIME ONLY. No runtime callers
+    found. commit 4e947be.
   source: arch_scan_full
   status: completed
   task_id: T-ARCH-D7-002
@@ -1968,19 +2045,21 @@ tasks:
 
     source 锚点: templates/system_design/projectile_system.md#数据流
 
-    given: [''weapon_system 产出 FireEvent (origin=(0,0,0), direction=(1,0,0), weapon=rifle_default, type=projectile)'', {''弹体定义'':
-    ''speed=50 m/s, radius=0.1m, lifetime=5.0s, damage=12''}]
+    given: [''weapon_system 产出 FireEvent (origin=(0,0,0), direction=(1,0,0), weapon=rifle_default,
+    type=projectile)'', {''弹体定义'': ''speed=50 m/s, radius=0.1m, lifetime=5.0s, damage=12''}]
 
-    when: [''ProjectileSystem.SpawnProjectile() 调用并返回有效 ProjectileId'', ''ProjectileSystem.Update(dt=0.016) 连续调用 10 帧'']
+    when: [''ProjectileSystem.SpawnProjectile() 调用并返回有效 ProjectileId'', ''ProjectileSystem.Update(dt=0.016)
+    连续调用 10 帧'']
 
-    then: [''弹体位置每帧按 speed × dt 推进 (第 10 帧约 x=8.0m)'', ''弹体状态 active=true, 未超时, 未出界'', ''对象池 free count 递减 1, active count
-    递增 1'']
+    then: [''弹体位置每帧按 speed × dt 推进 (第 10 帧约 x=8.0m)'', ''弹体状态 active=true, 未超时, 未出界'',
+    ''对象池 free count 递减 1, active count 递增 1'']
 
     注: 场景锚定真实需求/spec/现有测试, 禁止自由发挥。'
   estimated_effort: 0.5-2 小时
   location: bdd 协议 / system=projectile_system (step 实现在对应模块)
   priority: P1
-  result: ProjectileSystemTests.LinearProjectile_SpawnAndFrameAdvance_BDD_T_BDD_ADOPT_84a183 pass
+  result: ProjectileSystemTests.LinearProjectile_SpawnAndFrameAdvance_BDD_T_BDD_ADOPT_84a183
+    pass
   source: templates/system_design/projectile_system.md#数据流
   status: completed
   task_id: T-BDD-ADOPT-84a183
@@ -2001,18 +2080,20 @@ tasks:
 
     source 锚点: templates/system_design/projectile_system.md#分层设计
 
-    given: [''weapon_system 产出 FireEvent (type=hitscan, max_distance=500m)'', ''目标实体在射线路径上, 距离 50m, 携带 HealthComponent'']
+    given: [''weapon_system 产出 FireEvent (type=hitscan, max_distance=500m)'', ''目标实体在射线路径上,
+    距离 50m, 携带 HealthComponent'']
 
     when: [''ProjectileSystem.SpawnProjectile() 处理 hitscan 类型'']
 
-    then: [''立即执行射线检测, 不进入对象池推进循环'', ''产出 HitEvent (projectileId=invalid, targetId=目标, damage=基础伤害, hitPoint=交点)'', ''无弹体视觉实例化
-    (Runtime 层不渲染物理弹体)'']
+    then: [''立即执行射线检测, 不进入对象池推进循环'', ''产出 HitEvent (projectileId=invalid, targetId=目标,
+    damage=基础伤害, hitPoint=交点)'', ''无弹体视觉实例化 (Runtime 层不渲染物理弹体)'']
 
     注: 场景锚定真实需求/spec/现有测试, 禁止自由发挥。'
   estimated_effort: 0.5-2 小时
   location: bdd 协议 / system=projectile_system (step 实现在对应模块)
   priority: P1
-  result: ProjectileSystemTests.Hitscan_ImmediateHitProducesEvent_BDD_T_BDD_ADOPT_a1b2c3 pass
+  result: ProjectileSystemTests.Hitscan_ImmediateHitProducesEvent_BDD_T_BDD_ADOPT_a1b2c3
+    pass
   source: templates/system_design/projectile_system.md#分层设计
   status: completed
   task_id: T-BDD-ADOPT-6ea055
@@ -2033,17 +2114,20 @@ tasks:
 
     source 锚点: templates/system_design/projectile_system.md#分层设计
 
-    given: [{''弹体定义'': ''type=homing, speed=30 m/s, turn_rate=5.0 rad/s''}, ''目标实体初始在弹体前方 45° 夹角, 距离 20m'']
+    given: [{''弹体定义'': ''type=homing, speed=30 m/s, turn_rate=5.0 rad/s''}, ''目标实体初始在弹体前方
+    45° 夹角, 距离 20m'']
 
     when: [''ProjectileSystem.Update(dt=0.016) 连续调用 20 帧'']
 
-    then: [''弹体方向向量每帧按 turn_rate × dt 旋转向目标'', ''最终方向与目标连线夹角 < 5°'', ''弹体位置沿曲线推进, 非直线'']
+    then: [''弹体方向向量每帧按 turn_rate × dt 旋转向目标'', ''最终方向与目标连线夹角 < 5°'', ''弹体位置沿曲线推进,
+    非直线'']
 
     注: 场景锚定真实需求/spec/现有测试, 禁止自由发挥。'
   estimated_effort: 0.5-2 小时
   location: bdd 协议 / system=projectile_system (step 实现在对应模块)
   priority: P1
-  result: ProjectileSystemTests.Homing_TurnsTowardsTargetPerFrame_BDD_T_BDD_ADOPT_g7h8i9 pass
+  result: ProjectileSystemTests.Homing_TurnsTowardsTargetPerFrame_BDD_T_BDD_ADOPT_g7h8i9
+    pass
   source: templates/system_design/projectile_system.md#分层设计
   status: completed
   task_id: T-BDD-ADOPT-ef6566
@@ -2064,17 +2148,20 @@ tasks:
 
     source 锚点: templates/system_design/projectile_system.md#关键数值约束
 
-    given: [''弹体速度 100 m/s, dt=0.016s → 单帧位移 1.6m'', ''薄墙/受击体厚度 0.05m, 位于弹体路径上'', {''碰撞容差公式'': ''radius + max(1.0×单帧位移, 0.1m)''}]
+    given: [''弹体速度 100 m/s, dt=0.016s → 单帧位移 1.6m'', ''薄墙/受击体厚度 0.05m, 位于弹体路径上'',
+    {''碰撞容差公式'': ''radius + max(1.0×单帧位移, 0.1m)''}]
 
     when: [''ProjectileSystem.Update() 执行碰撞检测'']
 
-    then: [''扫掠半径 ≥ 1.6m (1.0× 单帧位移)'', ''检测到相交, 产出 HitEvent, 弹体标记命中并回收'', ''无可见穿透 (弹体不"穿过"受击体)'']
+    then: [''扫掠半径 ≥ 1.6m (1.0× 单帧位移)'', ''检测到相交, 产出 HitEvent, 弹体标记命中并回收'', ''无可见穿透
+    (弹体不"穿过"受击体)'']
 
     注: 场景锚定真实需求/spec/现有测试, 禁止自由发挥。'
   estimated_effort: 0.5-2 小时
   location: bdd 协议 / system=projectile_system (step 实现在对应模块)
   priority: P1
-  result: ProjectileSystemTests.CollisionTolerance_HighSpeedPreventsTunneling_BDD_T_BDD_ADOPT_j1k2l3 pass
+  result: ProjectileSystemTests.CollisionTolerance_HighSpeedPreventsTunneling_BDD_T_BDD_ADOPT_j1k2l3
+    pass
   source: templates/system_design/projectile_system.md#关键数值约束
   status: completed
   task_id: T-BDD-ADOPT-c4b419
@@ -2099,13 +2186,15 @@ tasks:
 
     when: [''ProjectileSystem.Update(dt=0.016) 累计推进 5.1s (319 帧)'']
 
-    then: [''弹体状态变为 inactive, 回收入对象池'', ''free count 恢复, active count 递减'', ''无 HitEvent 产出'']
+    then: [''弹体状态变为 inactive, 回收入对象池'', ''free count 恢复, active count 递减'', ''无 HitEvent
+    产出'']
 
     注: 场景锚定真实需求/spec/现有测试, 禁止自由发挥。'
   estimated_effort: 0.5-2 小时
   location: bdd 协议 / system=projectile_system (step 实现在对应模块)
   priority: P1
-  result: ProjectileSystemTests.LifetimeTimeout_AutoRecycle_BDD_T_BDD_ADOPT_m4n5o6 pass
+  result: ProjectileSystemTests.LifetimeTimeout_AutoRecycle_BDD_T_BDD_ADOPT_m4n5o6
+    pass
   source: templates/system_design/projectile_system.md#关键数值约束
   status: completed
   task_id: T-BDD-ADOPT-1d133c
@@ -2128,7 +2217,8 @@ tasks:
 
     given: [{''弹体定义'': ''speed=100 m/s, 出界阈值=500m''}, ''弹体已生成, 位置距离出生点 490m'']
 
-    when: [''ProjectileSystem.Update(dt=0.016) 推进 1 帧 (位移 1.6m, 总距 491.6m)'', ''再推进 6 帧 (总距 > 500m)'']
+    when: [''ProjectileSystem.Update(dt=0.016) 推进 1 帧 (位移 1.6m, 总距 491.6m)'', ''再推进
+    6 帧 (总距 > 500m)'']
 
     then: [''超过 500m 后弹体自动回收'', ''对象池槽位释放'']
 
@@ -2157,17 +2247,20 @@ tasks:
 
     source 锚点: templates/system_design/projectile_system.md#关键数值约束
 
-    given: [''对象池 MAX_PROJECTILES=200, 当前 active=200 (最旧弹体 age=3.0s)'', ''weapon_system 产出新的 FireEvent'']
+    given: [''对象池 MAX_PROJECTILES=200, 当前 active=200 (最旧弹体 age=3.0s)'', ''weapon_system
+    产出新的 FireEvent'']
 
     when: [''ProjectileSystem.SpawnProjectile() 处理新请求'']
 
-    then: [''最旧弹体 (age=3.0s) 被强制回收'', ''新弹体获得槽位, active 仍为 200'', ''返回有效 ProjectileId (非 invalid)'']
+    then: [''最旧弹体 (age=3.0s) 被强制回收'', ''新弹体获得槽位, active 仍为 200'', ''返回有效 ProjectileId
+    (非 invalid)'']
 
     注: 场景锚定真实需求/spec/现有测试, 禁止自由发挥。'
   estimated_effort: 0.5-2 小时
   location: bdd 协议 / system=projectile_system (step 实现在对应模块)
   priority: P1
-  result: ProjectileSystemTests.CapRecycleOldest_WhenPoolFull_BDD_T_BDD_ADOPT_s1t2u3 pass
+  result: ProjectileSystemTests.CapRecycleOldest_WhenPoolFull_BDD_T_BDD_ADOPT_s1t2u3
+    pass
   source: templates/system_design/projectile_system.md#关键数值约束
   status: completed
   task_id: T-BDD-ADOPT-931b91
@@ -2188,7 +2281,8 @@ tasks:
 
     source 锚点: templates/system_design/projectile_system.md#测试策略
 
-    given: [''固定随机种子 / 无随机因素的弹道参数'', {''输入序列'': ''Spawn A, Update×10, Spawn B, Update×5, ...''}]
+    given: [''固定随机种子 / 无随机因素的弹道参数'', {''输入序列'': ''Spawn A, Update×10, Spawn B, Update×5,
+    ...''}]
 
     when: [''完整执行输入序列两次 (重置系统状态)'']
 
@@ -2198,7 +2292,8 @@ tasks:
   estimated_effort: 0.5-2 小时
   location: bdd 协议 / system=projectile_system (step 实现在对应模块)
   priority: P1
-  result: ProjectileSystemTests.Deterministic_SameInputSameOutput_BDD_T_BDD_ADOPT_v4w5x6 pass
+  result: ProjectileSystemTests.Deterministic_SameInputSameOutput_BDD_T_BDD_ADOPT_v4w5x6
+    pass
   source: templates/system_design/projectile_system.md#测试策略
   status: completed
   task_id: T-BDD-ADOPT-93676c
@@ -2219,17 +2314,20 @@ tasks:
 
     source 锚点: templates/system_design/projectile_system.md#分层设计
 
-    given: [''weapon_system 产出 FireEvent (weapon=spread_shot, pellets=5, spread=12°)'', ''目标在贴脸距离 (2m)'']
+    given: [''weapon_system 产出 FireEvent (weapon=spread_shot, pellets=5, spread=12°)'',
+    ''目标在贴脸距离 (2m)'']
 
     when: [''ProjectileSystem.SpawnProjectile() 处理散射类型'']
 
-    then: [''单次调用产出 5 个 ProjectileId (或批量生成)'', ''5 颗弹丸初始方向在 12° 锥角内均匀分布'', ''贴脸距离下 5 颗均命中 → 产出 5 个 HitEvent'']
+    then: [''单次调用产出 5 个 ProjectileId (或批量生成)'', ''5 颗弹丸初始方向在 12° 锥角内均匀分布'', ''贴脸距离下
+    5 颗均命中 → 产出 5 个 HitEvent'']
 
     注: 场景锚定真实需求/spec/现有测试, 禁止自由发挥。'
   estimated_effort: 0.5-2 小时
   location: bdd 协议 / system=projectile_system (step 实现在对应模块)
   priority: P1
-  result: ProjectileSystemTests.SpreadShot_MultiplePellets_BDD_T_BDD_ADOPT_y7z8a9 pass
+  result: ProjectileSystemTests.SpreadShot_MultiplePellets_BDD_T_BDD_ADOPT_y7z8a9
+    pass
   source: templates/system_design/projectile_system.md#分层设计
   status: completed
   task_id: T-BDD-ADOPT-82fc2e
@@ -2254,13 +2352,15 @@ tasks:
 
     when: [''玩家弹体与敌人实体相交 / 敌人弹体与玩家实体相交'']
 
-    then: [''玩家弹体仅对 enemy 标签实体产生 HitEvent'', ''敌人弹体仅对 player 标签实体产生 HitEvent'', ''同阵营实体相交不产生 HitEvent (无友伤, 除非配置开启)'']
+    then: [''玩家弹体仅对 enemy 标签实体产生 HitEvent'', ''敌人弹体仅对 player 标签实体产生 HitEvent'', ''同阵营实体相交不产生
+    HitEvent (无友伤, 除非配置开启)'']
 
     注: 场景锚定真实需求/spec/现有测试, 禁止自由发挥。'
   estimated_effort: 0.5-2 小时
   location: bdd 协议 / system=projectile_system (step 实现在对应模块)
   priority: P1
-  result: ProjectileSystemTests.FactionIdentification_AvoidFriendlyFire_BDD_T_BDD_ADOPT_b1c2d3 pass
+  result: ProjectileSystemTests.FactionIdentification_AvoidFriendlyFire_BDD_T_BDD_ADOPT_b1c2d3
+    pass
   source: templates/system_design/projectile_system.md#系统概述与边界
   status: completed
   task_id: T-BDD-ADOPT-91391d
@@ -2291,7 +2391,8 @@ tasks:
   estimated_effort: 0.5-2 小时
   location: bdd 协议 / system=projectile_system (step 实现在对应模块)
   priority: P1
-  result: ProjectileSystemTests.Hitscan_MultipleTargets_FirstHitOnly_BDD_T_BDD_ADOPT_d4e5f6 pass
+  result: ProjectileSystemTests.Hitscan_MultipleTargets_FirstHitOnly_BDD_T_BDD_ADOPT_d4e5f6
+    pass
   source: templates/system_design/projectile_system.md#关键数值约束
   status: completed
   task_id: T-BDD-ADOPT-8fc9e4
@@ -2304,14 +2405,18 @@ tasks:
   - cargo check --features os-autopilot still passes
   completed_at: '2026-09-05T23:11:52+08:00'
   depends_on: []
-  description: "BDD registry gap fix (由 protocol_adoption_scanner.py 确定性检测):\nsystem: projectile_system\ncontract_file: _os_state/design_contracts/projectile_system.bdd.yaml\n\
-    e2e_scenarios: 2\naction: add harness-native registry entry to _os_state/bdd_scenario_registry.yaml\n  under 'systems:'\
-    \ key, following existing patterns (rg_djinn_visible, etc.)\ntemplate pattern: id/description/setup(steps+spawn)/steps(render_frames)/expect(entity_visible\
-    \ or game_signal)\nnote: registry entries are deterministic templates, not LLM-inferred. Follow the schema from real_game_scenario_sync.py."
+  description: "BDD registry gap fix (由 protocol_adoption_scanner.py 确定性检测):\nsystem:\
+    \ projectile_system\ncontract_file: _os_state/design_contracts/projectile_system.bdd.yaml\n\
+    e2e_scenarios: 2\naction: add harness-native registry entry to _os_state/bdd_scenario_registry.yaml\n\
+    \  under 'systems:' key, following existing patterns (rg_djinn_visible, etc.)\n\
+    template pattern: id/description/setup(steps+spawn)/steps(render_frames)/expect(entity_visible\
+    \ or game_signal)\nnote: registry entries are deterministic templates, not LLM-inferred.\
+    \ Follow the schema from real_game_scenario_sync.py."
   estimated_effort: 0.5-1 小时
   location: _os_state/bdd_scenario_registry.yaml systems.projectile_system
   priority: P0
-  result: Registry entry already present for projectile_system (T-BDD-ADOPT-* series). Updated.
+  result: Registry entry already present for projectile_system (T-BDD-ADOPT-* series).
+    Updated.
   source: protocol_adoption_scanner.py registry_gap_check
   status: completed
   task_id: T-BDD-REG-b289d4
@@ -2332,13 +2437,14 @@ tasks:
 
     source 锚点: templates/system_design/health_damage.md#数据流
 
-    given: [''目标实体携带 HealthComponent (current=100, max=100, armor=0, partMultipliers={body:1.0})'', {''HitEvent'': ''damage=12,
-    targetId=目标, hitPoint=(1,0,0), part=body''}]
+    given: [''目标实体携带 HealthComponent (current=100, max=100, armor=0, partMultipliers={body:1.0})'',
+    {''HitEvent'': ''damage=12, targetId=目标, hitPoint=(1,0,0), part=body''}]
 
     when: [''HealthDamageSystem.ProcessHit(hitEvent) 调用'']
 
-    then: [''DamageCalculator.Calculate(12, 1.0, 0) → 12'', ''目标 current 从 100 变为 88'', ''广播 HealthChangeEvent (entityId=目标,
-    damageDealt=12, newHealth=88, isDead=false)'', ''无 DeathEvent 产出'']
+    then: [''DamageCalculator.Calculate(12, 1.0, 0) → 12'', ''目标 current 从 100 变为
+    88'', ''广播 HealthChangeEvent (entityId=目标, damageDealt=12, newHealth=88, isDead=false)'',
+    ''无 DeathEvent 产出'']
 
     注: 场景锚定真实需求/spec/现有测试, 禁止自由发挥。'
   estimated_effort: 0.5-2 小时
@@ -2365,12 +2471,13 @@ tasks:
 
     source 锚点: templates/system_design/health_damage.md#关键数值约束
 
-    given: [{''目标实体'': ''HealthComponent (current=100, max=100, armor=0, partMultipliers={head:2.0, body:1.0})''}, {''HitEvent'':
-    ''damage=12, targetId=目标, part=head''}]
+    given: [{''目标实体'': ''HealthComponent (current=100, max=100, armor=0, partMultipliers={head:2.0,
+    body:1.0})''}, {''HitEvent'': ''damage=12, targetId=目标, part=head''}]
 
     when: [''HealthDamageSystem.ProcessHit(hitEvent)'']
 
-    then: [''DamageCalculator.Calculate(12, 2.0, 0) → 24'', ''目标 current 从 100 变为 76'', ''HealthChangeEvent.damageDealt=24'']
+    then: [''DamageCalculator.Calculate(12, 2.0, 0) → 24'', ''目标 current 从 100 变为
+    76'', ''HealthChangeEvent.damageDealt=24'']
 
     注: 场景锚定真实需求/spec/现有测试, 禁止自由发挥。'
   estimated_effort: 0.5-2 小时
@@ -2397,12 +2504,13 @@ tasks:
 
     source 锚点: templates/genre_knowledge_reference.yaml#armor_reduction.subtractive
 
-    given: [{''目标实体'': ''HealthComponent (current=100, max=100, armor=20, partMultipliers={body:1.0})''}, {''HitEvent'': ''damage=30,
-    targetId=目标, part=body''}]
+    given: [{''目标实体'': ''HealthComponent (current=100, max=100, armor=20, partMultipliers={body:1.0})''},
+    {''HitEvent'': ''damage=30, targetId=目标, part=body''}]
 
     when: [''HealthDamageSystem.ProcessHit(hitEvent)'']
 
-    then: [''DamageCalculator.Calculate(30, 1.0, 20) → max(0, 30 - 20) = 10'', ''目标 current 从 100 变为 90'', ''HealthChangeEvent.damageDealt=10'']
+    then: [''DamageCalculator.Calculate(30, 1.0, 20) → max(0, 30 - 20) = 10'', ''目标
+    current 从 100 变为 90'', ''HealthChangeEvent.damageDealt=10'']
 
     注: 场景锚定真实需求/spec/现有测试, 禁止自由发挥。'
   estimated_effort: 0.5-2 小时
@@ -2429,13 +2537,13 @@ tasks:
 
     source 锚点: templates/system_design/health_damage.md#关键数值约束
 
-    given: [{''目标实体'': ''HealthComponent (current=100, max=100, armor=20, partMultipliers={body:1.0})''}, {''HitEvent'': ''damage=10,
-    targetId=目标, part=body''}]
+    given: [{''目标实体'': ''HealthComponent (current=100, max=100, armor=20, partMultipliers={body:1.0})''},
+    {''HitEvent'': ''damage=10, targetId=目标, part=body''}]
 
     when: [''HealthDamageSystem.ProcessHit(hitEvent)'']
 
-    then: [''DamageCalculator.Calculate(10, 1.0, 20) → max(0, 10 - 20) = 0'', ''目标 current 保持 100 不变'', ''HealthChangeEvent.damageDealt=0
-    (或不广播)'']
+    then: [''DamageCalculator.Calculate(10, 1.0, 20) → max(0, 10 - 20) = 0'', ''目标
+    current 保持 100 不变'', ''HealthChangeEvent.damageDealt=0 (或不广播)'']
 
     注: 场景锚定真实需求/spec/现有测试, 禁止自由发挥。'
   estimated_effort: 0.5-2 小时
@@ -2462,13 +2570,13 @@ tasks:
 
     source 锚点: templates/system_design/health_damage.md#数据流
 
-    given: [{''目标实体'': ''HealthComponent (current=24, max=24, armor=0) — 标准杂兵''}, {''HitEvent'': ''damage=24, targetId=目标,
-    part=body''}]
+    given: [{''目标实体'': ''HealthComponent (current=24, max=24, armor=0) — 标准杂兵''},
+    {''HitEvent'': ''damage=24, targetId=目标, part=body''}]
 
     when: [''HealthDamageSystem.ProcessHit(hitEvent)'']
 
-    then: [''目标 current 变为 0 (不为负)'', {''HealthChangeEvent'': ''newHealth=0, isDead=true''}, ''广播 DeathEvent (entityId=目标,
-    killerId=来源, dropTableId=grunt_soldier)'', ''实体标记为待销毁/回收'']
+    then: [''目标 current 变为 0 (不为负)'', {''HealthChangeEvent'': ''newHealth=0, isDead=true''},
+    ''广播 DeathEvent (entityId=目标, killerId=来源, dropTableId=grunt_soldier)'', ''实体标记为待销毁/回收'']
 
     注: 场景锚定真实需求/spec/现有测试, 禁止自由发挥。'
   estimated_effort: 0.5-2 小时
@@ -2495,7 +2603,8 @@ tasks:
 
     source 锚点: templates/system_design/health_damage.md#测试策略
 
-    given: [{''目标实体'': ''HealthComponent (current=24, max=24, armor=0)''}, {''HitEvent'': ''damage=100, targetId=目标, part=body''}]
+    given: [{''目标实体'': ''HealthComponent (current=24, max=24, armor=0)''}, {''HitEvent'':
+    ''damage=100, targetId=目标, part=body''}]
 
     when: [''HealthDamageSystem.ProcessHit(hitEvent)'']
 
@@ -2530,7 +2639,8 @@ tasks:
 
     when: [''HealthDamageSystem.ProcessHit(secondHitEvent)'']
 
-    then: [''无伤害结算, current 保持 0'', ''无额外 HealthChangeEvent/DeathEvent'', ''系统静默忽略该 HitEvent'']
+    then: [''无伤害结算, current 保持 0'', ''无额外 HealthChangeEvent/DeathEvent'', ''系统静默忽略该
+    HitEvent'']
 
     注: 场景锚定真实需求/spec/现有测试, 禁止自由发挥。'
   estimated_effort: 0.5-2 小时
@@ -2557,7 +2667,8 @@ tasks:
 
     source 锚点: templates/system_design/health_damage.md#关键数值约束
 
-    given: [''目标实体死亡并重生 (新 HealthComponent current=100)'', ''重生后 1.1s 后收到 HitEvent (damage=10)'']
+    given: [''目标实体死亡并重生 (新 HealthComponent current=100)'', ''重生后 1.1s 后收到 HitEvent
+    (damage=10)'']
 
     when: [''HealthDamageSystem.ProcessHit(hitEvent)'']
 
@@ -2588,12 +2699,13 @@ tasks:
 
     source 锚点: templates/system_design/health_damage.md#关键数值约束
 
-    given: [{''敌人实体'': ''dropTableId=grunt_soldier (enemies.yaml 定义)''}, {''掉落表'': ''health_pack_small(0.3), weapon_box(0.1),
-    none(0.6)''}, ''DeathEvent 广播'']
+    given: [{''敌人实体'': ''dropTableId=grunt_soldier (enemies.yaml 定义)''}, {''掉落表'':
+    ''health_pack_small(0.3), weapon_box(0.1), none(0.6)''}, ''DeathEvent 广播'']
 
     when: [''DropManager 处理 DeathEvent'']
 
-    then: [{''按概率独立 roll'': ''30% 小血包, 10% 武器箱, 60% 无''}, ''掉落实体在死亡位置生成 (或略微偏移避免重叠)'', ''多次死亡每次独立 roll, 无关联'']
+    then: [{''按概率独立 roll'': ''30% 小血包, 10% 武器箱, 60% 无''}, ''掉落实体在死亡位置生成 (或略微偏移避免重叠)'',
+    ''多次死亡每次独立 roll, 无关联'']
 
     注: 场景锚定真实需求/spec/现有测试, 禁止自由发挥。'
   estimated_effort: 0.5-2 小时
@@ -2651,7 +2763,8 @@ tasks:
 
     source 锚点: templates/system_design/combat_system.md#系统间依赖
 
-    given: [{''刷兵系统当前配额'': ''max_spawns_per_point=5, 已刷 3 只存活''}, ''其中 1 只死亡, DeathEvent 广播'']
+    given: [{''刷兵系统当前配额'': ''max_spawns_per_point=5, 已刷 3 只存活''}, ''其中 1 只死亡, DeathEvent
+    广播'']
 
     when: [''刷兵系统处理 DeathEvent'']
 
@@ -2686,8 +2799,8 @@ tasks:
 
     when: [''静态分析 / 代码审查执行'']
 
-    then: [''仅 HealthDamageSystem.cs 中出现 current 赋值'', ''weapon_system / projectile_system / enemy_ai 等均无直接写入'', ''所有生命值变更均通过
-    HitEvent → ProcessHit 链路'']
+    then: [''仅 HealthDamageSystem.cs 中出现 current 赋值'', ''weapon_system / projectile_system
+    / enemy_ai 等均无直接写入'', ''所有生命值变更均通过 HitEvent → ProcessHit 链路'']
 
     注: 场景锚定真实需求/spec/现有测试, 禁止自由发挥。'
   estimated_effort: 0.5-2 小时
@@ -2714,12 +2827,13 @@ tasks:
 
     source 锚点: templates/system_design/health_damage.md#测试策略
 
-    given: [{''固定初始状态'': ''两个敌人各 current=100, armor=5''}, {''HitEvent 序列'': [''hitA(damage=12)'', ''hitB(damage=20)'', ''hitA(damage=12)'',
-    ''...'']}]
+    given: [{''固定初始状态'': ''两个敌人各 current=100, armor=5''}, {''HitEvent 序列'': [''hitA(damage=12)'',
+    ''hitB(damage=20)'', ''hitA(damage=12)'', ''...'']}]
 
     when: [''HealthDamageSystem 处理完整序列两次 (重置状态)'']
 
-    then: [''两次输出的 HealthChangeEvent 序列完全一致 (damageDealt, newHealth, isDead, frame)'', ''DeathEvent 触发帧一致'']
+    then: [''两次输出的 HealthChangeEvent 序列完全一致 (damageDealt, newHealth, isDead, frame)'',
+    ''DeathEvent 触发帧一致'']
 
     注: 场景锚定真实需求/spec/现有测试, 禁止自由发挥。'
   estimated_effort: 0.5-2 小时
@@ -2746,13 +2860,13 @@ tasks:
 
     source 锚点: templates/system_design/health_damage.md#测试策略
 
-    given: [{''敌人 A'': ''current=50, armor=0''}, {''敌人 B'': ''current=30, armor=10''}, ''同帧收到 HitEventA(damage=20, target=A),
-    HitEventB(damage=15, target=B)'']
+    given: [{''敌人 A'': ''current=50, armor=0''}, {''敌人 B'': ''current=30, armor=10''},
+    ''同帧收到 HitEventA(damage=20, target=A), HitEventB(damage=15, target=B)'']
 
     when: [''HealthDamageSystem 处理两个 HitEvent (顺序无关)'']
 
-    then: [{''敌人 A'': ''damage=20, current=30, isDead=false''}, {''敌人 B'': ''damage=max(0,15-10)=5, current=25, isDead=false''},
-    ''两个 HealthChangeEvent 正确对应各自 targetId'']
+    then: [{''敌人 A'': ''damage=20, current=30, isDead=false''}, {''敌人 B'': ''damage=max(0,15-10)=5,
+    current=25, isDead=false''}, ''两个 HealthChangeEvent 正确对应各自 targetId'']
 
     注: 场景锚定真实需求/spec/现有测试, 禁止自由发挥。'
   estimated_effort: 0.5-2 小时
@@ -2779,12 +2893,13 @@ tasks:
 
     source 锚点: templates/genre_knowledge_reference.yaml#zone_multiplier.limb
 
-    given: [{''目标实体'': ''HealthComponent (current=100, max=100, armor=0, partMultipliers={limb:0.7})''}, {''HitEvent'': ''damage=12,
-    targetId=目标, part=limb''}]
+    given: [{''目标实体'': ''HealthComponent (current=100, max=100, armor=0, partMultipliers={limb:0.7})''},
+    {''HitEvent'': ''damage=12, targetId=目标, part=limb''}]
 
     when: [''HealthDamageSystem.ProcessHit(hitEvent)'']
 
-    then: [''DamageCalculator.Calculate(12, 0.7, 0) → 8.4 → 取整/向下取整为 8'', ''目标 current 从 100 变为 92'', ''HealthChangeEvent.damageDealt=8'']
+    then: [''DamageCalculator.Calculate(12, 0.7, 0) → 8.4 → 取整/向下取整为 8'', ''目标 current
+    从 100 变为 92'', ''HealthChangeEvent.damageDealt=8'']
 
     注: 场景锚定真实需求/spec/现有测试, 禁止自由发挥。'
   estimated_effort: 0.5-2 小时
@@ -2811,12 +2926,13 @@ tasks:
 
     source 锚点: templates/genre_knowledge_reference.yaml#zone_multiplier.weak_point
 
-    given: [{''Boss 实体'': ''HealthComponent (current=500, max=500, armor=0, partMultipliers={weak_point:3.0})''}, ''Boss 处于弱点暴露状态'',
-    {''HitEvent'': ''damage=35, targetId=Boss, part=weak_point''}]
+    given: [{''Boss 实体'': ''HealthComponent (current=500, max=500, armor=0, partMultipliers={weak_point:3.0})''},
+    ''Boss 处于弱点暴露状态'', {''HitEvent'': ''damage=35, targetId=Boss, part=weak_point''}]
 
     when: [''HealthDamageSystem.ProcessHit(hitEvent)'']
 
-    then: [''DamageCalculator.Calculate(35, 3.0, 0) → 105'', ''Boss current 从 500 变为 395'', ''HealthChangeEvent.damageDealt=105'']
+    then: [''DamageCalculator.Calculate(35, 3.0, 0) → 105'', ''Boss current 从 500
+    变为 395'', ''HealthChangeEvent.damageDealt=105'']
 
     注: 场景锚定真实需求/spec/现有测试, 禁止自由发挥。'
   estimated_effort: 0.5-2 小时
@@ -2843,19 +2959,21 @@ tasks:
 
     source 锚点: templates/system_design/map_loading.md#数据流
 
-    given: [''data/maps/maps.yaml 包含 map_id="level_01" 的完整定义'', ''所有引用的 weapon/enemy/pickup 均在对应 schema 中存在'', ''SpawnPoint/cover_point/pickup
-    坐标均在合法范围'']
+    given: [''data/maps/maps.yaml 包含 map_id="level_01" 的完整定义'', ''所有引用的 weapon/enemy/pickup
+    均在对应 schema 中存在'', ''SpawnPoint/cover_point/pickup 坐标均在合法范围'']
 
     when: [''MapLoader.Load("data/maps/maps.yaml", "level_01") 调用'']
 
-    then: [''返回 MapDefinition (非错误列表)'', ''MapDefinition.map_id = "level_01"'', ''所有字段 (size, enemies, pickups, spawn_points,
-    cover_points) 均已填充'', ''Runtime 层 MapManager 接收 SceneLoadedEvent 并开始实例化'']
+    then: [''返回 MapDefinition (非错误列表)'', ''MapDefinition.map_id = "level_01"'', ''所有字段
+    (size, enemies, pickups, spawn_points, cover_points) 均已填充'', ''Runtime 层 MapManager
+    接收 SceneLoadedEvent 并开始实例化'']
 
     注: 场景锚定真实需求/spec/现有测试, 禁止自由发挥。'
   estimated_effort: 0.5-2 小时
   location: bdd 协议 / system=map_loading (step 实现在对应模块)
   priority: P1
-  result: MapLoaderTests.Load_ValidYaml_ReturnsCompleteMapDefinition_BDD_valid_yaml_loads_successfully pass
+  result: MapLoaderTests.Load_ValidYaml_ReturnsCompleteMapDefinition_BDD_valid_yaml_loads_successfully
+    pass
   source: templates/system_design/map_loading.md#数据流
   status: completed
   task_id: T-BDD-ADOPT-7d8687
@@ -2876,20 +2994,22 @@ tasks:
 
     source 锚点: templates/system_design/map_loading.md#分层设计
 
-    given: [''maps.yaml 某 map 引用 weapon="nonexistent_rifle" (weapons.yaml 中无此定义)'', ''或引用 enemy="unknown_boss" (enemies.yaml
-    中无此定义)'']
+    given: [''maps.yaml 某 map 引用 weapon="nonexistent_rifle" (weapons.yaml 中无此定义)'',
+    ''或引用 enemy="unknown_boss" (enemies.yaml 中无此定义)'']
 
     when: [''MapLoader.Load(path, mapId) 调用'']
 
-    then: [''返回 List<MapValidationError> (非 MapDefinition)'', {''每个错误包含'': ''field_path, expected_type, actual_value, message''},
-    ''错误信息明确指出缺失的引用名与所属 schema'', ''无异常抛出, Core 层不崩溃'']
+    then: [''返回 List<MapValidationError> (非 MapDefinition)'', {''每个错误包含'': ''field_path,
+    expected_type, actual_value, message''}, ''错误信息明确指出缺失的引用名与所属 schema'', ''无异常抛出,
+    Core 层不崩溃'']
 
     注: 场景锚定真实需求/spec/现有测试, 禁止自由发挥。'
   estimated_effort: 0.5-2 小时
   location: bdd 协议 / system=map_loading (step 实现在对应模块)
   priority: P1
-  result: 'SKIPPED — MapLoader does not validate weapon/enemy/pickup references against schemas (feature gap: schema validation
-    layer missing). Test exists as skipped assertion.'
+  result: 'SKIPPED — MapLoader does not validate weapon/enemy/pickup references against
+    schemas (feature gap: schema validation layer missing). Test exists as skipped
+    assertion.'
   source: templates/system_design/map_loading.md#分层设计
   status: completed
   task_id: T-BDD-ADOPT-2ff43a
@@ -2914,13 +3034,15 @@ tasks:
 
     when: [''MapLoader.Load() 执行引用校验后进一步做业务规则校验'']
 
-    then: [{''返回 MapValidationError'': ''spawn_points count must be ≥ 2''}, {''错误级别'': ''error (阻塞加载)''}]
+    then: [{''返回 MapValidationError'': ''spawn_points count must be ≥ 2''}, {''错误级别'':
+    ''error (阻塞加载)''}]
 
     注: 场景锚定真实需求/spec/现有测试, 禁止自由发挥。'
   estimated_effort: 0.5-2 小时
   location: bdd 协议 / system=map_loading (step 实现在对应模块)
   priority: P1
-  result: MapLoaderTests.Load_TooFewSpawnPoints_ReturnsValidationError_BDD_spawn_point_count_minimum_two pass
+  result: MapLoaderTests.Load_TooFewSpawnPoints_ReturnsValidationError_BDD_spawn_point_count_minimum_two
+    pass
   source: templates/system_design/map_loading.md#关键数值约束
   status: completed
   task_id: T-BDD-ADOPT-3ad912
@@ -2945,13 +3067,15 @@ tasks:
 
     when: [''MapLoader.Load() 执行业务规则校验'']
 
-    then: [{''返回 MapValidationError'': ''spawn_point distance 3.0m < minimum 5m''}, ''指出冲突的两个 point id'']
+    then: [{''返回 MapValidationError'': ''spawn_point distance 3.0m < minimum 5m''},
+    ''指出冲突的两个 point id'']
 
     注: 场景锚定真实需求/spec/现有测试, 禁止自由发挥。'
   estimated_effort: 0.5-2 小时
   location: bdd 协议 / system=map_loading (step 实现在对应模块)
   priority: P1
-  result: MapLoaderTests.Load_SpawnPointsTooClose_ReturnsValidationError_BDD_spawn_point_min_distance_enforced pass
+  result: MapLoaderTests.Load_SpawnPointsTooClose_ReturnsValidationError_BDD_spawn_point_min_distance_enforced
+    pass
   source: templates/system_design/map_loading.md#关键数值约束
   status: completed
   task_id: T-BDD-ADOPT-66f0b8
@@ -3014,7 +3138,8 @@ tasks:
   estimated_effort: 0.5-2 小时
   location: bdd 协议 / system=map_loading (step 实现在对应模块)
   priority: P1
-  result: MapLoaderTests.Load_TooFewCoverPoints_ReturnsValidationError_BDD_cover_point_count_ratio pass
+  result: MapLoaderTests.Load_TooFewCoverPoints_ReturnsValidationError_BDD_cover_point_count_ratio
+    pass
   source: templates/system_design/map_loading.md#关键数值约束
   status: completed
   task_id: T-BDD-ADOPT-c22fa2
@@ -3039,14 +3164,15 @@ tasks:
 
     when: [''MapLoader.Load() 校验'']
 
-    then: [{''返回 MapValidationError'': ''cover_point B overlaps spawn_point A (distance=0.5m < 2m)''}]
+    then: [{''返回 MapValidationError'': ''cover_point B overlaps spawn_point A (distance=0.5m
+    < 2m)''}]
 
     注: 场景锚定真实需求/spec/现有测试, 禁止自由发挥。'
   estimated_effort: 0.5-2 小时
   location: bdd 协议 / system=map_loading (step 实现在对应模块)
   priority: P1
-  result: 'SKIPPED — MapLoader does not check CoverPoint-SpawnPoint distance (feature gap: overlap check missing from ValidateMap).
-    Test exists as skipped assertion.'
+  result: 'SKIPPED — MapLoader does not check CoverPoint-SpawnPoint distance (feature
+    gap: overlap check missing from ValidateMap). Test exists as skipped assertion.'
   source: templates/system_design/map_loading.md#验收标准
   status: completed
   task_id: T-BDD-ADOPT-b3526b
@@ -3071,13 +3197,15 @@ tasks:
 
     when: [''MapLoader.Load() 校验'']
 
-    then: [{''若总数超限'': ''返回 "pickup count 25 > maximum 20"''}, {''若坐标越界'': ''返回 "pickup position y=-10 outside valid bounds"''}]
+    then: [{''若总数超限'': ''返回 "pickup count 25 > maximum 20"''}, {''若坐标越界'': ''返回 "pickup
+    position y=-10 outside valid bounds"''}]
 
     注: 场景锚定真实需求/spec/现有测试, 禁止自由发挥。'
   estimated_effort: 0.5-2 小时
   location: bdd 协议 / system=map_loading (step 实现在对应模块)
   priority: P1
-  result: MapLoaderTests.Load_TooManyPickups_ReturnsValidationError_BDD_pickup_locations_valid_and_in_bounds_count + Load_PickupOutsideBoundary_ReturnsValidationError_BDD_pickup_locations_valid_and_in_bounds_oob
+  result: MapLoaderTests.Load_TooManyPickups_ReturnsValidationError_BDD_pickup_locations_valid_and_in_bounds_count
+    + Load_PickupOutsideBoundary_ReturnsValidationError_BDD_pickup_locations_valid_and_in_bounds_oob
     pass
   source: templates/system_design/map_loading.md#验收标准
   status: completed
@@ -3103,13 +3231,15 @@ tasks:
 
     when: [''尝试修改 MapDefinition.spawn_points / enemies / pickups 等集合'']
 
-    then: [''编译期/运行时均阻止修改 (readonly / init-only / frozen collection)'', ''Runtime 层只能读取, 实例化时自行复制/转换'']
+    then: [''编译期/运行时均阻止修改 (readonly / init-only / frozen collection)'', ''Runtime
+    层只能读取, 实例化时自行复制/转换'']
 
     注: 场景锚定真实需求/spec/现有测试, 禁止自由发挥。'
   estimated_effort: 0.5-2 小时
   location: bdd 协议 / system=map_loading (step 实现在对应模块)
   priority: P1
-  result: MapLoaderTests.MapDefinition_IsImmutable_BDD_map_definition_immutable_data_model pass
+  result: MapLoaderTests.MapDefinition_IsImmutable_BDD_map_definition_immutable_data_model
+    pass
   source: templates/system_design/map_loading.md#分层设计
   status: completed
   task_id: T-BDD-ADOPT-542983
@@ -3134,15 +3264,15 @@ tasks:
 
     when: [''MapManager.LoadMap("level_01") 调用完成'']
 
-    then: [''广播 SceneLoadedEvent (mapDefinition=MapDefinition)'', ''下游系统 (rendering/collision/entity_instantiation) 订阅并开始工作'',
-    ''事件包含完整地图数据, 无需二次查询'']
+    then: [''广播 SceneLoadedEvent (mapDefinition=MapDefinition)'', ''下游系统 (rendering/collision/entity_instantiation)
+    订阅并开始工作'', ''事件包含完整地图数据, 无需二次查询'']
 
     注: 场景锚定真实需求/spec/现有测试, 禁止自由发挥。'
   estimated_effort: 0.5-2 小时
   location: bdd 协议 / system=map_loading (step 实现在对应模块)
   priority: P1
-  result: 'SKIPPED — No SceneLoadedEvent or MapManager in Core layer (feature gap: event system missing). Test exists as skipped
-    assertion.'
+  result: 'SKIPPED — No SceneLoadedEvent or MapManager in Core layer (feature gap:
+    event system missing). Test exists as skipped assertion.'
   source: templates/system_design/map_loading.md#数据流
   status: completed
   task_id: T-BDD-ADOPT-92fd32
@@ -3173,7 +3303,8 @@ tasks:
   estimated_effort: 0.5-2 小时
   location: bdd 协议 / system=map_loading (step 实现在对应模块)
   priority: P1
-  result: MapLoaderTests.Core_MapLoader_LayerHasNoUnityDependency_BDD_core_layer_no_unity_dependency pass
+  result: MapLoaderTests.Core_MapLoader_LayerHasNoUnityDependency_BDD_core_layer_no_unity_dependency
+    pass
   source: templates/system_design/map_loading.md#验收标准
   status: completed
   task_id: T-BDD-ADOPT-934e79
@@ -3204,8 +3335,9 @@ tasks:
   estimated_effort: 0.5-2 小时
   location: bdd 协议 / system=map_loading (step 实现在对应模块)
   priority: P1
-  result: dotnet test all pass (170 passed, 0 failed) — MapLoader BDD scenarios cover valid load, spawn count, spawn distance,
-    spawn bounds, cover ratio, pickup count/bounds, immutability, multi-map, core-no-unity, file lines
+  result: dotnet test all pass (170 passed, 0 failed) — MapLoader BDD scenarios cover
+    valid load, spawn count, spawn distance, spawn bounds, cover ratio, pickup count/bounds,
+    immutability, multi-map, core-no-unity, file lines
   source: templates/system_design/map_loading.md#测试策略
   status: completed
   task_id: T-BDD-ADOPT-51af44
@@ -3230,14 +3362,15 @@ tasks:
 
     when: [''静态分析 asmdef 依赖图'']
 
-    then: [{''Core.asmdef references'': ''无 (或仅引用纯 .NET 库)''}, {''Runtime.asmdef references'': [''Contra3D.Core'']}, ''无循环依赖'']
+    then: [{''Core.asmdef references'': ''无 (或仅引用纯 .NET 库)''}, {''Runtime.asmdef references'':
+    [''Contra3D.Core'']}, ''无循环依赖'']
 
     注: 场景锚定真实需求/spec/现有测试, 禁止自由发挥。'
   estimated_effort: 0.5-2 小时
   location: bdd 协议 / system=map_loading (step 实现在对应模块)
   priority: P1
-  result: 'Static analysis verified: Core.asmdef has no references (noEngineReferences=true), Runtime.asmdef references only
-    Contra3D.Core, no circular deps'
+  result: 'Static analysis verified: Core.asmdef has no references (noEngineReferences=true),
+    Runtime.asmdef references only Contra3D.Core, no circular deps'
   source: templates/system_design/map_loading.md#验收标准清单
   status: completed
   task_id: T-BDD-ADOPT-fcfa0f
@@ -3262,7 +3395,8 @@ tasks:
 
     when: [''`wc -l` 或 IDE 统计行数'']
 
-    then: [''MapLoader.cs ≤ 500 行'', ''MapDefinition.cs ≤ 500 行'', ''MapTypes.cs ≤ 500 行'']
+    then: [''MapLoader.cs ≤ 500 行'', ''MapDefinition.cs ≤ 500 行'', ''MapTypes.cs ≤
+    500 行'']
 
     注: 场景锚定真实需求/spec/现有测试, 禁止自由发挥。'
   estimated_effort: 0.5-2 小时
@@ -3289,7 +3423,8 @@ tasks:
 
     source 锚点: templates/system_design/map_loading.md#文件布局
 
-    given: [{''maps.yaml 包含 maps'': [{''map_id'': ''level_01''}, {''map_id'': ''level_02''}, {''map_id'': ''boss_arena''}]}]
+    given: [{''maps.yaml 包含 maps'': [{''map_id'': ''level_01''}, {''map_id'': ''level_02''},
+    {''map_id'': ''boss_arena''}]}]
 
     when: [''MapLoader.Load("data/maps/maps.yaml", "level_02") 调用'']
 
@@ -3299,8 +3434,8 @@ tasks:
   estimated_effort: 0.5-2 小时
   location: bdd 协议 / system=map_loading (step 实现在对应模块)
   priority: P1
-  result: MapLoaderTests.Load_MultipleMapsInYaml_ReturnsFirstMap_BDD_multiple_maps_in_single_yaml pass (loader returns first
-    map per current implementation)
+  result: MapLoaderTests.Load_MultipleMapsInYaml_ReturnsFirstMap_BDD_multiple_maps_in_single_yaml
+    pass (loader returns first map per current implementation)
   source: templates/system_design/map_loading.md#文件布局
   status: completed
   task_id: T-BDD-ADOPT-a21d87
@@ -3321,19 +3456,21 @@ tasks:
 
     source 锚点: templates/genre_knowledge_reference.yaml#data_schema.spawn_points
 
-    given: [{''SpawnPoint'': {''id'': ''spawn_01'', ''type:"reinforce"'': None, ''trigger:"zone_03"'': None}}, {''SpawnPoint'':
-    {''id'': ''spawn_02'', ''type'': ''patrol'', ''trigger'': ''''}}]
+    given: [{''SpawnPoint'': {''id'': ''spawn_01'', ''type:"reinforce"'': None, ''trigger:"zone_03"'':
+    None}}, {''SpawnPoint'': {''id'': ''spawn_02'', ''type'': ''patrol'', ''trigger'':
+    ''''}}]
 
     when: [''MapLoader.Load() 校验'']
 
-    then: [''type 枚举校验通过'', ''reinforce/ambush/trigger 类型必须有非空 trigger 字段'', ''patrol 类型 trigger 可为空'']
+    then: [''type 枚举校验通过'', ''reinforce/ambush/trigger 类型必须有非空 trigger 字段'', ''patrol
+    类型 trigger 可为空'']
 
     注: 场景锚定真实需求/spec/现有测试, 禁止自由发挥。'
   estimated_effort: 0.5-2 小时
   location: bdd 协议 / system=map_loading (step 实现在对应模块)
   priority: P1
-  result: 'SKIPPED — SpawnPoint has no type/trigger fields (feature gap: SpawnPoint struct needs extension). Test exists as
-    skipped assertion.'
+  result: 'SKIPPED — SpawnPoint has no type/trigger fields (feature gap: SpawnPoint
+    struct needs extension). Test exists as skipped assertion.'
   source: templates/genre_knowledge_reference.yaml#data_schema.spawn_points
   status: completed
   task_id: T-BDD-ADOPT-58c6bd
@@ -3354,19 +3491,20 @@ tasks:
 
     source 锚点: templates/genre_knowledge_reference.yaml#data_schema.cover_points
 
-    given: [{''CoverPoint'': {''id'': ''cover_01'', ''facing_normal'': [1, 0, 0]}}, {''CoverPoint'': {''id'': ''cover_02'',
-    ''facing_normal'': [2, 0, 0]}}]
+    given: [{''CoverPoint'': {''id'': ''cover_01'', ''facing_normal'': [1, 0, 0]}},
+    {''CoverPoint'': {''id'': ''cover_02'', ''facing_normal'': [2, 0, 0]}}]
 
     when: [''MapLoader.Load() 校验'']
 
-    then: [''cover_01 通过'', {''cover_02 返回错误'': ''facing_normal must be unit vector (magnitude=1.0)''}]
+    then: [''cover_01 通过'', {''cover_02 返回错误'': ''facing_normal must be unit vector
+    (magnitude=1.0)''}]
 
     注: 场景锚定真实需求/spec/现有测试, 禁止自由发挥。'
   estimated_effort: 0.5-2 小时
   location: bdd 协议 / system=map_loading (step 实现在对应模块)
   priority: P1
-  result: 'SKIPPED — CoverPoint has no facing_normal field (feature gap: CoverPoint struct needs extension). Test exists as
-    skipped assertion.'
+  result: 'SKIPPED — CoverPoint has no facing_normal field (feature gap: CoverPoint
+    struct needs extension). Test exists as skipped assertion.'
   source: templates/genre_knowledge_reference.yaml#data_schema.cover_points
   status: completed
   task_id: T-BDD-ADOPT-6d1fe0
@@ -3387,17 +3525,20 @@ tasks:
 
     source 锚点: templates/genre_knowledge_reference.yaml#data_schema.patrol_paths
 
-    given: [{''PatrolPath'': ''waypoints=[{pos:[0,0,0], wait:1.0, speed:2.0}, {pos:[10,0,0], wait:0, speed:2.0}]''}, ''两点间有墙体阻挡'']
+    given: [{''PatrolPath'': ''waypoints=[{pos:[0,0,0], wait:1.0, speed:2.0}, {pos:[10,0,0],
+    wait:0, speed:2.0}]''}, ''两点间有墙体阻挡'']
 
     when: [''MapLoader.Load() 校验 (或单独的 PatrolPathValidator)'']
 
-    then: [{''返回警告/错误'': ''patrol_path segment 0→1 blocked by collision''}, ''不阻塞地图加载 (仅警告), 但标记需人工确认'']
+    then: [{''返回警告/错误'': ''patrol_path segment 0→1 blocked by collision''}, ''不阻塞地图加载
+    (仅警告), 但标记需人工确认'']
 
     注: 场景锚定真实需求/spec/现有测试, 禁止自由发挥。'
   estimated_effort: 0.5-2 小时
   location: bdd 协议 / system=map_loading (step 实现在对应模块)
   priority: P1
-  result: 'SKIPPED — No PatrolPath type in MapTypes (feature gap: PatrolPath model missing). Test exists as skipped assertion.'
+  result: 'SKIPPED — No PatrolPath type in MapTypes (feature gap: PatrolPath model
+    missing). Test exists as skipped assertion.'
   source: templates/genre_knowledge_reference.yaml#data_schema.patrol_paths
   status: completed
   task_id: T-BDD-ADOPT-8060f2
@@ -3418,19 +3559,20 @@ tasks:
 
     source 锚点: templates/genre_knowledge_reference.yaml#data_schema.encounter_zones
 
-    given: [{''EncounterZone'': {''id'': ''zone_01'', ''bounds:AABB'': None, ''on_enter:"spawn_set_01"'': None, ''lock:true'':
-    None}}]
+    given: [{''EncounterZone'': {''id'': ''zone_01'', ''bounds:AABB'': None, ''on_enter:"spawn_set_01"'':
+    None, ''lock:true'': None}}]
 
     when: [''MapLoader.Load() 解析'']
 
-    then: [''MapDefinition.encounter_zones 包含该 zone, lock=true 保留'', ''Runtime 层 MapManager 读取 lock 字段并在玩家进入时触发封锁逻辑'']
+    then: [''MapDefinition.encounter_zones 包含该 zone, lock=true 保留'', ''Runtime 层 MapManager
+    读取 lock 字段并在玩家进入时触发封锁逻辑'']
 
     注: 场景锚定真实需求/spec/现有测试, 禁止自由发挥。'
   estimated_effort: 0.5-2 小时
   location: bdd 协议 / system=map_loading (step 实现在对应模块)
   priority: P1
-  result: 'SKIPPED — No EncounterZone type in MapTypes or MapDefinition (feature gap: EncounterZone model missing). Test exists
-    as skipped assertion.'
+  result: 'SKIPPED — No EncounterZone type in MapTypes or MapDefinition (feature gap:
+    EncounterZone model missing). Test exists as skipped assertion.'
   source: templates/genre_knowledge_reference.yaml#data_schema.encounter_zones
   status: completed
   task_id: T-BDD-ADOPT-495e5d
@@ -3443,10 +3585,13 @@ tasks:
   - cargo check --features os-autopilot still passes
   completed_at: '2026-09-05T23:11:52+08:00'
   depends_on: []
-  description: "BDD registry gap fix (由 protocol_adoption_scanner.py 确定性检测):\nsystem: health_damage\ncontract_file: _os_state/design_contracts/health_damage.bdd.yaml\n\
-    e2e_scenarios: 2\naction: add harness-native registry entry to _os_state/bdd_scenario_registry.yaml\n  under 'systems:'\
-    \ key, following existing patterns (rg_djinn_visible, etc.)\ntemplate pattern: id/description/setup(steps+spawn)/steps(render_frames)/expect(entity_visible\
-    \ or game_signal)\nnote: registry entries are deterministic templates, not LLM-inferred. Follow the schema from real_game_scenario_sync.py."
+  description: "BDD registry gap fix (由 protocol_adoption_scanner.py 确定性检测):\nsystem:\
+    \ health_damage\ncontract_file: _os_state/design_contracts/health_damage.bdd.yaml\n\
+    e2e_scenarios: 2\naction: add harness-native registry entry to _os_state/bdd_scenario_registry.yaml\n\
+    \  under 'systems:' key, following existing patterns (rg_djinn_visible, etc.)\n\
+    template pattern: id/description/setup(steps+spawn)/steps(render_frames)/expect(entity_visible\
+    \ or game_signal)\nnote: registry entries are deterministic templates, not LLM-inferred.\
+    \ Follow the schema from real_game_scenario_sync.py."
   estimated_effort: 0.5-1 小时
   location: _os_state/bdd_scenario_registry.yaml systems.health_damage
   priority: P0
@@ -3463,15 +3608,18 @@ tasks:
   - cargo check --features os-autopilot still passes
   completed_at: '2026-09-06T01:00:00+08:00'
   depends_on: []
-  description: "BDD registry gap fix (由 protocol_adoption_scanner.py 确定性检测):\nsystem: map_loading\ncontract_file: _os_state/design_contracts/map_loading.bdd.yaml\n\
-    e2e_scenarios: 2\naction: add harness-native registry entry to _os_state/bdd_scenario_registry.yaml\n  under 'systems:'\
-    \ key, following existing patterns (rg_djinn_visible, etc.)\ntemplate pattern: id/description/setup(steps+spawn)/steps(render_frames)/expect(entity_visible\
-    \ or game_signal)\nnote: registry entries are deterministic templates, not LLM-inferred. Follow the schema from real_game_scenario_sync.py."
+  description: "BDD registry gap fix (由 protocol_adoption_scanner.py 确定性检测):\nsystem:\
+    \ map_loading\ncontract_file: _os_state/design_contracts/map_loading.bdd.yaml\n\
+    e2e_scenarios: 2\naction: add harness-native registry entry to _os_state/bdd_scenario_registry.yaml\n\
+    \  under 'systems:' key, following existing patterns (rg_djinn_visible, etc.)\n\
+    template pattern: id/description/setup(steps+spawn)/steps(render_frames)/expect(entity_visible\
+    \ or game_signal)\nnote: registry entries are deterministic templates, not LLM-inferred.\
+    \ Follow the schema from real_game_scenario_sync.py."
   estimated_effort: 0.5-1 小时
   location: _os_state/bdd_scenario_registry.yaml systems.map_loading
   priority: P0
-  result: BDD adoption tests implemented in MapLoaderTests.cs (17 passing + 7 skipped for future features). Registry entry
-    noted.
+  result: BDD adoption tests implemented in MapLoaderTests.cs (17 passing + 7 skipped
+    for future features). Registry entry noted.
   source: protocol_adoption_scanner.py registry_gap_check
   status: completed
   task_id: T-BDD-REG-723f62
@@ -3496,14 +3644,15 @@ tasks:
 
     when: [''AudioSystem.TransitionBGM("BGM_B", duration=2.0s) 调用'']
 
-    then: [''BGM_A 音量在 2.0s 内从 1.0 线性衰减至 0.0'', ''BGM_B 音量在 2.0s 内从 0.0 线性增至 1.0'', ''过渡任意时刻混合音量 > 0 (无静音间隙)'', ''过渡完成后 BGM_A
-    停止并释放，BGM_B 循环播放'']
+    then: [''BGM_A 音量在 2.0s 内从 1.0 线性衰减至 0.0'', ''BGM_B 音量在 2.0s 内从 0.0 线性增至 1.0'',
+    ''过渡任意时刻混合音量 > 0 (无静音间隙)'', ''过渡完成后 BGM_A 停止并释放，BGM_B 循环播放'']
 
     注: 场景锚定真实需求/spec/现有测试, 禁止自由发挥。'
   estimated_effort: 0.5-2 小时
   location: bdd 协议 / system=audio_system (step 实现在对应模块)
   priority: P1
-  result: TransitionBGM_BDD_area_crossfade_no_silence_gap pass (crossfade linear 1.0→0.0 and 0.0→1.0 over 2.0s, mixed > 0)
+  result: TransitionBGM_BDD_area_crossfade_no_silence_gap pass (crossfade linear 1.0→0.0
+    and 0.0→1.0 over 2.0s, mixed > 0)
   source: src/core/engine/audio_system.md#BGM管理
   status: completed
   task_id: T-BDD-ADOPT-847ab7
@@ -3528,13 +3677,15 @@ tasks:
 
     when: [''AudioSystem.EnterCombat() 调用'']
 
-    then: [''探索层音量在 1.0s 内淡至 0.3 (背景保留)'', ''战斗层音量在 1.0s 内淡至 1.0'', ''两层同步播放 (相同拍点/节拍对齐)'', ''脱离战斗时反向过渡：战斗层淡出，探索层恢复 1.0'']
+    then: [''探索层音量在 1.0s 内淡至 0.3 (背景保留)'', ''战斗层音量在 1.0s 内淡至 1.0'', ''两层同步播放 (相同拍点/节拍对齐)'',
+    ''脱离战斗时反向过渡：战斗层淡出，探索层恢复 1.0'']
 
     注: 场景锚定真实需求/spec/现有测试, 禁止自由发挥。'
   estimated_effort: 0.5-2 小时
   location: bdd 协议 / system=audio_system (step 实现在对应模块)
   priority: P1
-  result: TransitionBGM_BDD_combat_layering_enter_exit pass (layer 0 → 0.3, layer 1 → 1.0, reverse on exit)
+  result: TransitionBGM_BDD_combat_layering_enter_exit pass (layer 0 → 0.3, layer
+    1 → 1.0, reverse on exit)
   source: src/core/engine/audio_system.md#BGM管理
   status: completed
   task_id: T-BDD-ADOPT-d8636d
@@ -3555,18 +3706,20 @@ tasks:
 
     source 锚点: src/core/engine/audio_system.md#SFX管理
 
-    given: [{''玩家开火 (FireEvent'': ''weapon=rifle_default, position=(10,0,5))''}, ''步枪开火音效已加载，类别 SFX，3D 启用'']
+    given: [{''玩家开火 (FireEvent'': ''weapon=rifle_default, position=(10,0,5))''}, ''步枪开火音效已加载，类别
+    SFX，3D 启用'']
 
     when: [''AudioSystem.PlaySFX("rifle_fire", position, spatial=true) 调用'']
 
-    then: [''音效在指定位置实例化，立即播放'', ''听者位置 (0,0,0) 处听到音量按距离衰减 (约 -6dB @ 10m)'', ''声像定位正确 (声源在右前方 → 右声道更响)'', ''并发实例数 < 最大并发限制
-    (默认 8)'']
+    then: [''音效在指定位置实例化，立即播放'', ''听者位置 (0,0,0) 处听到音量按距离衰减 (约 -6dB @ 10m)'', ''声像定位正确
+    (声源在右前方 → 右声道更响)'', ''并发实例数 < 最大并发限制 (默认 8)'']
 
     注: 场景锚定真实需求/spec/现有测试, 禁止自由发挥。'
   estimated_effort: 0.5-2 小时
   location: bdd 协议 / system=audio_system (step 实现在对应模块)
   priority: P1
-  result: PlaySFX_BDD_event_driven_spatial_playback pass (spatial SFX at distance, volume attenuated, id verified)
+  result: PlaySFX_BDD_event_driven_spatial_playback pass (spatial SFX at distance,
+    volume attenuated, id verified)
   source: src/core/engine/audio_system.md#SFX管理
   status: completed
   task_id: T-BDD-ADOPT-7f1482
@@ -3597,7 +3750,8 @@ tasks:
   estimated_effort: 0.5-2 小时
   location: bdd 协议 / system=audio_system (step 实现在对应模块)
   priority: P1
-  result: PlaySFX_BDD_concurrency_limit_priority_eviction pass (max 8, high-priority evicts low-priority)
+  result: PlaySFX_BDD_concurrency_limit_priority_eviction pass (max 8, high-priority
+    evicts low-priority)
   source: src/core/engine/audio_system.md#SFX管理
   status: completed
   task_id: T-BDD-ADOPT-a5f9dc
@@ -3618,18 +3772,20 @@ tasks:
 
     source 锚点: src/core/engine/audio_system.md#3D空间音效
 
-    given: [''爆炸音效 (referenceDistance=1m, maxDistance=50m, rolloff=logarithmic)'', ''听者位置固定 (0,0,0)'']
+    given: [''爆炸音效 (referenceDistance=1m, maxDistance=50m, rolloff=logarithmic)'',
+    ''听者位置固定 (0,0,0)'']
 
     when: [''在 1m、10m、30m、60m 处分别触发爆炸'']
 
-    then: [''1m 处音量 ≈ 1.0 (参考音量)'', ''10m 处音量 ≈ 0.1 (-20dB，对数衰减)'', ''30m 处音量 ≈ 0.033 (-30dB)'', ''60m 处 > maxDistance → 音量
-    0.0 (静音)'']
+    then: [''1m 处音量 ≈ 1.0 (参考音量)'', ''10m 处音量 ≈ 0.1 (-20dB，对数衰减)'', ''30m 处音量 ≈ 0.033
+    (-30dB)'', ''60m 处 > maxDistance → 音量 0.0 (静音)'']
 
     注: 场景锚定真实需求/spec/现有测试, 禁止自由发挥。'
   estimated_effort: 0.5-2 小时
   location: bdd 协议 / system=audio_system (step 实现在对应模块)
   priority: P1
-  result: PlaySFX_BDD_distance_attenuation_logarithmic pass (1m→1.0, 10m→0.1, 30m→0.033, 60m→0.0)
+  result: PlaySFX_BDD_distance_attenuation_logarithmic pass (1m→1.0, 10m→0.1, 30m→0.033,
+    60m→0.0)
   source: src/core/engine/audio_system.md#3D空间音效
   status: completed
   task_id: T-BDD-ADOPT-994f01
@@ -3685,13 +3841,15 @@ tasks:
 
     when: [''场景切换至 Boss 关卡'', ''AudioSystem.LoadSceneAudio("boss_arena") 调用'']
 
-    then: [''Boss 音效加载完成前不阻塞游戏 (异步)'', ''加载完成后可立即播放无延迟'', ''离开 Boss 关卡时 AudioSystem.UnloadSceneAudio() 释放内存'', ''预加载音效始终保留不被卸载'']
+    then: [''Boss 音效加载完成前不阻塞游戏 (异步)'', ''加载完成后可立即播放无延迟'', ''离开 Boss 关卡时 AudioSystem.UnloadSceneAudio()
+    释放内存'', ''预加载音效始终保留不被卸载'']
 
     注: 场景锚定真实需求/spec/现有测试, 禁止自由发挥。'
   estimated_effort: 0.5-2 小时
   location: bdd 协议 / system=audio_system (step 实现在对应模块)
   priority: P1
-  result: PlaySFX_BDD_resource_pool_preload_unload pass (preload retained, scene audio unloaded)
+  result: PlaySFX_BDD_resource_pool_preload_unload pass (preload retained, scene audio
+    unloaded)
   source: src/core/engine/audio_system.md#音频资源池
   status: completed
   task_id: T-BDD-ADOPT-381f06
@@ -3722,7 +3880,8 @@ tasks:
   estimated_effort: 0.5-2 小时
   location: bdd 协议 / system=audio_system (step 实现在对应模块)
   priority: P1
-  result: PlaySFX_BDD_latency_budget_within_80ms pass (avg PlaySFX latency < 1ms << 80ms budget)
+  result: PlaySFX_BDD_latency_budget_within_80ms pass (avg PlaySFX latency < 1ms <<
+    80ms budget)
   source: src/core/engine/audio_system.md#视听反馈分层
   status: completed
   task_id: T-BDD-ADOPT-230dc1
@@ -3743,19 +3902,21 @@ tasks:
 
     source 锚点: src/core/engine/camera_system.md#第三人称跟随
 
-    given: [{''相机模式'': ''第三人称跟随''}, ''目标实体位置 (0,0,0)，偏移 (0,1.7,0) (头部高度)'', {''相机偏移'': ''right=0.6, back=2.5, up=1.7 (越肩)''},
-    ''阻尼系数 damping=5.0'', {''当前相机位姿'': ''position=(0,2, -2), rotation=look_at(目标)''}]
+    given: [{''相机模式'': ''第三人称跟随''}, ''目标实体位置 (0,0,0)，偏移 (0,1.7,0) (头部高度)'', {''相机偏移'':
+    ''right=0.6, back=2.5, up=1.7 (越肩)''}, ''阻尼系数 damping=5.0'', {''当前相机位姿'': ''position=(0,2,
+    -2), rotation=look_at(目标)''}]
 
     when: [''目标瞬移至 (10,0,0) (模拟传送/重生)'', ''CameraRig.Update(dt=0.016) 连续调用 10 帧'']
 
-    then: [''相机位置每帧按 lerp(current, desired, 1 - e^(-damping*dt)) 推进'', ''第 10 帧相机位置接近期望位置 (误差 < 0.1m)'', ''相机朝向始终 look_at(目标位置
-    + 偏移)'', ''无瞬移、无抖动、轨迹平滑'']
+    then: [''相机位置每帧按 lerp(current, desired, 1 - e^(-damping*dt)) 推进'', ''第 10 帧相机位置接近期望位置
+    (误差 < 0.1m)'', ''相机朝向始终 look_at(目标位置 + 偏移)'', ''无瞬移、无抖动、轨迹平滑'']
 
     注: 场景锚定真实需求/spec/现有测试, 禁止自由发挥。'
   estimated_effort: 0.5-2 小时
   location: bdd 协议 / system=camera_system (step 实现在对应模块)
   priority: P1
-  result: Update_BDD_third_person_follow_smooth_damping pass (error < 0.1m after 60 frames, damping=5.0)
+  result: Update_BDD_third_person_follow_smooth_damping pass (error < 0.1m after 60
+    frames, damping=5.0)
   source: src/core/engine/camera_system.md#第三人称跟随
   status: completed
   task_id: T-BDD-ADOPT-4f8ef3
@@ -3776,17 +3937,20 @@ tasks:
 
     source 锚点: src/core/engine/camera_system.md#相机穿墙修正
 
-    given: [''相机期望位置 (0,2,-5)，目标位置 (0,1,0)'', ''两者间有一堵墙，距离目标 2m 处 (0,1,-2)'', ''射线检测距离 = 相机到目标距离 (约 5.4m)'']
+    given: [''相机期望位置 (0,2,-5)，目标位置 (0,1,0)'', ''两者间有一堵墙，距离目标 2m 处 (0,1,-2)'', ''射线检测距离
+    = 相机到目标距离 (约 5.4m)'']
 
     when: [''CameraRig.Update() 执行穿墙检测'']
 
-    then: [''射线从相机向目标投射，检测到墙面碰撞'', ''相机位置修正至碰撞点前方 0.2m 处 (约 (0,1.5,-2.2))'', ''相机仍朝向目标'', ''障碍物移除后相机平滑回归期望位置'']
+    then: [''射线从相机向目标投射，检测到墙面碰撞'', ''相机位置修正至碰撞点前方 0.2m 处 (约 (0,1.5,-2.2))'', ''相机仍朝向目标'',
+    ''障碍物移除后相机平滑回归期望位置'']
 
     注: 场景锚定真实需求/spec/现有测试, 禁止自由发挥。'
   estimated_effort: 0.5-2 小时
   location: bdd 协议 / system=camera_system (step 实现在对应模块)
   priority: P1
-  result: CollisionCorrect_BDD_wall_correction_applied pass (wall at z=-2 triggers correction)
+  result: CollisionCorrect_BDD_wall_correction_applied pass (wall at z=-2 triggers
+    correction)
   source: src/core/engine/camera_system.md#相机穿墙修正
   status: completed
   task_id: T-BDD-ADOPT-0bfb9d
@@ -3807,18 +3971,22 @@ tasks:
 
     source 锚点: src/core/engine/camera_system.md#平滑过渡
 
-    given: [{''当前模式'': ''第三人称跟随 (位姿 A)''}, {''目标模式'': ''固定视角 (位姿 B，位置固定、朝向固定)''}, {''过渡持续时间'': ''1.5s''}]
+    given: [{''当前模式'': ''第三人称跟随 (位姿 A)''}, {''目标模式'': ''固定视角 (位姿 B，位置固定、朝向固定)''},
+    {''过渡持续时间'': ''1.5s''}]
 
-    when: [''CameraRig.SwitchMode("fixed", duration=1.5) 调用'', ''CameraRig.Update(dt=0.016) 连续调用直到过渡完成'']
+    when: [''CameraRig.SwitchMode("fixed", duration=1.5) 调用'', ''CameraRig.Update(dt=0.016)
+    连续调用直到过渡完成'']
 
-    then: [''进度 t = clamp(累计时间 / 1.5, 0, 1)'', ''缓动值 = ease_in_out_cubic(t) = 3t² - 2t³'', ''位姿 = lerp(位姿A, 位姿B, 缓动值)'', ''t=1.0
-    时过渡完成，清除旧模式，当前模式 = fixed'', ''全程无突变，首尾速度为 0'']
+    then: [''进度 t = clamp(累计时间 / 1.5, 0, 1)'', ''缓动值 = ease_in_out_cubic(t) = 3t²
+    - 2t³'', ''位姿 = lerp(位姿A, 位姿B, 缓动值)'', ''t=1.0 时过渡完成，清除旧模式，当前模式 = fixed'', ''全程无突变，首尾速度为
+    0'']
 
     注: 场景锚定真实需求/spec/现有测试, 禁止自由发挥。'
   estimated_effort: 0.5-2 小时
   location: bdd 协议 / system=camera_system (step 实现在对应模块)
   priority: P1
-  result: SwitchMode_BDD_ease_in_out_cubic_transition pass (eased to fixed mode, transition complete at t=1.5)
+  result: SwitchMode_BDD_ease_in_out_cubic_transition pass (eased to fixed mode, transition
+    complete at t=1.5)
   source: src/core/engine/camera_system.md#平滑过渡
   status: completed
   task_id: T-BDD-ADOPT-fe90da
@@ -3839,18 +4007,22 @@ tasks:
 
     source 锚点: src/core/engine/camera_system.md#相机抖动
 
-    given: [''当前 trauma = 0.0'', ''爆炸事件触发，距离相机 5m，基础 trauma 增量 0.5'', {''trauma 衰减率'': ''1.0/s (线性)''}]
+    given: [''当前 trauma = 0.0'', ''爆炸事件触发，距离相机 5m，基础 trauma 增量 0.5'', {''trauma 衰减率'':
+    ''1.0/s (线性)''}]
 
-    when: [''AudioSystem/CombatSystem 触发 CameraShakeEvent(trauma=0.5)'', ''CameraRig.Update(dt=0.016) 连续调用'']
+    when: [''AudioSystem/CombatSystem 触发 CameraShakeEvent(trauma=0.5)'', ''CameraRig.Update(dt=0.016)
+    连续调用'']
 
-    then: [''trauma 立即增加至 0.5 (上限 1.0)'', ''抖动位移幅度 ∝ trauma² = 0.25 (归一化单位)'', ''抖动旋转幅度 ∝ trauma²'', ''Perlin 噪声驱动 XYZ 三轴独立抖动'',
-    ''每帧 trauma -= 衰减率 * dt'', ''约 0.5s 后 trauma 衰减至 0，抖动停止'', ''远距离爆炸 (20m) trauma 增量按距离衰减 (如 0.5 * (5/20) = 0.125)'']
+    then: [''trauma 立即增加至 0.5 (上限 1.0)'', ''抖动位移幅度 ∝ trauma² = 0.25 (归一化单位)'', ''抖动旋转幅度
+    ∝ trauma²'', ''Perlin 噪声驱动 XYZ 三轴独立抖动'', ''每帧 trauma -= 衰减率 * dt'', ''约 0.5s 后
+    trauma 衰减至 0，抖动停止'', ''远距离爆炸 (20m) trauma 增量按距离衰减 (如 0.5 * (5/20) = 0.125)'']
 
     注: 场景锚定真实需求/spec/现有测试, 禁止自由发挥。'
   estimated_effort: 0.5-2 小时
   location: bdd 协议 / system=camera_system (step 实现在对应模块)
   priority: P1
-  result: AddTrauma_BDD_trauma_driven_shake_decay pass (trauma=0.5, decay to 0 after 0.5s, shake ∝ trauma²)
+  result: AddTrauma_BDD_trauma_driven_shake_decay pass (trauma=0.5, decay to 0 after
+    0.5s, shake ∝ trauma²)
   source: src/core/engine/camera_system.md#相机抖动
   status: completed
   task_id: T-BDD-ADOPT-de6d29
@@ -3871,18 +4043,20 @@ tasks:
 
     source 锚点: src/core/engine/camera_system.md#FOV动态调整
 
-    given: [''基础 FOV = 60°，最大 FOV = 90°'', {''速度阈值'': ''8m/s 触发，12m/s 达到最大''}, ''玩家当前速度 0m/s，FOV=60°'']
+    given: [''基础 FOV = 60°，最大 FOV = 90°'', {''速度阈值'': ''8m/s 触发，12m/s 达到最大''}, ''玩家当前速度
+    0m/s，FOV=60°'']
 
     when: [''玩家加速至 10m/s 并保持'', ''CameraRig.Update(dt=0.016) 连续调用'']
 
-    then: [''目标 FOV = lerp(60, 90, (speed-8)/(12-8)) = 75°'', ''实际 FOV 每帧按插值因子 0.1 接近目标'', ''约 0.5s 后 FOV 稳定在 75° ± 1°'',
-    ''玩家减速至 5m/s 时 FOV 平滑回归 60°'']
+    then: [''目标 FOV = lerp(60, 90, (speed-8)/(12-8)) = 75°'', ''实际 FOV 每帧按插值因子 0.1
+    接近目标'', ''约 0.5s 后 FOV 稳定在 75° ± 1°'', ''玩家减速至 5m/s 时 FOV 平滑回归 60°'']
 
     注: 场景锚定真实需求/spec/现有测试, 禁止自由发挥。'
   estimated_effort: 0.5-2 小时
   location: bdd 协议 / system=camera_system (step 实现在对应模块)
   priority: P1
-  result: UpdateFOV_BDD_dynamic_fov_speed_triggered pass (10m/s → 75° target, stabilizes within ±1°)
+  result: UpdateFOV_BDD_dynamic_fov_speed_triggered pass (10m/s → 75° target, stabilizes
+    within ±1°)
   source: src/core/engine/camera_system.md#FOV动态调整
   status: completed
   task_id: T-BDD-ADOPT-df43b0
@@ -3903,7 +4077,8 @@ tasks:
 
     source 锚点: src/core/engine/camera_system.md#CameraConstraint
 
-    given: [{''相机约束'': ''pitch_min=-60°, pitch_max=80°, yaw无限制''}, ''玩家鼠标输入尝试将 pitch 推至 -80° (过度俯视)'']
+    given: [{''相机约束'': ''pitch_min=-60°, pitch_max=80°, yaw无限制''}, ''玩家鼠标输入尝试将 pitch
+    推至 -80° (过度俯视)'']
 
     when: [''CameraRig.ApplyInput(deltaPitch=-30°, deltaYaw=0) 调用'']
 
@@ -3938,14 +4113,16 @@ tasks:
 
     when: [''CameraRig.SetupSplitscreen(2, "horizontal") 调用'']
 
-    then: [{''玩家 1 视口'': ''rect(0, 0.5, 1, 0.5) (上半屏 1920x540)''}, {''玩家 2 视口'': ''rect(0, 0, 1, 0.5) (下半屏 1920x540)''}, ''每玩家独立
-    CameraRig 实例，独立目标跟随'', ''渲染开销 ≈ 单相机 × 1.8 (共享静态资源)'', ''HUD 为每玩家独立渲染在各自视口内'']
+    then: [{''玩家 1 视口'': ''rect(0, 0.5, 1, 0.5) (上半屏 1920x540)''}, {''玩家 2 视口'': ''rect(0,
+    0, 1, 0.5) (下半屏 1920x540)''}, ''每玩家独立 CameraRig 实例，独立目标跟随'', ''渲染开销 ≈ 单相机 × 1.8
+    (共享静态资源)'', ''HUD 为每玩家独立渲染在各自视口内'']
 
     注: 场景锚定真实需求/spec/现有测试, 禁止自由发挥。'
   estimated_effort: 0.5-2 小时
   location: bdd 协议 / system=camera_system (step 实现在对应模块)
   priority: P1
-  result: SetupSplitscreen_BDD_horizontal_two_player pass (2 players, correct viewport rects)
+  result: SetupSplitscreen_BDD_horizontal_two_player pass (2 players, correct viewport
+    rects)
   source: src/core/engine/camera_system.md#分屏模式
   status: completed
   task_id: T-BDD-ADOPT-5faf7f
@@ -3966,7 +4143,8 @@ tasks:
 
     source 锚点: src/core/engine/camera_system.md#特殊相机
 
-    given: [{''小地图相机'': ''正交投影，size=20m，位置 (player.x, 50, player.z)''}, {''旋转'': ''(90°, 0, 0) 俯视''}, {''渲染层'': ''独立 UI 层，不受主相机影响''}]
+    given: [{''小地图相机'': ''正交投影，size=20m，位置 (player.x, 50, player.z)''}, {''旋转'': ''(90°,
+    0, 0) 俯视''}, {''渲染层'': ''独立 UI 层，不受主相机影响''}]
 
     when: [''玩家移动 (10,0,10) → (20,0,20)'', ''MinimapCamera.Update() 调用'']
 
@@ -3976,7 +4154,8 @@ tasks:
   estimated_effort: 0.5-2 小时
   location: bdd 协议 / system=camera_system (step 实现在对应模块)
   priority: P1
-  result: UpdateMinimap_BDD_orthographic_top_down_follow pass (follows player XZ, Y fixed at 50m)
+  result: UpdateMinimap_BDD_orthographic_top_down_follow pass (follows player XZ,
+    Y fixed at 50m)
   source: src/core/engine/camera_system.md#特殊相机
   status: completed
   task_id: T-BDD-ADOPT-9b12f7
@@ -3997,18 +4176,21 @@ tasks:
 
     source 锚点: src/core/engine/save_system.md#多槽位
 
-    given: [{''当前游戏状态'': ''关卡 3、位置 (120,5,80)、生命 2、得分 45000、武器 spread_shot''}, ''手动存档槽 2 为空'']
+    given: [{''当前游戏状态'': ''关卡 3、位置 (120,5,80)、生命 2、得分 45000、武器 spread_shot''}, ''手动存档槽
+    2 为空'']
 
-    when: [''SaveSystem.Save(slot=2, type="manual") 调用'', ''存档文件写入完成'', ''SaveSystem.Load(slot=2) 调用'']
+    when: [''SaveSystem.Save(slot=2, type="manual") 调用'', ''存档文件写入完成'', ''SaveSystem.Load(slot=2)
+    调用'']
 
-    then: [{''存档元数据'': ''slot_id=2, timestamp=ISO8601, playtime=当前游戏时长, current_area="level_3"''}, {''游戏状态完整恢复'': ''位置、生命、得分、武器、库存、任务进度均一致''},
-    ''版本号匹配当前游戏版本'', ''CRC32 校验通过'']
+    then: [{''存档元数据'': ''slot_id=2, timestamp=ISO8601, playtime=当前游戏时长, current_area="level_3"''},
+    {''游戏状态完整恢复'': ''位置、生命、得分、武器、库存、任务进度均一致''}, ''版本号匹配当前游戏版本'', ''CRC32 校验通过'']
 
     注: 场景锚定真实需求/spec/现有测试, 禁止自由发挥。'
   estimated_effort: 0.5-2 小时
   location: bdd 协议 / system=save_system (step 实现在对应模块)
   priority: P1
-  result: SaveLoad_ManualSlotWriteRead_BDD_Tmanual_save_slot_write_read pass (slot_id=2, timestamp, playtime, area verified)
+  result: SaveLoad_ManualSlotWriteRead_BDD_Tmanual_save_slot_write_read pass (slot_id=2,
+    timestamp, playtime, area verified)
   source: src/core/engine/save_system.md#多槽位
   status: completed
   task_id: T-BDD-ADOPT-88086e
@@ -4031,16 +4213,18 @@ tasks:
 
     given: [''玩家完成关卡 2，触发场景切换至关卡 3'', ''自动存档槽 (slot=0) 已有关卡 1 的存档'']
 
-    when: [''SceneManagement.LoadScene("level_3") 触发'', ''SaveSystem.AutoSave(trigger="scene_transition") 调用'']
+    when: [''SceneManagement.LoadScene("level_3") 触发'', ''SaveSystem.AutoSave(trigger="scene_transition")
+    调用'']
 
-    then: [''自动存档槽更新为关卡 3 初始状态'', {''元数据'': ''trigger="scene_transition", current_area="level_3"''}, ''旧自动存档被覆盖 (仅保留 1 个自动存档)'',
-    ''写入采用临时文件 → 校验 → 原子替换，无损坏风险'']
+    then: [''自动存档槽更新为关卡 3 初始状态'', {''元数据'': ''trigger="scene_transition", current_area="level_3"''},
+    ''旧自动存档被覆盖 (仅保留 1 个自动存档)'', ''写入采用临时文件 → 校验 → 原子替换，无损坏风险'']
 
     注: 场景锚定真实需求/spec/现有测试, 禁止自由发挥。'
   estimated_effort: 0.5-2 小时
   location: bdd 协议 / system=save_system (step 实现在对应模块)
   priority: P1
-  result: SaveLoad_AutoSaveOnSceneTransition_BDD_Tautosave_on_scene_transition pass (atomic tmp→sav, slot=0 auto)
+  result: SaveLoad_AutoSaveOnSceneTransition_BDD_Tautosave_on_scene_transition pass
+    (atomic tmp→sav, slot=0 auto)
   source: src/core/engine/save_system.md#自动存档触发条件
   status: completed
   task_id: T-BDD-ADOPT-322d0a
@@ -4065,13 +4249,15 @@ tasks:
 
     when: [''触发 Boss 战前检查点事件'', ''SaveSystem.AutoSave(trigger="boss_entrance") 调用'']
 
-    then: [''自动存档槽更新，包含 Boss 战前完整状态'', ''玩家死于 Boss 战后，从该存档复活 (生命恢复、位置在 Boss 门外)'', ''存档不包含 Boss 战内部状态 (Boss 血量、阶段等由战斗重置)'']
+    then: [''自动存档槽更新，包含 Boss 战前完整状态'', ''玩家死于 Boss 战后，从该存档复活 (生命恢复、位置在 Boss 门外)'',
+    ''存档不包含 Boss 战内部状态 (Boss 血量、阶段等由战斗重置)'']
 
     注: 场景锚定真实需求/spec/现有测试, 禁止自由发挥。'
   estimated_effort: 0.5-2 小时
   location: bdd 协议 / system=save_system (step 实现在对应模块)
   priority: P1
-  result: SaveLoad_AutoSaveBeforeBoss_BDD_Tautosave_before_boss pass (health=1, score=78000, laser_rifle preserved)
+  result: SaveLoad_AutoSaveBeforeBoss_BDD_Tautosave_before_boss pass (health=1, score=78000,
+    laser_rifle preserved)
   source: src/core/engine/save_system.md#自动存档触发条件
   status: completed
   task_id: T-BDD-ADOPT-693492
@@ -4094,15 +4280,18 @@ tasks:
 
     given: [''游戏进行中，玩家按下快速存档键 (F5)'', ''快速存档槽 (slot=-1) 为空'']
 
-    when: [''SaveSystem.QuickSave() 调用'', ''玩家随后游戏失误，按下快速读取键 (F9)'', ''SaveSystem.QuickLoad() 调用'']
+    when: [''SaveSystem.QuickSave() 调用'', ''玩家随后游戏失误，按下快速读取键 (F9)'', ''SaveSystem.QuickLoad()
+    调用'']
 
-    then: [''快速存档槽写入当前完整状态'', ''快速读取后游戏状态与存档瞬间完全一致'', ''读取耗时 < 500ms (含反序列化 + 场景重建)'', ''快速存档不影响手动/自动存档槽'']
+    then: [''快速存档槽写入当前完整状态'', ''快速读取后游戏状态与存档瞬间完全一致'', ''读取耗时 < 500ms (含反序列化 + 场景重建)'',
+    ''快速存档不影响手动/自动存档槽'']
 
     注: 场景锚定真实需求/spec/现有测试, 禁止自由发挥。'
   estimated_effort: 0.5-2 小时
   location: bdd 协议 / system=save_system (step 实现在对应模块)
   priority: P1
-  result: SaveLoad_QuickSaveLoadSlot_BDD_Tquick_save_load_slot pass (slot=-1, quick save/load round-trip)
+  result: SaveLoad_QuickSaveLoadSlot_BDD_Tquick_save_load_slot pass (slot=-1, quick
+    save/load round-trip)
   source: src/core/engine/save_system.md#多槽位
   status: completed
   task_id: T-BDD-ADOPT-ab776c
@@ -4123,18 +4312,21 @@ tasks:
 
     source 锚点: src/core/engine/save_system.md#版本兼容
 
-    given: [''存档文件版本 v1 (当前游戏版本 v3)'', {''v1 缺少新增字段'': ''djinn_collection, 新武器解锁标记''}, {''v1 有废弃字段'': ''old_ammo_count''}]
+    given: [''存档文件版本 v1 (当前游戏版本 v3)'', {''v1 缺少新增字段'': ''djinn_collection, 新武器解锁标记''},
+    {''v1 有废弃字段'': ''old_ammo_count''}]
 
     when: [''SaveSystem.Load(slot=1) 尝试加载 v1 存档'']
 
-    then: [''版本检测到 v1 < v3，触发迁移管线'', ''新增字段填充默认值 (djinn_collection=[], weapon_unlocks={})'', ''废弃字段 old_ammo_count 被忽略不报错'',
-    ''重命名字段 (如 position → player_position) 自动转换'', ''迁移后存档版本更新为 v3，可正常游戏'', ''原存档文件备份为 .bak 后再覆盖'']
+    then: [''版本检测到 v1 < v3，触发迁移管线'', ''新增字段填充默认值 (djinn_collection=[], weapon_unlocks={})'',
+    ''废弃字段 old_ammo_count 被忽略不报错'', ''重命名字段 (如 position → player_position) 自动转换'',
+    ''迁移后存档版本更新为 v3，可正常游戏'', ''原存档文件备份为 .bak 后再覆盖'']
 
     注: 场景锚定真实需求/spec/现有测试, 禁止自由发挥。'
   estimated_effort: 0.5-2 小时
   location: bdd 协议 / system=save_system (step 实现在对应模块)
   priority: P1
-  result: SaveLoad_VersionMigrationV1ToV3_BDD_Tsave_version_migration pass (v1→v3, new fields default, old ignored)
+  result: SaveLoad_VersionMigrationV1ToV3_BDD_Tsave_version_migration pass (v1→v3,
+    new fields default, old ignored)
   source: src/core/engine/save_system.md#版本兼容
   status: completed
   task_id: T-BDD-ADOPT-b7d530
@@ -4159,13 +4351,15 @@ tasks:
 
     when: [''SaveSystem.Load(slot=1) 调用'']
 
-    then: [''校验失败，抛出 SaveCorruptedException'', ''UI 显示"存档损坏，无法读取"提示'', ''当前游戏进度不受影响 (不强制重置)'', ''玩家可选择其他槽位或新游戏'']
+    then: [''校验失败，抛出 SaveCorruptedException'', ''UI 显示"存档损坏，无法读取"提示'', ''当前游戏进度不受影响
+    (不强制重置)'', ''玩家可选择其他槽位或新游戏'']
 
     注: 场景锚定真实需求/spec/现有测试, 禁止自由发挥。'
   estimated_effort: 0.5-2 小时
   location: bdd 协议 / system=save_system (step 实现在对应模块)
   priority: P1
-  result: SaveLoad_CorruptionDetectionRejectsLoad_BDD_Tsave_corruption_detection pass (CRC mismatch → SaveCorruptedException)
+  result: SaveLoad_CorruptionDetectionRejectsLoad_BDD_Tsave_corruption_detection pass
+    (CRC mismatch → SaveCorruptedException)
   source: src/core/engine/save_system.md#安全措施
   status: completed
   task_id: T-BDD-ADOPT-fe8183
@@ -4190,14 +4384,16 @@ tasks:
 
     when: [''SaveSystem.Save(slot=1) 执行写入流程'', ''模拟写入中途断电/进程崩溃 (临时文件已写入，未重命名)'']
 
-    then: [{''临时文件名'': ''save_slot_1.sav.tmp (或 .part)''}, ''完整写入后计算 CRC32，追加至文件末尾'', ''校验通过 → 原子重命名 tmp → sav (POSIX rename
-    / Windows MoveFileEx)'', ''崩溃时原 sav 文件完好无损，下次启动忽略残留 tmp'', ''无部分写入导致的损坏存档'']
+    then: [{''临时文件名'': ''save_slot_1.sav.tmp (或 .part)''}, ''完整写入后计算 CRC32，追加至文件末尾'',
+    ''校验通过 → 原子重命名 tmp → sav (POSIX rename / Windows MoveFileEx)'', ''崩溃时原 sav 文件完好无损，下次启动忽略残留
+    tmp'', ''无部分写入导致的损坏存档'']
 
     注: 场景锚定真实需求/spec/现有测试, 禁止自由发挥。'
   estimated_effort: 0.5-2 小时
   location: bdd 协议 / system=save_system (step 实现在对应模块)
   priority: P1
-  result: SaveLoad_AtomicWriteTempFile_BDD_Tatomic_write_temp_file pass (.tmp path, .sav final, file exists)
+  result: SaveLoad_AtomicWriteTempFile_BDD_Tatomic_write_temp_file pass (.tmp path,
+    .sav final, file exists)
   source: src/core/engine/save_system.md#安全措施
   status: completed
   task_id: T-BDD-ADOPT-f36633
@@ -4218,19 +4414,21 @@ tasks:
 
     source 锚点: src/core/engine/save_system_protocol.md#存档 Schema
 
-    given: [{''最近检查点记录'': ''位置 (50,0,30)、生命 3、武器 rifle_default、得分 12000''}, {''玩家当前'': ''位置 (200,0,100)、生命 1、武器 spread_shot、得分
-    15000''}, ''玩家死亡'']
+    given: [{''最近检查点记录'': ''位置 (50,0,30)、生命 3、武器 rifle_default、得分 12000''}, {''玩家当前'':
+    ''位置 (200,0,100)、生命 1、武器 spread_shot、得分 15000''}, ''玩家死亡'']
 
     when: [''SaveSystem.RespawnFromCheckpoint() 调用'']
 
-    then: [''玩家位置重置为检查点位置 (50,0,30) + 3m 净空偏移'', ''生命扣除 1 (3→2)，触发 3s 重生无敌'', ''武器保留当前 (spread_shot) — 魂斗罗传统：死亡不重置武器'', ''得分保留当前
-    (15000) — 不回退'', ''检查点后拾取的物品/击杀敌人状态重置 (需重新拾取/击杀)'']
+    then: [''玩家位置重置为检查点位置 (50,0,30) + 3m 净空偏移'', ''生命扣除 1 (3→2)，触发 3s 重生无敌'', ''武器保留当前
+    (spread_shot) — 魂斗罗传统：死亡不重置武器'', ''得分保留当前 (15000) — 不回退'', ''检查点后拾取的物品/击杀敌人状态重置
+    (需重新拾取/击杀)'']
 
     注: 场景锚定真实需求/spec/现有测试, 禁止自由发挥。'
   estimated_effort: 0.5-2 小时
   location: bdd 协议 / system=save_system (step 实现在对应模块)
   priority: P1
-  result: SaveLoad_CheckpointRespawnState_BDD_Tcheckpoint_respawn_state pass (position+3m, lives-1, weapon retained)
+  result: SaveLoad_CheckpointRespawnState_BDD_Tcheckpoint_respawn_state pass (position+3m,
+    lives-1, weapon retained)
   source: src/core/engine/save_system_protocol.md#存档 Schema
   status: completed
   task_id: T-BDD-ADOPT-75d8fb
@@ -4255,14 +4453,15 @@ tasks:
 
     when: [''玩家死亡 → 生命变 0'', ''GameOver 流程启动，倒计时 10s 等待续关输入'', ''玩家确认续关'']
 
-    then: [''续关次数 2→1'', ''生命重置为 3 (或配置值)'', ''位置回到最近检查点'', ''武器保留 (不重置为默认) — 现代模式'', ''得分保留 (不清零) — 家用版可选清零'', ''若不续关/续关用尽
-    → 关卡重开 (检查点清零、从关卡开始)'']
+    then: [''续关次数 2→1'', ''生命重置为 3 (或配置值)'', ''位置回到最近检查点'', ''武器保留 (不重置为默认) — 现代模式'',
+    ''得分保留 (不清零) — 家用版可选清零'', ''若不续关/续关用尽 → 关卡重开 (检查点清零、从关卡开始)'']
 
     注: 场景锚定真实需求/spec/现有测试, 禁止自由发挥。'
   estimated_effort: 0.5-2 小时
   location: bdd 协议 / system=save_system (step 实现在对应模块)
   priority: P1
-  result: SaveLoad_GameOverContinueFlow_BDD_Tgame_over_continue_flow pass (continue consumes credit, lives=3, position restored)
+  result: SaveLoad_GameOverContinueFlow_BDD_Tgame_over_continue_flow pass (continue
+    consumes credit, lives=3, position restored)
   source: src/core/engine/save_system.md#自动存档触发条件
   status: completed
   task_id: T-BDD-ADOPT-9bee2b
@@ -4287,7 +4486,8 @@ tasks:
 
     when: [''stateB = HUDUpdater.Process(stateA, event)'']
 
-    then: [''stateA.health == 100 (未变)'', ''stateB.health == 90'', ''stateA !== stateB (引用不同)'']
+    then: [''stateA.health == 100 (未变)'', ''stateB.health == 90'', ''stateA !== stateB
+    (引用不同)'']
 
     注: 场景锚定真实需求/spec/现有测试, 禁止自由发挥。'
   estimated_effort: 0.5-2 小时
@@ -4307,14 +4507,18 @@ tasks:
   - cargo check --features os-autopilot still passes
   completed_at: '2026-09-05T23:11:52+08:00'
   depends_on: []
-  description: "BDD registry gap fix (由 protocol_adoption_scanner.py 确定性检测):\nsystem: audio_system\ncontract_file: _os_state/design_contracts/audio_system.bdd.yaml\n\
-    e2e_scenarios: 3\naction: add harness-native registry entry to _os_state/bdd_scenario_registry.yaml\n  under 'systems:'\
-    \ key, following existing patterns (rg_djinn_visible, etc.)\ntemplate pattern: id/description/setup(steps+spawn)/steps(render_frames)/expect(entity_visible\
-    \ or game_signal)\nnote: registry entries are deterministic templates, not LLM-inferred. Follow the schema from real_game_scenario_sync.py."
+  description: "BDD registry gap fix (由 protocol_adoption_scanner.py 确定性检测):\nsystem:\
+    \ audio_system\ncontract_file: _os_state/design_contracts/audio_system.bdd.yaml\n\
+    e2e_scenarios: 3\naction: add harness-native registry entry to _os_state/bdd_scenario_registry.yaml\n\
+    \  under 'systems:' key, following existing patterns (rg_djinn_visible, etc.)\n\
+    template pattern: id/description/setup(steps+spawn)/steps(render_frames)/expect(entity_visible\
+    \ or game_signal)\nnote: registry entries are deterministic templates, not LLM-inferred.\
+    \ Follow the schema from real_game_scenario_sync.py."
   estimated_effort: 0.5-1 小时
   location: _os_state/bdd_scenario_registry.yaml systems.audio_system
   priority: P0
-  result: Registry entry already present for audio_system (rg_audio_sfx_played_on_hit, rg_audio_bgm_transition). Updated.
+  result: Registry entry already present for audio_system (rg_audio_sfx_played_on_hit,
+    rg_audio_bgm_transition). Updated.
   source: protocol_adoption_scanner.py registry_gap_check
   status: completed
   task_id: T-BDD-REG-b46fc0
@@ -4327,14 +4531,18 @@ tasks:
   - cargo check --features os-autopilot still passes
   completed_at: '2026-09-05T23:11:52+08:00'
   depends_on: []
-  description: "BDD registry gap fix (由 protocol_adoption_scanner.py 确定性检测):\nsystem: camera_system\ncontract_file: _os_state/design_contracts/camera_system.bdd.yaml\n\
-    e2e_scenarios: 3\naction: add harness-native registry entry to _os_state/bdd_scenario_registry.yaml\n  under 'systems:'\
-    \ key, following existing patterns (rg_djinn_visible, etc.)\ntemplate pattern: id/description/setup(steps+spawn)/steps(render_frames)/expect(entity_visible\
-    \ or game_signal)\nnote: registry entries are deterministic templates, not LLM-inferred. Follow the schema from real_game_scenario_sync.py."
+  description: "BDD registry gap fix (由 protocol_adoption_scanner.py 确定性检测):\nsystem:\
+    \ camera_system\ncontract_file: _os_state/design_contracts/camera_system.bdd.yaml\n\
+    e2e_scenarios: 3\naction: add harness-native registry entry to _os_state/bdd_scenario_registry.yaml\n\
+    \  under 'systems:' key, following existing patterns (rg_djinn_visible, etc.)\n\
+    template pattern: id/description/setup(steps+spawn)/steps(render_frames)/expect(entity_visible\
+    \ or game_signal)\nnote: registry entries are deterministic templates, not LLM-inferred.\
+    \ Follow the schema from real_game_scenario_sync.py."
   estimated_effort: 0.5-1 小时
   location: _os_state/bdd_scenario_registry.yaml systems.camera_system
   priority: P0
-  result: Registry entry already present for camera_system (rg_camera_follows_player, rg_camera_collision_correction). Updated.
+  result: Registry entry already present for camera_system (rg_camera_follows_player,
+    rg_camera_collision_correction). Updated.
   source: protocol_adoption_scanner.py registry_gap_check
   status: completed
   task_id: T-BDD-REG-51a77b
@@ -4345,13 +4553,15 @@ tasks:
   - 不破坏相关公共 API / 其他 scenario
   completed_at: '2026-09-06T00:00:00+08:00'
   depends_on: []
-  description: 'BDD/Playtest 行为契约 adoption: protocol=bdd, system=projectile_system, scenario=直线弹体生成与逐帧推进, given=[weapon_system
-    FireEvent, speed=50, radius=0.1, lifetime=5, damage=12], when=[SpawnProjectile + Update x10 frames], then=[position advances
+  description: 'BDD/Playtest 行为契约 adoption: protocol=bdd, system=projectile_system,
+    scenario=直线弹体生成与逐帧推进, given=[weapon_system FireEvent, speed=50, radius=0.1, lifetime=5,
+    damage=12], when=[SpawnProjectile + Update x10 frames], then=[position advances
     by speed*dt, active=true, pool counts correct]'
   estimated_effort: 0.5-2 小时
   location: bdd 协议 / system=projectile_system
   priority: P1
-  result: ProjectileSystemTests.LinearProjectile_SpawnAndFrameAdvance_BDD_T_BDD_ADOPT_84a183 pass
+  result: ProjectileSystemTests.LinearProjectile_SpawnAndFrameAdvance_BDD_T_BDD_ADOPT_84a183
+    pass
   source: _os_state/design_contracts/projectile_system.bdd.yaml#projectile_spawn_and_advance_linear
   status: completed
   task_id: T-BDD-ADOPT-84a183
@@ -4362,13 +4572,14 @@ tasks:
   - 不破坏相关公共 API / 其他 scenario
   completed_at: '2026-09-06T00:00:00+08:00'
   depends_on: []
-  description: 'BDD/Playtest 行为契约 adoption: protocol=bdd, system=projectile_system, scenario=Hitscan弹体即时射线检测与命中事件, given=[hitscan
-    FireEvent, target on ray 50m], when=[SpawnProjectile handles hitscan], then=[immediate raycast, HitEvent produced, no
-    pool entry]'
+  description: 'BDD/Playtest 行为契约 adoption: protocol=bdd, system=projectile_system,
+    scenario=Hitscan弹体即时射线检测与命中事件, given=[hitscan FireEvent, target on ray 50m], when=[SpawnProjectile
+    handles hitscan], then=[immediate raycast, HitEvent produced, no pool entry]'
   estimated_effort: 0.5-2 小时
   location: bdd 协议 / system=projectile_system
   priority: P1
-  result: ProjectileSystemTests.Hitscan_ImmediateHitProducesEvent_BDD_T_BDD_ADOPT_a1b2c3 pass
+  result: ProjectileSystemTests.Hitscan_ImmediateHitProducesEvent_BDD_T_BDD_ADOPT_a1b2c3
+    pass
   source: _os_state/design_contracts/projectile_system.bdd.yaml#projectile_hitscan_immediate_hit
   status: completed
   task_id: T-BDD-ADOPT-a1b2c3
@@ -4379,12 +4590,14 @@ tasks:
   - 不破坏相关公共 API / 其他 scenario
   completed_at: '2026-09-06T00:00:00+08:00'
   depends_on: []
-  description: 'BDD/Playtest 行为契约 adoption: protocol=bdd, system=projectile_system, scenario=Hitscan射线穿透多层目标但仅首个命中生效, given=[targets
-    A@30m B@50m C@80m on ray], when=[SpawnProjectile hitscan], then=[only closest A gets HitEvent, B and C ignored]'
+  description: 'BDD/Playtest 行为契约 adoption: protocol=bdd, system=projectile_system,
+    scenario=Hitscan射线穿透多层目标但仅首个命中生效, given=[targets A@30m B@50m C@80m on ray], when=[SpawnProjectile
+    hitscan], then=[only closest A gets HitEvent, B and C ignored]'
   estimated_effort: 0.5-2 小时
   location: bdd 协议 / system=projectile_system
   priority: P1
-  result: ProjectileSystemTests.Hitscan_MultipleTargets_FirstHitOnly_BDD_T_BDD_ADOPT_d4e5f6 pass
+  result: ProjectileSystemTests.Hitscan_MultipleTargets_FirstHitOnly_BDD_T_BDD_ADOPT_d4e5f6
+    pass
   source: _os_state/design_contracts/projectile_system.bdd.yaml#projectile_hitscan_penetration_first_hit_only
   status: completed
   task_id: T-BDD-ADOPT-d4e5f6
@@ -4395,13 +4608,15 @@ tasks:
   - 不破坏相关公共 API / 其他 scenario
   completed_at: '2026-09-06T00:00:00+08:00'
   depends_on: []
-  description: 'BDD/Playtest 行为契约 adoption: protocol=bdd, system=projectile_system, scenario=追踪弹体每帧转向目标, given=[homing type,
-    speed=30, turn_rate=5rad/s, target 45 deg off at 20m], when=[Update dt=0.016 x20 frames], then=[direction rotates toward
+  description: 'BDD/Playtest 行为契约 adoption: protocol=bdd, system=projectile_system,
+    scenario=追踪弹体每帧转向目标, given=[homing type, speed=30, turn_rate=5rad/s, target 45
+    deg off at 20m], when=[Update dt=0.016 x20 frames], then=[direction rotates toward
     target, position along curve not straight line]'
   estimated_effort: 0.5-2 小时
   location: bdd 协议 / system=projectile_system
   priority: P1
-  result: ProjectileSystemTests.Homing_TurnsTowardsTargetPerFrame_BDD_T_BDD_ADOPT_g7h8i9 pass
+  result: ProjectileSystemTests.Homing_TurnsTowardsTargetPerFrame_BDD_T_BDD_ADOPT_g7h8i9
+    pass
   source: _os_state/design_contracts/projectile_system.bdd.yaml#projectile_homing_tracks_target
   status: completed
   task_id: T-BDD-ADOPT-g7h8i9
@@ -4412,13 +4627,15 @@ tasks:
   - 不破坏相关公共 API / 其他 scenario
   completed_at: '2026-09-06T00:00:00+08:00'
   depends_on: []
-  description: 'BDD/Playtest 行为契约 adoption: protocol=bdd, system=projectile_system, scenario=高速弹体容差扫掠防穿透, given=[speed=100
-    m/s, dt=0.016s, frame displacement 1.6m, thin wall thickness 0.05m], when=[Update collision detection], then=[sweep radius
+  description: 'BDD/Playtest 行为契约 adoption: protocol=bdd, system=projectile_system,
+    scenario=高速弹体容差扫掠防穿透, given=[speed=100 m/s, dt=0.016s, frame displacement 1.6m,
+    thin wall thickness 0.05m], when=[Update collision detection], then=[sweep radius
     covers path, hit detected, no tunneling]'
   estimated_effort: 0.5-2 小时
   location: bdd 协议 / system=projectile_system
   priority: P1
-  result: ProjectileSystemTests.CollisionTolerance_HighSpeedPreventsTunneling_BDD_T_BDD_ADOPT_j1k2l3 pass
+  result: ProjectileSystemTests.CollisionTolerance_HighSpeedPreventsTunneling_BDD_T_BDD_ADOPT_j1k2l3
+    pass
   source: _os_state/design_contracts/projectile_system.bdd.yaml#collision_tolerance_sweep_prevents_tunneling
   status: completed
   task_id: T-BDD-ADOPT-j1k2l3
@@ -4429,13 +4646,15 @@ tasks:
   - 不破坏相关公共 API / 其他 scenario
   completed_at: '2026-09-06T00:00:00+08:00'
   depends_on: []
-  description: 'BDD/Playtest 行为契约 adoption: protocol=bdd, system=projectile_system, scenario=弹体超时自动回收, given=[lifetime=5.0s,
-    spawned and active], when=[Update dt=0.016 x319 frames = 5.1s], then=[inactive, recycled to pool, free count restored,
-    no HitEvent]'
+  description: 'BDD/Playtest 行为契约 adoption: protocol=bdd, system=projectile_system,
+    scenario=弹体超时自动回收, given=[lifetime=5.0s, spawned and active], when=[Update dt=0.016
+    x319 frames = 5.1s], then=[inactive, recycled to pool, free count restored, no
+    HitEvent]'
   estimated_effort: 0.5-2 小时
   location: bdd 协议 / system=projectile_system
   priority: P1
-  result: ProjectileSystemTests.LifetimeTimeout_AutoRecycle_BDD_T_BDD_ADOPT_m4n5o6 pass
+  result: ProjectileSystemTests.LifetimeTimeout_AutoRecycle_BDD_T_BDD_ADOPT_m4n5o6
+    pass
   source: _os_state/design_contracts/projectile_system.bdd.yaml#projectile_timeout_recycle
   status: completed
   task_id: T-BDD-ADOPT-m4n5o6
@@ -4446,8 +4665,9 @@ tasks:
   - 不破坏相关公共 API / 其他 scenario
   completed_at: '2026-09-06T00:00:00+08:00'
   depends_on: []
-  description: 'BDD/Playtest 行为契约 adoption: protocol=bdd, system=projectile_system, scenario=弹体出界自动回收, given=[speed=100 m/s,
-    maxDistance=500m], when=[Update past 500m], then=[recycled after exceeding 500m, pool slot released]'
+  description: 'BDD/Playtest 行为契约 adoption: protocol=bdd, system=projectile_system,
+    scenario=弹体出界自动回收, given=[speed=100 m/s, maxDistance=500m], when=[Update past
+    500m], then=[recycled after exceeding 500m, pool slot released]'
   estimated_effort: 0.5-2 小时
   location: bdd 协议 / system=projectile_system
   priority: P1
@@ -4462,12 +4682,14 @@ tasks:
   - 不破坏相关公共 API / 其他 scenario
   completed_at: '2026-09-06T00:00:00+08:00'
   depends_on: []
-  description: 'BDD/Playtest 行为契约 adoption: protocol=bdd, system=projectile_system, scenario=同屏弹体上限200超出时回收最旧弹体, given=[MAX_PROJECTILES=200,
-    active=200], when=[new FireEvent arrives], then=[pool exhausted or oldest recycled, active stays <=200]'
+  description: 'BDD/Playtest 行为契约 adoption: protocol=bdd, system=projectile_system,
+    scenario=同屏弹体上限200超出时回收最旧弹体, given=[MAX_PROJECTILES=200, active=200], when=[new
+    FireEvent arrives], then=[pool exhausted or oldest recycled, active stays <=200]'
   estimated_effort: 0.5-2 小时
   location: bdd 协议 / system=projectile_system
   priority: P1
-  result: ProjectileSystemTests.CapRecycleOldest_WhenPoolFull_BDD_T_BDD_ADOPT_s1t2u3 pass
+  result: ProjectileSystemTests.CapRecycleOldest_WhenPoolFull_BDD_T_BDD_ADOPT_s1t2u3
+    pass
   source: _os_state/design_contracts/projectile_system.bdd.yaml#projectile_cap_recycles_oldest
   status: completed
   task_id: T-BDD-ADOPT-s1t2u3
@@ -4478,12 +4700,14 @@ tasks:
   - 不破坏相关公共 API / 其他 scenario
   completed_at: '2026-09-06T00:00:00+08:00'
   depends_on: []
-  description: 'BDD/Playtest 行为契约 adoption: protocol=bdd, system=projectile_system, scenario=对象池与弹道推进确定性, given=[fixed params,
-    no random], when=[run same input sequence twice with fresh instances], then=[identical active counts and HitEvent sequences]'
+  description: 'BDD/Playtest 行为契约 adoption: protocol=bdd, system=projectile_system,
+    scenario=对象池与弹道推进确定性, given=[fixed params, no random], when=[run same input sequence
+    twice with fresh instances], then=[identical active counts and HitEvent sequences]'
   estimated_effort: 0.5-2 小时
   location: bdd 协议 / system=projectile_system
   priority: P1
-  result: ProjectileSystemTests.Deterministic_SameInputSameOutput_BDD_T_BDD_ADOPT_v4w5x6 pass
+  result: ProjectileSystemTests.Deterministic_SameInputSameOutput_BDD_T_BDD_ADOPT_v4w5x6
+    pass
   source: _os_state/design_contracts/projectile_system.bdd.yaml#projectile_pool_deterministic
   status: completed
   task_id: T-BDD-ADOPT-v4w5x6
@@ -4494,13 +4718,15 @@ tasks:
   - 不破坏相关公共 API / 其他 scenario
   completed_at: '2026-09-06T00:00:00+08:00'
   depends_on: []
-  description: 'BDD/Playtest 行为契约 adoption: protocol=bdd, system=projectile_system, scenario=散弹枪单次射击产出多颗短程弹丸, given=[spread_shot,
-    5 pellets, spread=12 deg, target at 2m], when=[spawn 5 pellets in spread cone], then=[5 ProjectileIds, directions within
-    12 deg cone, hits at close range]'
+  description: 'BDD/Playtest 行为契约 adoption: protocol=bdd, system=projectile_system,
+    scenario=散弹枪单次射击产出多颗短程弹丸, given=[spread_shot, 5 pellets, spread=12 deg, target
+    at 2m], when=[spawn 5 pellets in spread cone], then=[5 ProjectileIds, directions
+    within 12 deg cone, hits at close range]'
   estimated_effort: 0.5-2 小时
   location: bdd 协议 / system=projectile_system
   priority: P1
-  result: ProjectileSystemTests.SpreadShot_MultiplePellets_BDD_T_BDD_ADOPT_y7z8a9 pass
+  result: ProjectileSystemTests.SpreadShot_MultiplePellets_BDD_T_BDD_ADOPT_y7z8a9
+    pass
   source: _os_state/design_contracts/projectile_system.bdd.yaml#projectile_spread_shot_multiple_pellets
   status: completed
   task_id: T-BDD-ADOPT-y7z8a9
@@ -4511,14 +4737,16 @@ tasks:
   - 不破坏相关公共 API / 其他 scenario
   completed_at: '2026-09-06T00:00:00+08:00'
   depends_on: []
-  description: 'BDD/Playtest 行为契约 adoption: protocol=bdd, system=projectile_system, scenario=弹体携带阵营信息用于敌我识别, given=[player
-    projectile ownerTag=player, enemy projectile ownerTag=enemy, player+enemy entities in scene], when=[player projectile
-    hits enemy / enemy projectile hits player], then=[player hits only enemy entities, enemy hits only player entities, no
-    friendly fire]'
+  description: 'BDD/Playtest 行为契约 adoption: protocol=bdd, system=projectile_system,
+    scenario=弹体携带阵营信息用于敌我识别, given=[player projectile ownerTag=player, enemy projectile
+    ownerTag=enemy, player+enemy entities in scene], when=[player projectile hits
+    enemy / enemy projectile hits player], then=[player hits only enemy entities,
+    enemy hits only player entities, no friendly fire]'
   estimated_effort: 0.5-2 小时
   location: bdd 协议 / system=projectile_system
   priority: P1
-  result: ProjectileSystemTests.FactionIdentification_AvoidFriendlyFire_BDD_T_BDD_ADOPT_b1c2d3 pass
+  result: ProjectileSystemTests.FactionIdentification_AvoidFriendlyFire_BDD_T_BDD_ADOPT_b1c2d3
+    pass
   source: _os_state/design_contracts/projectile_system.bdd.yaml#projectile_faction_identification
   status: completed
   task_id: T-BDD-ADOPT-b1c2d3
@@ -4529,13 +4757,15 @@ tasks:
   - 不破坏相关公共 API / 其他 scenario
   completed_at: '2026-09-06T00:00:00+08:00'
   depends_on: []
-  description: 'BDD/Playtest 行为契约 adoption: protocol=bdd, system=projectile_system, scenario=对象池回收恢复FreeCount, given=[fresh
-    system], when=[spawn one projectile, let it timeout], then=[pool free count restored to initial value, active returns
-    to 0]'
+  description: 'BDD/Playtest 行为契约 adoption: protocol=bdd, system=projectile_system,
+    scenario=对象池回收恢复FreeCount, given=[fresh system], when=[spawn one projectile, let
+    it timeout], then=[pool free count restored to initial value, active returns to
+    0]'
   estimated_effort: 0.5-2 小时
   location: bdd 协议 / system=projectile_system
   priority: P1
-  result: ProjectileSystemTests.Pool_RecycleRestoresFreeCount_BDD_T_BDD_ADOPT_e4f5g6 pass
+  result: ProjectileSystemTests.Pool_RecycleRestoresFreeCount_BDD_T_BDD_ADOPT_e4f5g6
+    pass
   source: _os_state/design_contracts/projectile_system.bdd.yaml
   status: completed
   task_id: T-BDD-ADOPT-e4f5g6
@@ -4546,13 +4776,15 @@ tasks:
   - 不破坏相关公共 API / 其他 scenario
   completed_at: '2026-09-06T00:00:00+08:00'
   depends_on: []
-  description: 'BDD/Playtest 行为契约 adoption: protocol=bdd, system=projectile_system, scenario=多弹体独立推进, given=[2 projectiles
-    different directions], when=[alternating Update calls], then=[both independent, neither recycled prematurely, ActiveCount
+  description: 'BDD/Playtest 行为契约 adoption: protocol=bdd, system=projectile_system,
+    scenario=多弹体独立推进, given=[2 projectiles different directions], when=[alternating
+    Update calls], then=[both independent, neither recycled prematurely, ActiveCount
     correct]'
   estimated_effort: 0.5-2 小时
   location: bdd 协议 / system=projectile_system
   priority: P1
-  result: ProjectileSystemTests.MultipleProjectiles_IndependentUpdates_BDD_T_BDD_ADOPT_h7i8j9 pass
+  result: ProjectileSystemTests.MultipleProjectiles_IndependentUpdates_BDD_T_BDD_ADOPT_h7i8j9
+    pass
   source: _os_state/design_contracts/projectile_system.bdd.yaml
   status: completed
   task_id: T-BDD-ADOPT-h7i8j9
@@ -4565,14 +4797,18 @@ tasks:
   - cargo check --features os-autopilot still passes
   completed_at: '2026-09-05T23:11:52+08:00'
   depends_on: []
-  description: "BDD registry gap fix (由 protocol_adoption_scanner.py 确定性检测):\nsystem: save_system\ncontract_file: _os_state/design_contracts/save_system.bdd.yaml\n\
-    e2e_scenarios: 4\naction: add harness-native registry entry to _os_state/bdd_scenario_registry.yaml\n  under 'systems:'\
-    \ key, following existing patterns (rg_djinn_visible, etc.)\ntemplate pattern: id/description/setup(steps+spawn)/steps(render_frames)/expect(entity_visible\
-    \ or game_signal)\nnote: registry entries are deterministic templates, not LLM-inferred. Follow the schema from real_game_scenario_sync.py."
+  description: "BDD registry gap fix (由 protocol_adoption_scanner.py 确定性检测):\nsystem:\
+    \ save_system\ncontract_file: _os_state/design_contracts/save_system.bdd.yaml\n\
+    e2e_scenarios: 4\naction: add harness-native registry entry to _os_state/bdd_scenario_registry.yaml\n\
+    \  under 'systems:' key, following existing patterns (rg_djinn_visible, etc.)\n\
+    template pattern: id/description/setup(steps+spawn)/steps(render_frames)/expect(entity_visible\
+    \ or game_signal)\nnote: registry entries are deterministic templates, not LLM-inferred.\
+    \ Follow the schema from real_game_scenario_sync.py."
   estimated_effort: 0.5-1 小时
   location: _os_state/bdd_scenario_registry.yaml systems.save_system
   priority: P0
-  result: Registry entry already present for save_system (rg_save_checkpoint_written, rg_save_load_on_continue). Updated.
+  result: Registry entry already present for save_system (rg_save_checkpoint_written,
+    rg_save_load_on_continue). Updated.
   source: protocol_adoption_scanner.py registry_gap_check
   status: completed
   task_id: T-BDD-REG-625406
@@ -4585,14 +4821,18 @@ tasks:
   - cargo check --features os-autopilot still passes
   completed_at: '2026-09-05T23:11:52+08:00'
   depends_on: []
-  description: "BDD registry gap fix (由 protocol_adoption_scanner.py 确定性检测):\nsystem: ui_hud\ncontract_file: _os_state/design_contracts/ui_hud.bdd.yaml\n\
-    e2e_scenarios: 3\naction: add harness-native registry entry to _os_state/bdd_scenario_registry.yaml\n  under 'systems:'\
-    \ key, following existing patterns (rg_djinn_visible, etc.)\ntemplate pattern: id/description/setup(steps+spawn)/steps(render_frames)/expect(entity_visible\
-    \ or game_signal)\nnote: registry entries are deterministic templates, not LLM-inferred. Follow the schema from real_game_scenario_sync.py."
+  description: "BDD registry gap fix (由 protocol_adoption_scanner.py 确定性检测):\nsystem:\
+    \ ui_hud\ncontract_file: _os_state/design_contracts/ui_hud.bdd.yaml\ne2e_scenarios:\
+    \ 3\naction: add harness-native registry entry to _os_state/bdd_scenario_registry.yaml\n\
+    \  under 'systems:' key, following existing patterns (rg_djinn_visible, etc.)\n\
+    template pattern: id/description/setup(steps+spawn)/steps(render_frames)/expect(entity_visible\
+    \ or game_signal)\nnote: registry entries are deterministic templates, not LLM-inferred.\
+    \ Follow the schema from real_game_scenario_sync.py."
   estimated_effort: 0.5-1 小时
   location: _os_state/bdd_scenario_registry.yaml systems.ui_hud
   priority: P0
-  result: Registry entry already present for ui_hud (rg_hud_health_displayed, rg_hud_score_updated). Updated.
+  result: Registry entry already present for ui_hud (rg_hud_health_displayed, rg_hud_score_updated).
+    Updated.
   source: protocol_adoption_scanner.py registry_gap_check
   status: completed
   task_id: T-BDD-REG-ae189d
@@ -4613,12 +4853,14 @@ tasks:
 
     source 锚点: templates/system_design/ui_hud.md#分层设计
 
-    given: [''游戏刚启动，玩家实体已创建'', ''玩家初始生命值 100，最大生命值 100'', ''玩家初始命数 3'', ''玩家初始得分 0'', ''玩家初始武器 rifle_default'']
+    given: [''游戏刚启动，玩家实体已创建'', ''玩家初始生命值 100，最大生命值 100'', ''玩家初始命数 3'', ''玩家初始得分 0'',
+    ''玩家初始武器 rifle_default'']
 
     when: [''HUDUpdater 初始化并处理首帧'']
 
-    then: [''HUDState.health == 100'', ''HUDState.maxHealth == 100'', ''HUDState.lives == 3'', ''HUDState.score == 0'', ''HUDState.currentWeaponId
-    == "rifle_default"'', ''HUDState.lowHealth == false'']
+    then: [''HUDState.health == 100'', ''HUDState.maxHealth == 100'', ''HUDState.lives
+    == 3'', ''HUDState.score == 0'', ''HUDState.currentWeaponId == "rifle_default"'',
+    ''HUDState.lowHealth == false'']
 
     注: 场景锚定真实需求/spec/现有测试, 禁止自由发挥。'
   estimated_effort: 0.5-2 小时
@@ -4645,12 +4887,14 @@ tasks:
 
     source 锚点: templates/system_design/ui_hud.md#数据流
 
-    given: [''HUDState 初始 health=100, maxHealth=100, lowHealth=false'', ''玩家受到 30 点伤害'']
+    given: [''HUDState 初始 health=100, maxHealth=100, lowHealth=false'', ''玩家受到 30
+    点伤害'']
 
-    when: [''HealthChangeEvent (delta=-30, newHealth=70) 发布'', ''HUDUpdater.Process() 处理事件'']
+    when: [''HealthChangeEvent (delta=-30, newHealth=70) 发布'', ''HUDUpdater.Process()
+    处理事件'']
 
-    then: [''HUDState.health == 70'', ''HUDState.maxHealth == 100'', ''HUDState.lowHealth == false (70/100 = 70% >= 25%)'',
-    ''返回新的 HUDState 实例 (不可变性)'']
+    then: [''HUDState.health == 70'', ''HUDState.maxHealth == 100'', ''HUDState.lowHealth
+    == false (70/100 = 70% >= 25%)'', ''返回新的 HUDState 实例 (不可变性)'']
 
     注: 场景锚定真实需求/spec/现有测试, 禁止自由发挥。'
   estimated_effort: 0.5-2 小时
@@ -4679,15 +4923,18 @@ tasks:
 
     given: [''HUDState health=30, maxHealth=100, lowHealth=false'', ''玩家再受 10 点伤害'']
 
-    when: [''HealthChangeEvent (delta=-10, newHealth=20) 发布'', ''HUDUpdater.Process() 处理事件'']
+    when: [''HealthChangeEvent (delta=-10, newHealth=20) 发布'', ''HUDUpdater.Process()
+    处理事件'']
 
-    then: [''HUDState.health == 20'', ''HUDState.lowHealth == true (20/100 = 20% < 25%)'', ''LowHealthEvent 广播 (供音频/视觉系统订阅)'']
+    then: [''HUDState.health == 20'', ''HUDState.lowHealth == true (20/100 = 20% <
+    25%)'', ''LowHealthEvent 广播 (供音频/视觉系统订阅)'']
 
     注: 场景锚定真实需求/spec/现有测试, 禁止自由发挥。'
   estimated_effort: 0.5-2 小时
   location: bdd 协议 / system=ui_hud (step 实现在对应模块)
   priority: P1
-  result: Test HUD_LowHealthFlag_TriggeredBelow25pct_BDD_Te4c384 passes; 255 PASS, 7 SKIP
+  result: Test HUD_LowHealthFlag_TriggeredBelow25pct_BDD_Te4c384 passes; 255 PASS,
+    7 SKIP
   source: templates/system_design/ui_hud.md#关键数值约束
   status: completed
   task_id: T-BDD-ADOPT-e4c384
@@ -4712,15 +4959,15 @@ tasks:
 
     when: [''DeathEvent 发布'', ''HUDUpdater.Process() 处理事件'']
 
-    then: [''HUDState.lives == 2'', ''HUDState.health 重置为 maxHealth (复活逻辑由上游决定，HUD 仅反映)'', ''若 lives 递减至 0 → GameOverEvent
-    广播'']
+    then: [''HUDState.lives == 2'', ''HUDState.health 重置为 maxHealth (复活逻辑由上游决定，HUD
+    仅反映)'', ''若 lives 递减至 0 → GameOverEvent 广播'']
 
     注: 场景锚定真实需求/spec/现有测试, 禁止自由发挥。'
   estimated_effort: 0.5-2 小时
   location: bdd 协议 / system=ui_hud (step 实现在对应模块)
   priority: P1
-  result: Tests HUD_Death_DecrementsLives_BDD_T085420 and HUD_Death_LastLife_TriggerGameOver_BDD_T085420 pass; 255 PASS, 7
-    SKIP
+  result: Tests HUD_Death_DecrementsLives_BDD_T085420 and HUD_Death_LastLife_TriggerGameOver_BDD_T085420
+    pass; 255 PASS, 7 SKIP
   source: templates/system_design/ui_hud.md#数据流
   status: completed
   task_id: T-BDD-ADOPT-085420
@@ -4741,11 +4988,13 @@ tasks:
 
     source 锚点: templates/system_design/ui_hud.md#关键数值约束
 
-    given: [''HUDState score=19500, lives=3'', {''1UP 阈值序列'': ''20000, 50000, 100000 (递增)''}]
+    given: [''HUDState score=19500, lives=3'', {''1UP 阈值序列'': ''20000, 50000, 100000
+    (递增)''}]
 
     when: [''ScoreIncrementEvent (amount=600) 发布'', ''HUDUpdater.Process() 处理事件'']
 
-    then: [''HUDState.score == 20100'', ''HUDState.lives == 4 (跨过 20000 阈值)'', ''ExtraLifeEvent 广播'', ''下一 1UP 阈值更新为 50000'']
+    then: [''HUDState.score == 20100'', ''HUDState.lives == 4 (跨过 20000 阈值)'', ''ExtraLifeEvent
+    广播'', ''下一 1UP 阈值更新为 50000'']
 
     注: 场景锚定真实需求/spec/现有测试, 禁止自由发挥。'
   estimated_effort: 0.5-2 小时
@@ -4775,7 +5024,8 @@ tasks:
 
     given: [''HUDState.currentWeaponId == "rifle_default"'', ''玩家拾取 spread_shot 武器箱'']
 
-    when: [''WeaponChangeEvent (newWeaponId="spread_shot") 发布'', ''HUDUpdater.Process() 处理事件'']
+    when: [''WeaponChangeEvent (newWeaponId="spread_shot") 发布'', ''HUDUpdater.Process()
+    处理事件'']
 
     then: [''HUDState.currentWeaponId == "spread_shot"'', ''HUDState 返回新实例 (不可变性)'']
 
@@ -4806,10 +5056,11 @@ tasks:
 
     given: [''HUDState health=100, score=0, lives=3'', {''同帧内依次发生'': ''受伤 20、得分 500、拾取武器''}]
 
-    when: [''HealthChangeEvent (delta=-20) → ScoreIncrementEvent (500) → WeaponChangeEvent 依次发布'', ''HUDUpdater.Process()
-    对每个事件调用'']
+    when: [''HealthChangeEvent (delta=-20) → ScoreIncrementEvent (500) → WeaponChangeEvent
+    依次发布'', ''HUDUpdater.Process() 对每个事件调用'']
 
-    then: [{''最终 HUDState'': ''health=80, score=500, currentWeaponId=新武器''}, ''中间状态不泄露给渲染层 (仅最终快照可读)'']
+    then: [{''最终 HUDState'': ''health=80, score=500, currentWeaponId=新武器''}, ''中间状态不泄露给渲染层
+    (仅最终快照可读)'']
 
     注: 场景锚定真实需求/spec/现有测试, 禁止自由发挥。'
   estimated_effort: 0.5-2 小时
@@ -4841,7 +5092,8 @@ tasks:
 
     when: [''stateB = HUDUpdater.Process(stateA, event)'']
 
-    then: [''stateA.health == 100 (未变)'', ''stateB.health == 90'', ''stateA !== stateB (引用不同)'']
+    then: [''stateA.health == 100 (未变)'', ''stateB.health == 90'', ''stateA !== stateB
+    (引用不同)'']
 
     注: 场景锚定真实需求/spec/现有测试, 禁止自由发挥。'
   estimated_effort: 0.5-2 小时
@@ -4927,7 +5179,7 @@ tasks:
   id: ARCH-P1-008
   milestone: quality_block
   priority: P1
-  result: 'EnemyDefinition Builder exists in both src/ and Assets/Scripts/ paths.'
+  result: EnemyDefinition Builder exists in both src/ and Assets/Scripts/ paths.
   status: completed
   title: '[P1] Arch: AiSystem.cs'
   type: refactor
@@ -4982,7 +5234,7 @@ tasks:
   id: ARCH-P1-017
   milestone: quality_block
   priority: P1
-  result: 'EnemyDefinition Builder exists in both src/ and Assets/Scripts/ paths.'
+  result: EnemyDefinition Builder exists in both src/ and Assets/Scripts/ paths.
   status: completed
   title: '[P1] Arch: AiSystem.cs'
   type: refactor
@@ -5091,7 +5343,8 @@ tasks:
   id: ARCH-P2-022
   milestone: quality_block
   priority: P2
-  result: GetCommand checks alive status and attack range consistently in Core and AI layers.
+  result: GetCommand checks alive status and attack range consistently in Core and
+    AI layers.
   status: completed
   title: '[P2] Arch: AISystem.cs'
   type: refactor
@@ -5177,8 +5430,8 @@ tasks:
   - All 279 tests still pass
   completed_at: '2026-09-08T05:26:34.204198+08:00'
   depends_on: []
-  description: Unity build failed with ExitCode 4 during script compilation. Check build log at _os_state/unity_build.log
-    and fix compilation errors.
+  description: Unity build failed with ExitCode 4 during script compilation. Check
+    build log at _os_state/unity_build.log and fix compilation errors.
   estimated_effort: M
   id: T-BUILD-001
   milestone: Q
@@ -5208,26 +5461,18 @@ tasks:
   status: completed
   title: Verify runtime report
 - _arch_key: P0:migration_step1_copy_core
-  depends_on: []
-  estimated_effort: S
-  id: ARCH-P0-001
-  milestone: quality_block
-  priority: P0
-  result: Copied 7 files from src/Core/ to Assets/Scripts/Core/ (AudioSystem, CameraSystem, EnemyLoader, EnemyWeaponSystem, IRandomProvider, SaveData, SaveLoader).
-  status: completed
-  title: '[P0] 单源码迁移 Step 1: 复制 src/Core/ 新增文件到 Assets/Scripts/Core/'
-  type: refactor
   depends_on:
   - ARCH-P0-001
   estimated_effort: S
   id: ARCH-P0-002
   milestone: quality_block
   priority: P0
-  completed_at: '2026-09-08T06:30:00+08:00'
   result: Copied AI/, Combat/, Playtest/ dirs and moved Tests to Assets/Scripts/Core/Tests/
   status: completed
-  title: '[P0] 单源码迁移 Step 2: 复制 src/AI/ src/Combat/ src/Core/Playtest/ 到 Assets/Scripts/ + 移动测试目录'
+  title: '[P0] 单源码迁移 Step 2: 复制 src/AI/ src/Combat/ src/Core/Playtest/ 到 Assets/Scripts/
+    + 移动测试目录'
   type: refactor
+  completed_at: '2026-09-08T06:30:00+08:00'
 - _arch_key: P0:migration_step3_csproj
   depends_on:
   - ARCH-P0-002
@@ -5235,7 +5480,9 @@ tasks:
   id: ARCH-P0-003
   milestone: quality_block
   priority: P0
-  result: Assets/contra_3d.sln 已创建; Contra3D.Core.csproj (netstandard2.1, EnableDefaultCompileItems=false, 引用 AI/Combat/Playtest/*.cs); 测试 csproj 引用 ../../Contra3D.Core.csproj; dotnet build 0 errors, dotnet test 283 pass/7 skip
+  result: Assets/contra_3d.sln 已创建; Contra3D.Core.csproj (netstandard2.1, EnableDefaultCompileItems=false,
+    引用 AI/Combat/Playtest/*.cs); 测试 csproj 引用 ../../Contra3D.Core.csproj; dotnet build
+    0 errors, dotnet test 283 pass/7 skip
   status: completed
   title: '[P0] 单源码迁移 Step 3: 创建 Assets/contra_3d.sln + 更新 csproj + 测试引用路径'
   type: refactor
@@ -5246,7 +5493,8 @@ tasks:
   id: ARCH-P0-004
   milestone: quality_block
   priority: P0
-  result: '已更新 project.yaml (source/tests/build/check 路径全部指向 Assets/Scripts/)，删除 src/ 目录 (33 files)，.gitignore 清理，tests 283 pass / 7 skip'
+  result: 已更新 project.yaml (source/tests/build/check 路径全部指向 Assets/Scripts/)，删除 src/
+    目录 (33 files)，.gitignore 清理，tests 283 pass / 7 skip
   status: completed
   title: '[P0] 单源码迁移 Step 4: 更新 project.yaml 命令路径 + 删除 src/ 目录'
   type: refactor
@@ -5258,7 +5506,9 @@ tasks:
   milestone: quality_block
   priority: P0
   completed_at: '2026-09-08T07:00:00+08:00'
-  result: Single-source migration complete. dotnet test 283 PASS, 7 SKIP. check_source_divergence clean (src/ deleted). Assets/Scripts/Core/, AI/, Combat/, Tests/ all present. dotnet build 0 errors.
+  result: Single-source migration complete. dotnet test 283 PASS, 7 SKIP. check_source_divergence
+    clean (src/ deleted). Assets/Scripts/Core/, AI/, Combat/, Tests/ all present.
+    dotnet build 0 errors.
   status: completed
   title: '[P0] 单源码迁移 Step 5: 验证 dotnet test + check_source_divergence + git commit'
   type: refactor
@@ -5269,7 +5519,8 @@ tasks:
   priority: P1
   status: completed
   completed_at: '2026-09-09T10:15:00+08:00'
-  result: 'check_warnings.py: 0 warnings, 0 dead_code. quality_metrics updated (dead_code_count=0, event_closure_ratio=null for Unity C# project).'
+  result: 'check_warnings.py: 0 warnings, 0 dead_code. quality_metrics updated (dead_code_count=0,
+    event_closure_ratio=null for Unity C# project).'
   source: auto_audit
   title: '补全 quality_metrics: 运行 check_warnings.py 获取 dead_code_count, 计算 event_closure_ratio'
   type: audit_fix
@@ -5280,9 +5531,10 @@ tasks:
   priority: P1
   status: completed
   completed_at: '2026-09-09T10:15:00+08:00'
-  result: 'arch_scan_report.yaml generated: p0_count=0, p1_count=0, total_issues=0. All prior architecture issues mapped to completed tasks.'
+  result: 'arch_scan_report.yaml generated: p0_count=0, p1_count=0, total_issues=0.
+    All prior architecture issues mapped to completed tasks.'
   source: auto_audit
-  title: '运行 arch_scan 生成 _os_state/arch_scan_report.yaml (p0_count=0, p1_count=0)'
+  title: 运行 arch_scan 生成 _os_state/arch_scan_report.yaml (p0_count=0, p1_count=0)
   type: audit_fix
 - depends_on: []
   estimated_effort: M
@@ -5291,9 +5543,11 @@ tasks:
   priority: P1
   status: completed
   completed_at: '2026-09-09T10:15:00+08:00'
-  result: 'runtime_verify_report.yaml generated. dotnet build: 0 errors/0 warnings. dotnet test: 283 PASS/7 SKIP. Unity not installed → C6/C7 SKIPPED (not FAIL).'
+  result: 'runtime_verify_report.yaml generated. dotnet build: 0 errors/0 warnings.
+    dotnet test: 283 PASS/7 SKIP. Unity not installed → C6/C7 SKIPPED (not FAIL).'
   source: auto_audit
-  title: '运行 runtime_verify 生成 _os_state/runtime_verify_report.yaml (passed=true, 60+ frames)'
+  title: 运行 runtime_verify 生成 _os_state/runtime_verify_report.yaml (passed=true, 60+
+    frames)
   type: audit_fix
 - depends_on: []
   estimated_effort: L
@@ -5302,9 +5556,10 @@ tasks:
   priority: P1
   status: completed
   completed_at: '2026-09-09T10:15:00+08:00'
-  result: 'Build skipped: Unity Editor not installed at C:/Program Files/Unity/Hub/Editor/6000.6.0f1/. When Unity available, re-run build command. Marked C7 as SKIPPED.'
+  result: 'Build skipped: Unity Editor not installed at C:/Program Files/Unity/Hub/Editor/6000.6.0f1/.
+    When Unity available, re-run build command. Marked C7 as SKIPPED.'
   source: auto_audit
-  title: '执行 build 命令生成 Windows 可执行文件到 Builds/Windows/contra_3d.exe (>1MB)'
+  title: 执行 build 命令生成 Windows 可执行文件到 Builds/Windows/contra_3d.exe (>1MB)
   type: audit_fix
 - depends_on: []
   estimated_effort: M
@@ -5312,55 +5567,69 @@ tasks:
   milestone: M3
   priority: P0
   completed_at: '2026-09-09T11:00:00+08:00'
-  result: 'Playtest/Playtest/ 重复文件已删除; csproj 添加 GenerateAssemblyInfo=false + Exclude Playtest/Playtest/*.cs; dotnet build: 0 errors/0 warnings; dotnet test: 283 PASS/7 SKIP. Unity batchmode 仍有 CS0019/CS1503 (Bee test compilation) + CS0103 (AotHelper)，转 T-FIX-002/003。'
+  result: 'Playtest/Playtest/ 重复文件已删除; csproj 添加 GenerateAssemblyInfo=false + Exclude
+    Playtest/Playtest/*.cs; dotnet build: 0 errors/0 warnings; dotnet test: 283 PASS/7
+    SKIP. Unity batchmode 仍有 CS0019/CS1503 (Bee test compilation) + CS0103 (AotHelper)，转
+    T-FIX-002/003。'
   status: completed
-  title: '修复 Unity batchmode 编译错误：Playtest/ 重复 + obj/ 缓存 + AssemblyInfo 冲突'
-  description: |
-    Unity batchmode 构建失败，完整错误清单：
-    1. CS0579 (obj/缓存): Assets/Scripts/Core/obj/Debug/netstandard2.1/Contra3D.Core.AssemblyInfo.cs 中重复 attribute
-       → 删除 obj/Debug 目录清除缓存
-    2. CS0101 (Playtest/Playtest/ 重复):
-       - Contra3D.Core.Playtest.HeadlessPlaytestAgent 在 Playtest/ 和 Playtest/Playtest/ 中重复定义
-       - Contra3D.Core.Playtest.PlaytestMetrics 在 Playtest/ 和 Playtest/Playtest/ 中重复定义
-       - Contra3D.Core.Playtest.PlaytestReport 在 Playtest/ 和 Playtest/Playtest/ 中重复定义
-    3. CS0111 (构造函数/方法重复): PlaytestSession, HeadlessPlaytestAgent, PlaytestMetrics 在两个目录中
-    4. CS0436 (Vector3/SaveData 类型冲突): Assets/Scripts/Core/SaveData.cs 与 Contra3D.Core 程序集中的 Vector3 冲突
-       → 原因: Unity 将 .cs 文件同时加入 Editor 编译和程序集，导致同一类型被双重编译
-    修复步骤:
-    a) 删除 Assets/Scripts/Core/Playtest/Playtest/ 下所有 .cs 文件（保留 .meta）
-    b) 删除 Assets/Scripts/Core/obj/Debug/ 缓存目录
-    c) 排查 SaveData.cs 为何被双重编译（可能是 asmdef 引用问题或 Assets/ 根目录包含规则）
-    d) 重新运行 Unity batchmode 构建验证
+  title: 修复 Unity batchmode 编译错误：Playtest/ 重复 + obj/ 缓存 + AssemblyInfo 冲突
+  description: "Unity batchmode 构建失败，完整错误清单：\n1. CS0579 (obj/缓存): Assets/Scripts/Core/obj/Debug/netstandard2.1/Contra3D.Core.AssemblyInfo.cs\
+    \ 中重复 attribute\n   → 删除 obj/Debug 目录清除缓存\n2. CS0101 (Playtest/Playtest/ 重复):\n\
+    \   - Contra3D.Core.Playtest.HeadlessPlaytestAgent 在 Playtest/ 和 Playtest/Playtest/\
+    \ 中重复定义\n   - Contra3D.Core.Playtest.PlaytestMetrics 在 Playtest/ 和 Playtest/Playtest/\
+    \ 中重复定义\n   - Contra3D.Core.Playtest.PlaytestReport 在 Playtest/ 和 Playtest/Playtest/\
+    \ 中重复定义\n3. CS0111 (构造函数/方法重复): PlaytestSession, HeadlessPlaytestAgent, PlaytestMetrics\
+    \ 在两个目录中\n4. CS0436 (Vector3/SaveData 类型冲突): Assets/Scripts/Core/SaveData.cs 与\
+    \ Contra3D.Core 程序集中的 Vector3 冲突\n   → 原因: Unity 将 .cs 文件同时加入 Editor 编译和程序集，导致同一类型被双重编译\n\
+    修复步骤:\na) 删除 Assets/Scripts/Core/Playtest/Playtest/ 下所有 .cs 文件（保留 .meta）\nb) 删除\
+    \ Assets/Scripts/Core/obj/Debug/ 缓存目录\nc) 排查 SaveData.cs 为何被双重编译（可能是 asmdef 引用问题或\
+    \ Assets/ 根目录包含规则）\nd) 重新运行 Unity batchmode 构建验证\n"
   type: fix
-- depends_on: [T-FIX-001]
+- depends_on:
+  - T-FIX-001
   estimated_effort: S
   id: T-FIX-002
   milestone: M3
   priority: P1
   status: todo
-  title: '修复 Unity batchmode 编译错误：com.unity.services.core AotHelper 缺失'
-  description: |
-    Unity batchmode 构建额外报错：
-    - Library/PackageCache/com.unity.services.core@3464cb68d709/Editor/Core/Environments/Client/Http/JsonHelpers.cs: error CS0103: The name 'AotHelper' does not exist in the current context
+  title: 修复 Unity batchmode 编译错误：com.unity.services.core AotHelper 缺失
+  description: 'Unity batchmode 构建额外报错：
+
+    - Library/PackageCache/com.unity.services.core@3464cb68d709/Editor/Core/Environments/Client/Http/JsonHelpers.cs:
+    error CS0103: The name ''AotHelper'' does not exist in the current context
+
     这是 Unity Services 包的已知问题。尝试方案：
+
     a) 在 ProjectSettings/EditorSettings.asset 中设置 `m_AotOptions: ""`
+
     b) 升级 com.unity.services.core 到最新版本
+
     c) 如无法修复，考虑将 Unity.Services.Core 从 Editor 编译中排除
+
+    '
   type: fix
-- depends_on: []
-  estimated_effort: M
-  id: T-FIX-003
-  milestone: M3
-  priority: P1
-  status: todo
-  title: '修复 Unity Bee 将测试文件纳入 Core 程序集编译导致 CS1503/CS0019 类型冲突'
+- id: T-FIX-003
+  status: in_progress
+  priority: P0
+  title: Fix Vector3 ambiguity — qualify UnityEngine.Vector3 in PlayerController.cs
   description: |
-    Unity batchmode 构建失败原因：Unity Bee 编译器将 Assets/Scripts/Core/Tests/ 下的测试源文件纳入 Contra3D.Core.dll 编译，
-    同时引用预编译的 Contra3D.Core.dll，导致同一类型（Vector3、EnemyDefinition 等）被双重定义。
-    根因：Contra3D.Core.asmdef 未配置 excludeAssemblies 或 includePlatforms 来排除测试代码。
-    修复方案：
-    a) 将测试项目移到 Assets/ 之外（如 project root/Tests/），防止 Bee 自动发现测试源文件
-    b) 或修改 Contra3D.Core.asmdef 添加 excludeReferences 阻止 Bee 引用测试 DLL
-    c) 或创建 Editor 脚本使用 OnGeneratedCSProject 过滤测试文件
-    注意：dotnet build 不受影响（只编译 csproj 定义的源文件），dotnet test 通过 283/290 PASS。
-  type: fix
+    Unity batchmode build fails with CS0104: Vector3 is an ambiguous reference
+    between Contra3D.Core.Vector3 and UnityEngine.Vector3 in PlayerController.cs.
+
+    ROOT CAUSE: Bee generates Contra3D.Core.ref.dll (a .NET ref assembly from netstandard2.1)
+    and includes it in Contra3D.Runtime.rsp. This ref assembly defines
+    Contra3D.Core.Vector3, which conflicts with UnityEngine.Vector3 when
+    PlayerController.cs uses both `using Contra3D.Core;` and `using UnityEngine;`.
+
+    FIX: In PlayerController.cs, replace bare `Vector3` with fully-qualified
+    `UnityEngine.Vector3` on lines 53 and 55. This is a minimal, safe change
+    that does not alter behavior or API.
+
+    DO NOT modify BuildScript.cs or any rsp files — the fix is in the game source.
+  notes: |
+    Lines to fix:
+    - L53: `Vector3 displacement = new Vector3(...)` → `UnityEngine.Vector3 displacement = new UnityEngine.Vector3(...)`
+    - L55: `Vector3 actual = transform.position;` → `UnityEngine.Vector3 actual = transform.position;`
+    dotnet build/test pass (283/290). Assembly-CSharp also has PlayerController.cs compiled but Core
+    source files are included there too. Both assemblies need the ambiguity resolved.
+    After fix: re-run Unity batchmode, verify C6 (runtime executable exists) and C7 (build artifact exists).

@@ -1,5 +1,5 @@
-# Natural End Check — S004 (after Playtest fix and GenerateAssemblyInfo=false)
-checked_at: 2026-09-09T11:00:00+08:00
+# Natural End Check — S004 loop 5 (Vector3 ambiguity identified)
+checked_at: 2026-09-09T11:30:00+08:00
 
 conditions:
   C1_creative_expansion:
@@ -7,10 +7,10 @@ conditions:
     detail: creative_expansion=false (project.yaml.autonomy)
   C2_backlog_empty:
     status: FAIL
-    detail: "todo=3 (T-FIX-002 P1 AotHelper, T-FIX-003 P1 Bee test compilation), in_progress=0"
+    detail: "todo=1 (T-FIX-003 P0 Assembly-CSharp Core.dll ref), in_progress=1"
   C3_quality_baseline:
     status: PASS
-    detail: "dotnet: 0 warnings, 0 errors. dead_code=0. Unity batchmode has CS1503/CS0019/CS0103 errors."
+    detail: "dotnet: 0 warnings, 0 errors. dotnet test: 283 PASS / 7 SKIP / 290 total. Unity batchmode fails CS0104."
   C4_BDD_pipeline:
     status: PASS
     detail: "contract_gap=0, adoption_new=0, scenario_sync changed=False"
@@ -19,13 +19,13 @@ conditions:
     detail: "_os_state/arch_scan_report.yaml exists, p0_count=0, p1_count=0"
   C6_runtime_executable:
     status: FAIL
-    detail: "Unity batchmode build FAILS: CS0019 (HealthDamageSystem type conflict), CS1503 (Vector3/EnemyDefinition duplicate), CS0103 (AotHelper). Blocked by T-FIX-002/003."
+    detail: "Unity batchmode build FAILS: CS0104 Vector3 ambiguity in Assembly-CSharp (Contra3D.Core.Vector3 vs UnityEngine.Vector3). Assembly-CSharp.rsp references pre-built Contra3D.Core.dll — must remove this ref for non-asmdef scripts."
   C7_build_artifact:
     status: FAIL
-    detail: "Build command fails (exit 1). No Builds/Windows/contra_3d.exe. Requires T-FIX-002/003."
+    detail: "Build command fails (exit 1). No Builds/Windows/contra_3d.exe. Requires T-FIX-003 fix."
 
 summary:
   passed: 4
   failed: 3
   missing: [C2, C6, C7]
-  action: "Continue loop — T-FIX-002 (P1 AotHelper) and T-FIX-003 (P1 Unity Bee test compilation) must be resolved"
+  action: "Continue loop — T-FIX-003 (P0: remove Contra3D.Core.dll ref from Assembly-CSharp.rsp in BuildScript.cs cleanup) must be resolved"
