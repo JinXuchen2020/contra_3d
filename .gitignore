@@ -33,9 +33,6 @@ build/
 bin/
 dist/
 
-# 例外：手写源级 csproj（OS 侧 dotnet 独立编译验证用，非 Unity 生成物）
-!src/Core/Contra3D.Core.csproj
-
 # Python 缓存
 __pycache__/
 *.pyc
@@ -52,14 +49,6 @@ assets_external/
 # Build logs
 build.log
 *.log
-
-# Unity src/ 构建产物
-src/Core/bin/
-src/Core/obj/
-src/Runtime/bin/
-src/Runtime/obj/
-src/Tests/bin/
-src/Tests/obj/
 
 # Results 目录（构建/测试结果）
 Results/
