@@ -1,4 +1,4 @@
-﻿tasks:
+tasks:
 - depends_on: []
   estimated_effort: L
   id: T-SYS-001
@@ -5223,8 +5223,9 @@
   id: ARCH-P0-002
   milestone: quality_block
   priority: P0
-  result: 已复制 AI/, Combat/, Playtest/ 目录; 测试目录移至 Assets/Scripts/Core/Tests/
-  status: todo
+  completed_at: '2026-09-08T06:30:00+08:00'
+  result: Copied AI/, Combat/, Playtest/ dirs and moved Tests to Assets/Scripts/Core/Tests/
+  status: completed
   title: '[P0] 单源码迁移 Step 2: 复制 src/AI/ src/Combat/ src/Core/Playtest/ 到 Assets/Scripts/ + 移动测试目录'
   type: refactor
 - _arch_key: P0:migration_step3_csproj
