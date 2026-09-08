@@ -5235,8 +5235,8 @@ tasks:
   id: ARCH-P0-003
   milestone: quality_block
   priority: P0
-  result: 已创建 sln; Core csproj 用 glob 编译; 测试 csproj 引用 ../Core/
-  status: todo
+  result: Assets/contra_3d.sln 已创建; Contra3D.Core.csproj (netstandard2.1, EnableDefaultCompileItems=false, 引用 AI/Combat/Playtest/*.cs); 测试 csproj 引用 ../../Contra3D.Core.csproj; dotnet build 0 errors, dotnet test 283 pass/7 skip
+  status: completed
   title: '[P0] 单源码迁移 Step 3: 创建 Assets/contra_3d.sln + 更新 csproj + 测试引用路径'
   type: refactor
 - _arch_key: P0:migration_step4_cleanup
