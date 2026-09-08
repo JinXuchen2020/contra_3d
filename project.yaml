@@ -16,6 +16,10 @@ architecture_review:
   max_plugins_per_file: 5
   max_pub_types_per_non_api_module: 5
   require_prelude_module: false
+  coupling_threshold: 10
+  type_spread_threshold: 5
+  event_leak_threshold: 3
+  optimization_proposal_interval: 10
 asset_config:
   asset_dirs:
   - assets/models/
@@ -44,7 +48,8 @@ commands:
   check: dotnet build Assets/contra_3d.sln -v q --nologo
   check_hardcoded: python adapter/tools/check_hardcoded.py --src-dir Assets/Scripts/
   check_source_divergence: python adapter/tools/check_source_path_divergence.py --project-root . --output _os_state/source_divergence_report.yaml
-  check_warnings: python adapter/tools/check_warnings.py --build-command 'dotnet build Assets/contra_3d.sln -v q' --module-priority P0
+  check_warnings: python adapter/tools/check_warnings.py --build-command 'dotnet build Assets/contra_3d.sln -v q' --module-priority
+    P0
   demo: ''
   metrics: python adapter/tools/collect_metrics.py --dashboard --project-root F:/AI_Projects/projects/contra_3d
   release: C:/Program Files/Unity/Hub/Editor/6000.6.0f1/Editor/Unity.exe -batchmode -quit -projectPath . -executeMethod BuildScript.BuildWindowsRelease
@@ -65,7 +70,7 @@ ecs_registry:
   events: []
   states: []
   systems: []
-env: claude
+env: dsh
 external_loop:
   run_cmd: python ..\..\Universal-AI-OS\src\adapter\env\dsh_loop.py
 framework:
@@ -190,5 +195,3 @@ validation_protocols:
       fps_min: 30
       memory_mb_max: 1024
     timeout_seconds: 120
-
-
