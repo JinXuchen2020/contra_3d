@@ -116,6 +116,7 @@ qa:
   - architecture
   - architecture_consistency
   - internationalization
+  - source_divergence
   severity_threshold: P1
   tool_configs:
     complexity:
@@ -124,6 +125,11 @@ qa:
     performance:
       async_loading: true
       benchmark_threshold: 2.0
+    source_divergence:
+      blocking: true
+      check_command: python adapter/tools/check_source_path_divergence.py --project-root .
+      enabled: true
+      severity_threshold: P0
     test_coverage:
       min_percentage: 80
 quality_gate:
