@@ -5224,9 +5224,9 @@ tasks:
   id: ARCH-P0-002
   milestone: quality_block
   priority: P0
-  result: 已复制 AI/, Combat/, Playtest/ 目录
+  result: 已复制 AI/, Combat/, Playtest/ 目录; 测试目录移至 Assets/Scripts/Core/Tests/
   status: todo
-  title: '[P0] 单源码迁移 Step 2: 复制 src/AI/ src/Combat/ src/Core/Playtest/ 到 Assets/Scripts/'
+  title: '[P0] 单源码迁移 Step 2: 复制 src/AI/ src/Combat/ src/Core/Playtest/ 到 Assets/Scripts/ + 移动测试目录'
   type: refactor
 - _arch_key: P0:migration_step3_csproj
   depends_on:
@@ -5235,9 +5235,9 @@ tasks:
   id: ARCH-P0-003
   milestone: quality_block
   priority: P0
-  result: 已创建 Assets/contra_3d.sln，更新 csproj 使用 glob 模式编译 Assets/Scripts/Core/*.cs
+  result: 已创建 sln; Core csproj 用 glob 编译; 测试 csproj 引用 ../Core/
   status: todo
-  title: '[P0] 单源码迁移 Step 3: 创建 Assets/contra_3d.sln + 更新 csproj 编译路径'
+  title: '[P0] 单源码迁移 Step 3: 创建 Assets/contra_3d.sln + 更新 csproj + 测试引用路径'
   type: refactor
 - _arch_key: P0:migration_step4_cleanup
   depends_on:
