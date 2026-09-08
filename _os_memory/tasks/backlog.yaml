@@ -5207,43 +5207,57 @@ tasks:
   source: auto_audit
   status: completed
   title: Verify runtime report
-- _arch_key: P0:source_path_divergence
+- _arch_key: P0:migration_step1_copy_core
   depends_on: []
-  estimated_effort: M
-  id: ARCH-P2-031
-  milestone: quality_block
-  priority: P0
-  status: todo
-  title: '[P0] Arch: 双路径同步 - 9 个文件 src/ 与 Assets/Scripts/Core/ 已分叉'
-  type: refactor
-- _arch_key: P0:vector3_lerp_unity
-  depends_on:
-  - ARCH-P2-031
   estimated_effort: S
-  id: ARCH-P2-032
+  id: ARCH-P0-001
   milestone: quality_block
   priority: P0
+  result: 已复制 AudioSystem.cs, CameraSystem.cs, EnemyLoader.cs, EnemyWeaponSystem.cs, IRandomProvider.cs, SaveData.cs, SaveLoader.cs
   status: todo
-  title: '[P0] Arch: 修复 Unity 路径 - ProjectileTypes Vector3.Lerp (P1-011 仅修 src/)'
+  title: '[P0] 单源码迁移 Step 1: 复制 src/Core/ 新增文件到 Assets/Scripts/Core/'
   type: refactor
-- _arch_key: P0:sniper_bug_unity
+- _arch_key: P0:migration_step2_copy_dirs
   depends_on:
-  - ARCH-P2-031
+  - ARCH-P0-001
   estimated_effort: S
-  id: ARCH-P2-033
+  id: ARCH-P0-002
   milestone: quality_block
   priority: P0
+  result: 已复制 AI/, Combat/, Playtest/ 目录
   status: todo
-  title: '[P0] Arch: 修复 Unity 路径 - AiSystem Sniper bug (P2-021 仅修 src/)'
+  title: '[P0] 单源码迁移 Step 2: 复制 src/AI/ src/Combat/ src/Core/Playtest/ 到 Assets/Scripts/'
   type: refactor
-- _arch_key: P0:sync_mechanism
+- _arch_key: P0:migration_step3_csproj
   depends_on:
-  - ARCH-P2-031
-  estimated_effort: L
-  id: ARCH-P2-034
+  - ARCH-P0-002
+  estimated_effort: S
+  id: ARCH-P0-003
   milestone: quality_block
   priority: P0
-  result: 'Recommended: Option A - delete src/, compile dotnet from Assets/Scripts/Core/ (zero UnityEngine deps).'
+  result: 已创建 Assets/contra_3d.sln，更新 csproj 使用 glob 模式编译 Assets/Scripts/Core/*.cs
   status: todo
-  title: '[P0] Arch: 建立 src/→Assets/Scripts/ 同步机制或迁移到单源码库'
+  title: '[P0] 单源码迁移 Step 3: 创建 Assets/contra_3d.sln + 更新 csproj 编译路径'
+  type: refactor
+- _arch_key: P0:migration_step4_cleanup
+  depends_on:
+  - ARCH-P0-003
+  estimated_effort: S
+  id: ARCH-P0-004
+  milestone: quality_block
+  priority: P0
+  result: '已更新 project.yaml: source=Assets/Scripts/, check=dotnet build Assets/contra_3d.sln，删除 src/ 目录'
+  status: todo
+  title: '[P0] 单源码迁移 Step 4: 更新 project.yaml 命令路径 + 删除 src/ 目录'
+  type: refactor
+- _arch_key: P0:migration_step5_verify
+  depends_on:
+  - ARCH-P0-004
+  estimated_effort: S
+  id: ARCH-P0-005
+  milestone: quality_block
+  priority: P0
+  result: dotnet test 通过，check_source_divergence 无分叉，所有 ARCH 任务标记完成
+  status: todo
+  title: '[P0] 单源码迁移 Step 5: 验证 dotnet test + check_source_divergence + git commit'
   type: refactor

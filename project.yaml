@@ -1,4 +1,4 @@
-architecture_review:
+﻿architecture_review:
   csharp:
     forbid_public_in_internal_ns: true
     forbid_source_path_divergence: true
@@ -44,7 +44,7 @@ commands:
   check: dotnet build src/contra_3d.sln -v q --nologo
   check_hardcoded: python adapter/tools/check_hardcoded.py --src-dir src/
   check_source_divergence: python adapter/tools/check_source_path_divergence.py --project-root . --output _os_state/source_divergence_report.yaml
-  check_warnings: python adapter/tools/check_warnings.py --build-command 'dotnet build src/contra_3d.sln -v q' --module-priority
+  check_warnings: python adapter/tools/check_warnings.py --build-command 'dotnet build Assets/contra_3d.sln -v q' -v q' --module-priority
     P0
   demo: ''
   metrics: python adapter/tools/collect_metrics.py --dashboard --project-root F:/AI_Projects/projects/contra_3d
@@ -191,3 +191,5 @@ validation_protocols:
       fps_min: 30
       memory_mb_max: 1024
     timeout_seconds: 120
+
+
