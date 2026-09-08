@@ -5311,7 +5311,9 @@ tasks:
   id: T-FIX-001
   milestone: M3
   priority: P0
-  status: todo
+  completed_at: '2026-09-09T11:00:00+08:00'
+  result: 'Playtest/Playtest/ 重复文件已删除; csproj 添加 GenerateAssemblyInfo=false + Exclude Playtest/Playtest/*.cs; dotnet build: 0 errors/0 warnings; dotnet test: 283 PASS/7 SKIP. Unity batchmode 仍有 CS0019/CS1503 (Bee test compilation) + CS0103 (AotHelper)，转 T-FIX-002/003。'
+  status: completed
   title: '修复 Unity batchmode 编译错误：Playtest/ 重复 + obj/ 缓存 + AssemblyInfo 冲突'
   description: |
     Unity batchmode 构建失败，完整错误清单：
