@@ -6,19 +6,38 @@ namespace Contra3D.Core
 {
     /// <summary>
     /// 从 YAML 文件加载武器定义。使用简单文本解析（不引入新依赖）。
-    /// 格式：YAML 列表，每个条目含 weapon_id/name/type/damage/fire_rate/magazine_size/reload_time/spread。
+    /// 格式：YAML 列表，每个条目含 weapon_id/name/type/damage/fire_rate/magazine_size/reload_time/spread/min_fire_interval/switch_cooldown。
     /// </summary>
+    /// <remarks>
+    /// LOAD-TIME ONLY: This class performs YAML parsing with string.Split allocations.
+    /// Must only be called at startup/level load, NEVER in runtime hot paths (Update, FixedUpdate, etc.).
+    /// </remarks>
     public static class WeaponLoader
     {
-        /// <summary>从文件加载武器字典。</summary>
-        public static Dictionary<string, WeaponDefinition> LoadFromFile(string path)
+        /// <summary>加载结果：武器字典与默认武器 ID（YAML 中第一个武器）。</summary>
+        public readonly struct LoadResult
+        {
+            public readonly Dictionary<string, WeaponDefinition> Weapons;
+            public readonly string DefaultWeaponId;
+
+            public LoadResult(Dictionary<string, WeaponDefinition> weapons, string defaultWeaponId)
+            {
+                Weapons = weapons;
+                DefaultWeaponId = defaultWeaponId;
+            }
+        }
+
+        /// <summary>从文件加载武器字典与默认武器 ID。</summary>
+        public static LoadResult LoadFromFile(string path)
         {
             if (!File.Exists(path))
                 throw new FileNotFoundException($"Weapons YAML not found: {path}");
 
             var weapons = new Dictionary<string, WeaponDefinition>();
+            // LOAD-TIME ONLY - not in hot path
             string[] lines = File.ReadAllLines(path);
             var current = new Dictionary<string, string>();
+            string firstWeaponId = null;
 
             foreach (string line in lines)
             {
@@ -32,7 +51,12 @@ namespace Contra3D.Core
                     if (current.Count > 0)
                     {
                         var def = ParseWeapon(current);
-                        if (def != null) weapons[def.Id] = def;
+                        if (def != null)
+                        {
+                            weapons[def.Id] = def;
+                            if (firstWeaponId == null)
+                                firstWeaponId = def.Id;
+                        }
                     }
                     current = new Dictionary<string, string>();
                     string val = trimmed.Substring("- weapon_id:".Length).Trim();
@@ -62,10 +86,15 @@ namespace Contra3D.Core
             if (current.Count > 0)
             {
                 var def = ParseWeapon(current);
-                if (def != null) weapons[def.Id] = def;
+                if (def != null)
+                {
+                    weapons[def.Id] = def;
+                    if (firstWeaponId == null)
+                        firstWeaponId = def.Id;
+                }
             }
 
-            return weapons;
+            return new LoadResult(weapons, firstWeaponId ?? string.Empty);
         }
 
         private static WeaponDefinition ParseWeapon(Dictionary<string, string> fields)

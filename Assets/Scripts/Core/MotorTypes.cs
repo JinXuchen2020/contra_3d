@@ -70,6 +70,46 @@ namespace Contra3D.Core
         };
 
         /// <summary>
+        /// 从 YAML 字符串加载配置。null 或空字符串时回退到内置默认值。
+        /// 格式：每行 "key: value"，支持的 key 见属性注释。
+        /// </summary>
+        public static MotorConfig LoadFromYaml(string yamlContent)
+        {
+            var c = Default;  // 先获取默认值，避免递归
+            if (string.IsNullOrWhiteSpace(yamlContent)) return c;
+
+            foreach (var line in yamlContent.Split('\n'))
+            {
+                var trimmed = line.Trim();
+                if (string.IsNullOrEmpty(trimmed) || trimmed.StartsWith("#")) continue;
+
+                var parts = trimmed.Split(':', 2);
+                if (parts.Length != 2) continue;
+
+                var key = parts[0].Trim();
+                var val = parts[1].Trim();
+                if (float.TryParse(val, out float fv))
+                {
+                    switch (key)
+                    {
+                        case "max_speed": c.MaxSpeed = fv; break;
+                        case "ground_accel": c.GroundAccel = fv; break;
+                        case "ground_decel": c.GroundDecel = fv; break;
+                        case "air_control_mult": c.AirControlMult = fv; break;
+                        case "jump_height": c.JumpHeight = fv; break;
+                        case "airtime": c.Airtime = fv; break;
+                        case "fall_gravity_mult": c.FallGravityMult = fv; break;
+                        case "variable_jump_retain": c.VariableJumpRetain = fv; break;
+                        case "coyote_time": c.CoyoteTime = fv; break;
+                        case "input_buffer": c.InputBuffer = fv; break;
+                        case "look_sensitivity": c.LookSensitivity = fv; break;
+                    }
+                }
+            }
+            return c;
+        }
+
+        /// <summary>
         /// 起跳初速：v0 = 2h / t_up，t_up = Airtime / 2（上升段反解，player_movement.md 参数表注）。
         /// </summary>
         public float JumpVelocity
