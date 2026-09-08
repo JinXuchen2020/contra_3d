@@ -5214,9 +5214,9 @@
   milestone: quality_block
   priority: P0
   result: Copied 7 files from src/Core/ to Assets/Scripts/Core/ (AudioSystem, CameraSystem, EnemyLoader, EnemyWeaponSystem, IRandomProvider, SaveData, SaveLoader).
+  status: completed
   title: '[P0] 单源码迁移 Step 1: 复制 src/Core/ 新增文件到 Assets/Scripts/Core/'
   type: refactor
-- _arch_key: P0:migration_step2_copy_dirs
   depends_on:
   - ARCH-P0-001
   estimated_effort: S
