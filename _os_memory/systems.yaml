@@ -1,0 +1,36 @@
+# Systems — contra_3d
+# 从 project.yaml game.core_systems 初始化
+
+systems:
+  - name: rendering
+    status: completed
+    milestone: M1
+    notes: "Core rendering definitions complete. Unity Runtime 层桥接待实现 (需 Unity Editor)"
+  - name: player_movement
+    status: completed
+    milestone: M1
+    notes: "PlayerMotor.Simulate 纯函数完成 + PlayerInputAdapter Unity 桥接。81 tests PASS"
+  - name: weapon_system
+    status: completed
+    milestone: M1
+    notes: "WeaponSystem + CombatSystem 完整实现。24 tests, BDD 5 scenarios adopted"
+  - name: projectile_system
+    status: completed
+    milestone: M1
+    notes: "ProjectileSystem 完整实现 (sphere-sweep collision, homing, lifecycle)。34 tests PASS"
+  - name: enemy_ai
+    status: completed
+    milestone: M2
+    notes: "AiSystem Core + AISystem Unity bridge。7 tests, BDD 5 scenarios adopted"
+  - name: health_damage
+    status: completed
+    milestone: M2
+    notes: "DamageCalculator + HealthDamageSystem 完整。11 tests, BDD 6 scenarios adopted"
+  - name: map_loading
+    status: completed
+    milestone: M2
+    notes: "MapLoader + MapDefinition + MapTypes 完整。12 tests PASS"
+  - name: ui_hud
+    status: completed
+    milestone: M3
+    notes: "HUDState + HUDUpdater + HUDEvents 完整。17 tests PASS, BDD 3 scenarios adopted"

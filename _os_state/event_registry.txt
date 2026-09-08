@@ -1,0 +1,20 @@
+======================================================================
+  EVENT CHAIN CLOSURE REPORT
+======================================================================
+  Total events scanned   : 0
+  [OK] Complete              : 0
+  [ORPHAN] Orphan producers       : 0  (produced but never consumed)
+  [WARN] Orphan consumers       : 0  (consumed but never produced)
+  [SKEL] Skeleton only          : 0  (defined, no producer or consumer)
+======================================================================
+
+  (No events discovered in scanned sources)
+
+======================================================================
+  REGISTRY VALIDATION
+======================================================================
+  [WARN] Event 'event_chain_report' registered in _os_state/event_registry.yaml but was NOT found in any scanned source file
+
+======================================================================
+  RESULT: PASS  (no orphan producers)
+======================================================================

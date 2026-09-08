@@ -1,0 +1,13 @@
+event_chain_report:
+  total: 0
+  complete: 0
+  orphan_producer: 0
+  orphan_consumer: 0
+  skeleton_only: 0
+  closure_ratio: 0.0000
+  passed: true
+
+  warnings:
+    - "[WARN] Event 'event_chain_report' registered in _os_state/event_registry.yaml but was NOT found in any scanned source file"
+
+  events:

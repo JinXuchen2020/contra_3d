@@ -4,10 +4,22 @@ _os_state/*
 !_os_state/qa_review.yaml
 !_os_state/architect_review.yaml
 !_os_state/design_contracts/
+!_os_state/logs/
+!_os_state/event_registry.yaml
+!_os_state/event_registry.txt
+!_os_state/bdd_scenario_registry.yaml
+!_os_state/bdd_scenarios.yaml
+!_os_state/test_report.yaml
+!_os_state/natural_end_check.yaml
+!_os_state/auto_audit_needed.yaml
 _os_memory/*
 !_os_memory/tasks/
 _os_memory/tasks/*
 !_os_memory/tasks/backlog.yaml
+!_os_memory/lessons.md
+!_os_memory/sprint_plan.yaml
+!_os_memory/systems.yaml
+!_os_memory/decisions.yaml
 .omo/
 
 # Unity 生成目录与产物
@@ -17,6 +29,7 @@ _os_memory/tasks/*
 [Bb]uild/
 [Bb]uilds/
 [Ll]ogs/
+!_os_state/logs/
 [Uu]serSettings/
 MemoryCaptures/
 *.csproj

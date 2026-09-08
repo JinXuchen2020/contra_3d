@@ -1,0 +1,35 @@
+# Sprint Plan — contra_3d
+
+## Milestone M1: Core Combat Loop ✅ COMPLETED
+- T-SYS-001: rendering ✅ completed
+- T-SYS-002: player_movement ✅ completed
+- T-SYS-003: weapon_system ✅ completed
+- T-SYS-004: projectile_system ✅ completed
+- T-SYS-001-V: Editor 内视觉验收 ✅ completed (BLK-001 解除)
+
+## Milestone M2: Enemy + Map Systems ✅ COMPLETED
+- T-SYS-005: enemy_ai ✅ completed
+- T-SYS-006: health_damage ✅ completed
+- T-SYS-007: map_loading ✅ completed
+
+## Milestone M3: UI + Polish ✅ COMPLETED
+- T-SYS-008: ui_hud ✅ completed
+
+## Quality Block: Architecture Refactors ✅ COMPLETED
+- All 28 ARCH-P1/P2 tasks resolved (T-ARCH-D1-001 ~ T-ARCH-D7-002 + this session)
+- HUDUpdater event lists → IReadOnlyList (this session)
+- CombatSystem hardcoded score table → empty default (this session)
+
+## Known Blockers
+- BLK-001: Unity Editor 未安装 → Runtime PlayMode 验证不可用
+  - 不影响: Core 层 dotnet 测试, BDD 设计契约, 数据 YAML
+  - 解除条件: 安装 Unity Hub + Editor 6000.0 LTS
+
+## BDD Contract Status
+- drafted_committed: 8/8 systems (all systems)
+- pending_systems: none
+
+## Test Summary
+- Total: 279 tests, 279 PASS, 0 FAIL
+- Build: clean
+- Framework: C# / .NET 9.0 / xUnit

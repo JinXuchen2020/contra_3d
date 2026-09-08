@@ -1,0 +1,439 @@
+
+
+scenarios:
+- id: rg_projectile_spawn_and_advance
+  description: 'ProjectileSystem spawns a projectile and advances it frame by frame.
+    Verifies LinearProjectile_SpawnAndFrameAdvance_BDD scenario (T-BDD-ADOPT-84a183):
+    speed=50 m/s, dt=0.016s → position advances ~0.8m per frame; after 10 frames x≈8.0m;
+    ActiveCount increments, FreeCount decrements.'
+  setup: []
+  steps:
+  - step: spawn_projectile
+    origin:
+    - 0
+    - 0
+    - 0
+    direction:
+    - 1
+    - 0
+    - 0
+    weapon: rifle_default
+    type: projectile
+  - step: render_frames
+    count: 10
+  expect:
+  - check: state_changed
+    field: active_count
+    equals: '1'
+  - check: state_changed
+    field: free_count
+    min_equals: '199'
+  - check: game_signal
+    signal: projectile_position
+    field: x
+    min_equals: '7.5'
+- id: rg_projectile_faction_avoids_friendly_fire
+  description: 'Projectile faction identification: player projectiles only hit enemies,
+    enemy projectiles only hit players. Verifies FactionIdentification_AvoidFriendlyFire
+    scenario (T-BDD-ADOPT-91391d).'
+  setup:
+  - spawn_entity:
+      type: player
+      position:
+      - 0
+      - 0
+      - 0
+      team: player
+  - spawn_entity:
+      type: enemy
+      position:
+      - 10
+      - 0
+      - 0
+      team: enemy
+  steps:
+  - step: fire_projectile
+    from: player
+    target: enemy
+    owner_tag: player
+  expect:
+  - check: game_signal
+    signal: hit_event
+    field: target_team
+    equals: enemy
+  - check: not_game_signal
+    signal: hit_event
+    field: source_team
+    equals: player
+- id: rg_health_damage_deterministic
+  description: 'Damage calculation is deterministic: same HitEvent sequence produces
+    identical HealthChangeEvent/DeathEvent sequences. Verifies damage_deterministic_same_input_same_output
+    scenario (T-BDD-ADOPT-33bed2) and hit_event_processed_damage_applied (T-BDD-ADOPT-47a6c2).'
+  setup:
+  - spawn_entity:
+      type: enemy
+      position:
+      - 0
+      - 0
+      - 0
+      health: 100
+  steps:
+  - step: apply_damage
+    target: enemy
+    amount: 12
+    part: body
+  - step: apply_damage
+    target: enemy
+    amount: 20
+    part: body
+  expect:
+  - check: state_changed
+    field: health
+    equals: '68'
+  - check: game_signal
+    signal: health_change
+    field: damage_dealt
+    equals: '12'
+  - check: no_game_signal
+    signal: death_event
+- id: rg_health_armor_reduction_subtractive
+  description: 'Armor uses subtractive model: effective_damage = max(0, base - armor).
+    Verifies armor_reduction_subtractive (T-BDD-ADOPT-300ab8) and armor_overkill_zero_damage
+    (T-BDD-ADOPT-aeaf1d).'
+  setup:
+  - spawn_entity:
+      type: enemy
+      position:
+      - 0
+      - 0
+      - 0
+      health: 100
+      armor: 20
+  steps:
+  - step: apply_damage
+    target: enemy
+    amount: 30
+    part: body
+  - step: apply_damage
+    target: enemy
+    amount: 10
+    part: body
+  expect:
+  - check: state_changed
+    field: health
+    equals: '85'
+  - check: game_signal
+    signal: health_change
+    field: damage_dealt
+    min_equals: '10'
+    max_equals: '11'
+- id: rg_weapons_loaded
+  description: The REAL DataLoader populated the weapon library from data/weapons/
+    (proves the production asset pipeline ran on the weapons path, not the headless
+    Startup loader). Verifies rifle_default is present with damage=12 / fire_rate=7
+    / magazine_size=30.
+  setup: []
+  steps:
+  - step: render_frames
+    count: 20
+  expect:
+  - check: game_signal
+    signal: weapon_library
+    field: weapon_count
+    equals: '5'
+- id: rg_enemies_loaded
+  description: The REAL DataLoader populated the enemy library from data/enemies/
+    (proves the production asset pipeline ran on the enemies path). Verifies 5 enemy
+    types loaded (grunt_soldier, charger_mutant, turret_sniper, hound_runner, elite_gunner).
+  setup: []
+  steps:
+  - step: render_frames
+    count: 20
+  expect:
+  - check: game_signal
+    signal: enemy_library
+    field: enemy_count
+    equals: '5'
+- id: rg_save_slots_initialized
+  description: The REAL DataLoader / SaveLoadPlugin initialized SaveSlotManager at
+    startup (resource registered by SaveLoadPlugin regardless of display). Verifies
+    max_slots >= 1 and slot data structure is valid.
+  setup: []
+  steps:
+  - step: render_frames
+    count: 20
+  expect:
+  - check: game_signal
+    signal: save_slots
+    field: max_slots
+    min_equals: '1'
+- id: rg_crosshair_rendered
+  description: 'A spawned player entity with CrosshairUI context is rendered and seen
+    by a camera. Verifies the UI system''s rendering pipeline: player entity has Transform/Mesh
+    components present; camera can see it. Headless => entity_visible reports an honest
+    skip.'
+  setup:
+  - spawn_entity:
+      type: camera
+      position:
+      - 0
+      - 0
+      - 6
+      look_at:
+      - 0
+      - 0
+      - 0
+  - spawn_entity:
+      type: player
+      position:
+      - 0
+      - 0
+      - 0
+  steps:
+  - step: render_frames
+    count: 15
+  expect:
+  - check: entity_exists_with_components
+    entity_type: player
+    components:
+    - Transform
+    - Mesh
+  - check: entity_visible
+    entity_type: player
+- id: rg_combat_damage_deterministic
+  description: A spawned enemy entity is present and damage calculation is deterministic.
+    Verifies DamageCalculator.Calculate produces consistent results for identical
+    inputs (base_damage=12, part_multiplier=1.0, armor=0 => 12). Headless => entity_visible
+    reports honest skip; game_signal confirms weapon_library is loaded.
+  setup:
+  - spawn_entity:
+      type: camera
+      position:
+      - 0
+      - 0
+      - 6
+      look_at:
+      - 0
+      - 0
+      - 0
+  - spawn_entity:
+      type: enemy
+      position:
+      - 0
+      - 0
+      - 0
+  steps:
+  - step: render_frames
+    count: 15
+  expect:
+  - check: entity_exists_with_components
+    entity_type: enemy
+    components:
+    - Transform
+    - Mesh
+  - check: game_signal
+    signal: damage_calculator
+    field: last_result
+    equals: '12'
+- id: rg_audio_sfx_played_on_hit
+  description: Enemy takes damage and hit SFX signal is emitted. Verifies AudioManager
+    plays the correct hit sound effect via game_signal with sfx_type=hit.
+  setup:
+  - spawn_entity:
+      type: enemy
+      position:
+      - 0
+      - 0
+      - 0
+  steps:
+  - step: render_frames
+    count: 10
+  - step: apply_damage
+    target: enemy
+    amount: 12
+  expect:
+  - check: game_signal
+    signal: audio_sfx
+    field: sfx_type
+    equals: hit
+- id: rg_audio_bgm_transition_on_zone
+  description: Player crosses zone boundary and BGM transition signal is emitted.
+    Verifies AudioManager crossfades to new zone BGM via game_signal with bgm_zone=new_zone
+    and transition_type=crossfade.
+  setup:
+  - spawn_entity:
+      type: player
+      position:
+      - 0
+      - 0
+      - 0
+  steps:
+  - step: render_frames
+    count: 10
+  - step: trigger_zone_transition
+    from_zone: zone_1
+    to_zone: zone_2
+  expect:
+  - check: game_signal
+    signal: audio_bgm
+    field: bgm_zone
+    equals: zone_2
+- id: rg_camera_follows_player
+  description: Camera follows player with correct offset. Verifies CameraController
+    emits follow signal with target=player and offset matching configured third-person
+    distance (e.g., distance=5, height=2).
+  setup:
+  - spawn_entity:
+      type: player
+      position:
+      - 0
+      - 0
+      - 0
+  - spawn_entity:
+      type: camera
+      position:
+      - 0
+      - 2
+      - -5
+      look_at:
+      - 0
+      - 0
+      - 0
+  steps:
+  - step: render_frames
+    count: 15
+  - step: move_entity
+    target: player
+    position:
+    - 10
+    - 0
+    - 0
+  expect:
+  - check: game_signal
+    signal: camera_follow
+    field: target
+    equals: player
+- id: rg_camera_collision_correction
+  description: Camera collision correction pushes camera away from obstacle. Verifies
+    CameraController emits collision_pushback signal with corrected_position when
+    raycast hits geometry between camera and player.
+  setup:
+  - spawn_entity:
+      type: player
+      position:
+      - 0
+      - 0
+      - 0
+  - spawn_entity:
+      type: camera
+      position:
+      - 0
+      - 2
+      - -5
+      look_at:
+      - 0
+      - 0
+      - 0
+  - spawn_entity:
+      type: wall
+      position:
+      - 0
+      - 1
+      - -2
+      scale:
+      - 10
+      - 5
+      - 1
+  steps:
+  - step: render_frames
+    count: 15
+  expect:
+  - check: game_signal
+    signal: camera_collision
+    field: pushback_applied
+    equals: 'true'
+- id: rg_save_checkpoint_written
+  description: Player reaches checkpoint and save slot is written. Verifies SaveManager
+    emits save_written signal with slot_index=0 and checksum valid on checkpoint trigger.
+  setup:
+  - spawn_entity:
+      type: player
+      position:
+      - 0
+      - 0
+      - 0
+  steps:
+  - step: render_frames
+    count: 10
+  - step: trigger_checkpoint
+    checkpoint_id: cp_1
+  expect:
+  - check: game_signal
+    signal: save_written
+    field: slot_index
+    equals: '0'
+- id: rg_save_load_on_continue
+  description: Player selects Continue and save data is loaded. Verifies SaveManager
+    emits save_loaded signal with slot_index=0 and player_state restored (health,
+    position, inventory).
+  setup: []
+  steps:
+  - step: render_frames
+    count: 10
+  - step: continue_game
+    slot_index: 0
+  expect:
+  - check: game_signal
+    signal: save_loaded
+    field: slot_index
+    equals: '0'
+- id: rg_hud_health_displayed
+  description: HUD health bar updates when player takes damage. Verifies HUDController
+    emits health_changed signal with current_health and max_health fields matching
+    player HealthComponent.
+  setup:
+  - spawn_entity:
+      type: player
+      position:
+      - 0
+      - 0
+      - 0
+  steps:
+  - step: render_frames
+    count: 10
+  - step: apply_damage
+    target: player
+    amount: 20
+  expect:
+  - check: game_signal
+    signal: hud_health
+    field: current_health
+    equals: '80'
+- id: rg_hud_score_updated
+  description: HUD score display updates on enemy kill. Verifies HUDController emits
+    score_changed signal with new_score reflecting kill reward (e.g., +100 per grunt
+    kill).
+  setup:
+  - spawn_entity:
+      type: player
+      position:
+      - 0
+      - 0
+      - 0
+  - spawn_entity:
+      type: enemy
+      position:
+      - 5
+      - 0
+      - 0
+  steps:
+  - step: render_frames
+    count: 10
+  - step: apply_damage
+    target: enemy
+    amount: 100
+  expect:
+  - check: game_signal
+    signal: hud_score
+    field: score
+    equals: '100'
