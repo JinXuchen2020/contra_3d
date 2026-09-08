@@ -48,3 +48,11 @@ env_id: dsh
 [10:30:04] [TASK] T-FIX-002 (P1): AotHelper missing in com.unity.services.core
 [10:30:05] [TASK] T-FIX-003 (P1): Unity Bee includes test source files in Core assembly → type conflicts
 [10:30:06] [NATURAL_END] 重新检查: C1✓ C2✗ C3✓ C4✓ C5✓ C6✗ C7✗ — 继续循环
+
+[11:00:01] [FIX] T-FIX-001 apply round 2: GenerateAssemblyInfo=false added to Core.csproj
+[11:00:02] [VERIFY] dotnet build: 0 errors, 0 warnings. dotnet test: 283 PASS, 7 SKIP, 290 total
+[11:00:03] [VERIFY] Unity batchmode: CS0579 FIXED. Still CS0019/CS1503 (Bee compiles Tests/ into Core) + CS0103 (AotHelper)
+[11:00:04] [TASK] T-FIX-002 (P1): AotHelper missing in com.unity.services.core@3464cb68d709
+[11:00:05] [TASK] T-FIX-003 (P1): Unity Bee includes Tests/ source files in Contra3D.Core.dll compilation
+[11:00:06] [NATURAL_END] C1✓ C2✗ C3✓ C4✓ C5✓ C6✗ C7✗ — T-FIX-002/003 P1 remain
+[11:00:07] [COMMIT] b7a7da3 fix(os): T-FIX-001 apply — GenerateAssemblyInfo=false, delete Playtest/Playtest/ dupes
