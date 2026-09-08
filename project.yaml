@@ -70,9 +70,9 @@ ecs_registry:
   events: []
   states: []
   systems: []
-env: dsh
+env: opencode
 external_loop:
-  run_cmd: python ..\..\Universal-AI-OS\src\adapter\env\dsh_loop.py
+  run_cmd: ""
 framework:
   build_file: Assets/contra_3d.sln
   lock_file: ProjectSettings/ProjectVersion.txt
