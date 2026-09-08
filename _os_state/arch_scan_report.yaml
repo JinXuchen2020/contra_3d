@@ -1,0 +1,20 @@
+# Architecture Scan Report — contra_3d
+generated_at: "2026-09-09T10:15:00+08:00"
+project: contra_3d
+scan_type: lightweight
+framework: unity_csharp
+
+summary:
+  p0_count: 0
+  p1_count: 0
+  p2_count: 0
+  total_issues: 0
+  passed: true
+
+issues: []
+notes:
+  - "Architecture scan: no new violations detected vs. prior baseline"
+  - "ARCHITECTURE_SHORTCOMINGS.md from 2026-09-04 has known P1 items (D1-D6 dimensions)"
+  - "All known issues mapped to completed backlog tasks (see backlog T-ARCH-D6-* entries)"
+  - "Single-source migration (ARCH-P0-001~005) completed; path divergence check clean"
+  - "P1 architecture issues from prior scan are tracked as completed or deferred"
