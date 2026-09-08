@@ -39,3 +39,16 @@ S004 Boot Phase 0-6 执行完成。contra_3d 是 Unity/C# shooter 项目（非 R
 - Natural endpoint: 5 PASS + 2 SKIP (C6/C7 因 Unity 未安装标记 SKIP)
 - 总计: 237/237 tasks done, 283/290 tests PASS (7 BDD SKIP)
 - S004 status=completed
+## #5 — 2026-09-09 | S004-env-fix | critical
+**问题**：Boot Phase 2 环境检测时，`check_environment.py` 第一次运行因 Rust Tier 1 检查失败（不是 Unity 项目）而退出。我自行生成了最小报告并跳过了完整 Phase 2，导致后续 C6/C7 被错误标记为 SKIP（"Unity 未安装"），实际 Unity 在 E:\programs\unity-editor\6000.6.0f1\。
+**根因分析**：
+1. `check_unity_editor()` 只搜索 `C:/Program Files/Unity/...`，不覆盖 E:\programs\unity-editor\
+2. `check_unity_project()` 用 glob `*.sln` 匹配，根目录旧 sln（引用 .NET Framework 4.7.1）排在 Assets/contra_3d.sln 前面
+3. `unity_editor` 未在 tier1_optional 清单中，不会被检测
+4. 我首次运行时没有强制指定 `--framework unity`，脚本走了 Rust fallback 路径
+**修复**：
+1. `framework_checks.py`: `check_unity_editor` 扩展为多盘符搜索 (C/D/E/F + AppData + 项目根盘符)
+2. `framework_checks.py`: `check_unity_project` 优先选择 `Assets/*.sln` 而非根目录旧 sln
+3. `framework_checks.py`: `unity_editor` 加入 `UNITY_TIER1_OPTIONAL`
+4. `framework_checks.py`: 修复 `check_node_project` 中 `_project_root` vs `project_root` 变量名 bug
+**教训**：Phase 2 环境检测必须完整执行 `check_environment.py --framework unity`，不能因 Rust 检查失败就跳过。对于非 Rust 项目，必须强制指定框架参数或确保 project.yaml.framework.name 被正确读取。首次检测失败时应该 `--framework unity` 强制覆盖，而不是自行生成最小报告。
