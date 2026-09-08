@@ -74,3 +74,19 @@ env_id: dsh
 - Modify BuildScript.cs CleanBeeRspTestReferences() to also strip
   -r:Contra3D.Core.dll from Assembly-CSharp.rsp (keep it in Contra3D.Runtime.rsp)
 - Delegated to Developer Agent subagent for execution
+
+## S004 Loop 6 ¡ª Natural End
+
+**Time**: 2026-09-09T12:00:00+08:00
+**Task**: T-FIX-003 (completed)
+**Build**: contra_3d.exe 667136 bytes at Builds/Windows/
+**dotnet test**: 283 PASS / 7 SKIP / 290 total
+**Natural End**: C1-C7 all PASS
+**Session Status**: completed
+
+### Fixes applied this loop:
+1. Moved Contra3D.Core.asmdef from Assets/Scripts/Core/ to Assets/Scripts/ (Bee now compiles ALL Core+AI+Combat as one assembly, eliminating duplicate source compilation)
+2. BuildScript.cs CleanBeeRspReferences() strips Tests refs from non-test rsp files
+3. Added GenerateAssemblyInfo=false to Core and Test csproj (prevents duplicate AssemblyInfo)
+4. Qualified UnityEngine.Vector3 in PlayerController.cs (lines 53, 55, 56)
+5. Deleted BeeRspCleaner.cs (had broken using directives)

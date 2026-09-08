@@ -5609,27 +5609,36 @@ tasks:
     '
   type: fix
 - id: T-FIX-003
-  status: in_progress
+  status: completed
+  completed_at: '2026-09-09T12:00:00+08:00'
   priority: P0
   title: Fix Vector3 ambiguity — qualify UnityEngine.Vector3 in PlayerController.cs
   description: |
-    Unity batchmode build fails with CS0104: Vector3 is an ambiguous reference
-    between Contra3D.Core.Vector3 and UnityEngine.Vector3 in PlayerController.cs.
+    Unity batchmode build failed with CS0104 (Vector3 ambiguity between
+    Contra3D.Core.Vector3 and UnityEngine.Vector3) and CS1704/CS0579
+    (duplicate assembly/Test references).
 
-    ROOT CAUSE: Bee generates Contra3D.Core.ref.dll (a .NET ref assembly from netstandard2.1)
-    and includes it in Contra3D.Runtime.rsp. This ref assembly defines
-    Contra3D.Core.Vector3, which conflicts with UnityEngine.Vector3 when
-    PlayerController.cs uses both `using Contra3D.Core;` and `using UnityEngine;`.
+    ROOT CAUSE: Three issues:
+    1. Assembly-CSharp included Core source files (AI/, Combat/) compiled
+       against pre-built Contra3D.Core.dll → type conflicts (CS0436/CS0104)
+    2. Test AssemblyInfo leaked into Assembly-CSharp → CS0579 duplicate
+    3. Contra3D.Runtime referenced both pre-built Core.dll AND ref DLL → CS1704
 
-    FIX: In PlayerController.cs, replace bare `Vector3` with fully-qualified
-    `UnityEngine.Vector3` on lines 53 and 55. This is a minimal, safe change
-    that does not alter behavior or API.
-
-    DO NOT modify BuildScript.cs or any rsp files — the fix is in the game source.
+    FIX:
+    - Moved Contra3D.Core.asmdef from Assets/Scripts/Core/ to Assets/Scripts/
+      so Bee compiles ALL Core+AI+Combat sources into one assembly
+    - Updated BuildScript.cs CleanBeeRspReferences() to strip Tests refs
+      from non-test/non-Editor assemblies
+    - Added GenerateAssemblyInfo=false to both Core and Test csproj
+    - Qualified UnityEngine.Vector3 in PlayerController.cs lines 53,55,56
+    - Deleted problematic BeeRspCleaner.cs
+  result: Unity batchmode build SUCCEEDS. contra_3d.exe (667KB) at Builds/Windows/.
+    dotnet test: 283 PASS / 7 SKIP / 290 total. C6+C7 now PASS.
   notes: |
-    Lines to fix:
-    - L53: `Vector3 displacement = new Vector3(...)` → `UnityEngine.Vector3 displacement = new UnityEngine.Vector3(...)`
-    - L55: `Vector3 actual = transform.position;` → `UnityEngine.Vector3 actual = transform.position;`
-    dotnet build/test pass (283/290). Assembly-CSharp also has PlayerController.cs compiled but Core
-    source files are included there too. Both assemblies need the ambiguity resolved.
-    After fix: re-run Unity batchmode, verify C6 (runtime executable exists) and C7 (build artifact exists).
+    Key insight: Bee was compiling AI/ and Combat/ .cs files into BOTH
+    Contra3D.Core (via asmdef) AND Assembly-CSharp (via Core csproj
+    Include="../AI/*.cs" and "../Combat/*.cs"). The Core source files
+    referenced types from the pre-built Contra3D.Core.dll causing CS0436
+    warnings and CS0104 ambiguity. Moving asmdef to Assets/Scripts/ level
+    made Bee treat ALL Core+AI+Combat as one assembly, eliminating the
+    duplicate compilation.

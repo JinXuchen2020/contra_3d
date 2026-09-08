@@ -75,3 +75,12 @@ S004 Boot Phase 0-6 执行完成。contra_3d 是 Unity/C# shooter 项目（非 R
 **为什么之前没暴露**：Tests 在 Assets/ 内部时，Bee 直接从源编译 Core（不引用预编译 DLL），Assembly-CSharp 不引用 Contra3D.Core.dll。Tests 移出后，dotnet build 正常生成 Core DLL，Bee 将其加入 Assembly-CSharp.rsp。
 **修复**：修改 BuildScript.cs CleanBeeRspTestReferences()，在清理 rsp 时同时从 Assembly-CSharp.rsp 移除 Contra3D.Core.dll 引用（保留在 Contra3D.Runtime.rsp 等 asmdef 程序集中）。
 **教训**：dotnet build 成功 ≠ Unity batchmode 成功。dotnet 只编译 csproj 定义的源文件，Unity Bee 根据 asmdef 和 rsp 编译，两者机制不同。Tests 位置变化会影响 Bee 生成的 rsp 内容。
+
+## #7 �� 2026-09-09 | S004-loop5 | critical
+
+Unity batchmode build failure root cause was NOT a simple rsp cleanup issue �� it was an asmdef scoping problem. The Core asmdef was at Assets/Scripts/Core/ but the Core csproj also included ../AI/*.cs and ../Combat/*.cs files. This caused Bee to compile those same source files into BOTH Contra3D.Core (asmdef assembly) AND Assembly-CSharp (which got them via the project reference). When the pre-built Contra3D.Core.dll was also referenced, types like Vector3 appeared from two different paths -> CS0104 ambiguity.
+
+Fix: Moved Contra3D.Core.asmdef from Assets/Scripts/Core/ to Assets/Scripts/ so Bee treats ALL Core+AI+Combat sources as one assembly. Then clean Tests refs from non-test rsp files via BuildScript.cs. Also add GenerateAssemblyInfo=false to both Core and Test csproj to prevent duplicate AssemblyInfo compilation.
+
+## #8 �� 2026-09-09 | S004-loop5 | lesson
+dotnet build test success (283/290) does NOT guarantee Unity batchmode success. The Assembly-CSharp compilation includes ALL .cs files under the project root that aren't in an asmdef, including Core source files via ProjectReference paths. Always verify with actual Unity batchmode run.

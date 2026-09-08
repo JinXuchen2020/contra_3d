@@ -1,16 +1,16 @@
-# Natural End Check — S004 loop 5 (Vector3 ambiguity identified)
-checked_at: 2026-09-09T11:30:00+08:00
+# Natural End Check — S004 loop 5 (Vector3 ambiguity resolved, build succeeds)
+checked_at: 2026-09-09T12:00:00+08:00
 
 conditions:
   C1_creative_expansion:
     status: PASS
     detail: creative_expansion=false (project.yaml.autonomy)
   C2_backlog_empty:
-    status: FAIL
-    detail: "todo=1 (T-FIX-003 P0 Assembly-CSharp Core.dll ref), in_progress=1"
+    status: PASS
+    detail: "T-FIX-003 completed. Backlog clean of P0/P1 blocking tasks."
   C3_quality_baseline:
     status: PASS
-    detail: "dotnet: 0 warnings, 0 errors. dotnet test: 283 PASS / 7 SKIP / 290 total. Unity batchmode fails CS0104."
+    detail: "dotnet: 0 warnings, 0 errors. dotnet test: 283 PASS / 7 SKIP / 290 total."
   C4_BDD_pipeline:
     status: PASS
     detail: "contract_gap=0, adoption_new=0, scenario_sync changed=False"
@@ -18,14 +18,14 @@ conditions:
     status: PASS
     detail: "_os_state/arch_scan_report.yaml exists, p0_count=0, p1_count=0"
   C6_runtime_executable:
-    status: FAIL
-    detail: "Unity batchmode build FAILS: CS0104 Vector3 ambiguity in Assembly-CSharp (Contra3D.Core.Vector3 vs UnityEngine.Vector3). Assembly-CSharp.rsp references pre-built Contra3D.Core.dll — must remove this ref for non-asmdef scripts."
+    status: PASS
+    detail: "Unity batchmode build SUCCEEDED. contra_3d.exe (667KB) at Builds/Windows/. CS0104 Vector3 ambiguity resolved by asmdef restructuring + UnityEngine.Vector3 qualification."
   C7_build_artifact:
-    status: FAIL
-    detail: "Build command fails (exit 1). No Builds/Windows/contra_3d.exe. Requires T-FIX-003 fix."
+    status: PASS
+    detail: "Builds/Windows/contra_3d.exe exists (667136 bytes), Contra3D.Core.dll compiled from source via Bee, Assembly-CSharp cleaned of Core.dll ref and Tests refs."
 
 summary:
-  passed: 4
-  failed: 3
-  missing: [C2, C6, C7]
-  action: "Continue loop — T-FIX-003 (P0: remove Contra3D.Core.dll ref from Assembly-CSharp.rsp in BuildScript.cs cleanup) must be resolved"
+  passed: 7
+  failed: 0
+  missing: []
+  action: "S004 NATURAL END — all 7 conditions met. Unity batchmode build succeeds."
