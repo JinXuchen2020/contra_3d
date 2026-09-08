@@ -140,6 +140,8 @@ public static class BuildScript
     ///    to prevent CS0104 ambiguous Vector3 reference.
     /// 2. Removes Tests/ DLL and source references from non-Editor, non-test assemblies
     ///    to prevent CS0579 duplicate attribute errors.
+    /// 3. Injects AotHelper stub into com.unity.services.core Editor rsp
+    ///    to fix CS0103 "AotHelper does not exist" (known package bug).
     /// </summary>
     private static void CleanBeeRspReferences()
     {
@@ -228,6 +230,37 @@ public static class BuildScript
             {
                 File.WriteAllText(rspFile, content);
                 cleaned++;
+            }
+        }
+
+        // Inject AotHelper stub into com.unity.services.core Editor rsp to fix CS0103.
+        // The package's JsonHelpers.cs references AotHelper.EnsureType<T>() but the class
+        // is missing from this version of the package (known Unity bug).
+        string stubPath = Path.Combine(Directory.GetCurrentDirectory(), "Assets", "Editor", "AotHelperStub.cs");
+        if (File.Exists(stubPath))
+        {
+            foreach (string rspFile in Directory.GetFiles(artifactsDir, "*.rsp", SearchOption.AllDirectories))
+            {
+                if (!rspFile.EndsWith(".dll.mvfrm.rsp") && !rspFile.EndsWith(".rsp2")) continue;
+                string baseName = Path.GetFileNameWithoutExtension(rspFile);
+                if (baseName.EndsWith(".dll.mvfrm"))
+                    baseName = baseName.Substring(0, baseName.Length - ".dll.mvfrm".Length);
+                if (!baseName.Contains("Unity.Services.Core.Environments.Editor")) continue;
+
+                string content = File.ReadAllText(rspFile);
+                string stubLine = "\"" + stubPath.Replace("\\", "/") + "\"";
+                if (!content.Contains("AotHelperStub.cs"))
+                {
+                    // Insert stub source before the compiler flags section
+                    int flagIndex = content.IndexOf("-langversion:");
+                    if (flagIndex >= 0)
+                    {
+                        content = content.Insert(flagIndex, stubLine + "\n");
+                        File.WriteAllText(rspFile, content);
+                        Debug.Log("[BuildScript] Injected AotHelperStub.cs into " + Path.GetFileName(rspFile));
+                        cleaned++;
+                    }
+                }
             }
         }
 

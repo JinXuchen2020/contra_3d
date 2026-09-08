@@ -5591,7 +5591,13 @@ tasks:
   id: T-FIX-002
   milestone: M3
   priority: P1
-  status: todo
+  completed_at: '2026-09-08T05:30:00+08:00'
+  result: Unity batchmode build succeeds. contra_3d.exe (667KB) at Builds/Windows/.
+    Fix: BuildScript.CleanBeeRspReferences() now injects Assets/Editor/AotHelperStub.cs
+    into the Bee rsp for Unity.Services.Core.Environments.Editor assembly, providing
+    the missing AotHelper.EnsureType<T>() stub that com.unity.services.core@3464cb68d709
+    references in JsonHelpers.cs but does not define (known Unity bug).
+  status: completed
   title: 修复 Unity batchmode 编译错误：com.unity.services.core AotHelper 缺失
   description: 'Unity batchmode 构建额外报错：
 
