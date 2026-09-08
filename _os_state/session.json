@@ -38,9 +38,9 @@
         "test_count": 290,
         "test_passed": 283,
         "test_skipped": 7,
-        "note": "S004 loop 3: T-FIX-001 applied (Playtest dup deleted, GenerateAssemblyInfo=false). dotnet: 0/0, tests: 283/290 PASS. Unity batchmode: CS0019/CS1503 (Bee compiles tests into Core) + CS0103 (AotHelper). T-FIX-002/003 P1 pending.",
+        "note": "S004 loop 4: T-FIX-001 fully applied — Playtest/Playtest/ dupes deleted, GenerateAssemblyInfo=false, Exclude pattern added. dotnet: 0/0, tests: 283/290 PASS. Unity batchmode: CS0019/CS1503 (Bee compiles Tests/ into Core.dll) + CS0103 (AotHelper). Root cause identified: Bee scans ALL .cs under asmdef scope. T-FIX-002/003 P1 pending. Added lesson #6.",
         "last_verify_result": "fail",
-        "last_verified_at": "2026-09-09T11:00:00+08:00"
+        "last_verified_at": "2026-09-09T11:10:00+08:00"
     },
     "execution_lock": {
         "locked": false,
