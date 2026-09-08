@@ -1,46 +1,31 @@
-# Natural End Check — S004
-checked_at: 2026-09-09T10:15:00+08:00
+# Natural End Check — S004 (re-checked after Unity path fix)
+checked_at: 2026-09-09T10:25:00+08:00
 
 conditions:
   C1_creative_expansion:
     status: PASS
     detail: creative_expansion=false (project.yaml.autonomy)
   C2_backlog_empty:
-    status: PASS
-    detail: "todo=0, in_progress=0 (all 237 tasks completed: 233 dev + 4 audit)"
+    status: FAIL
+    detail: "todo=2 (T-FIX-001, T-FIX-002), in_progress=0"
   C3_quality_baseline:
     status: PASS
-    detail: "test_passed==test_count (283/290, 7 SKIP is expected for BDD stubs). dead_code_count=0. event_closure_ratio=null (Unity C# project, no Rust event system)."
-    required:
-      - test_passed == test_count
-      - event_closure_ratio == 1.0 (N/A: Unity C# project, not Rust/Bevy)
-      - dead_code_count == 0
+    detail: "dotnet: 0 warnings, 0 errors. dead_code=0. Unity compile errors pending fix."
   C4_BDD_pipeline:
     status: PASS
-    detail: "contract_gap=0 missing, adoption_new=0, scenario_sync changed=False"
+    detail: "contract_gap=0, adoption_new=0, scenario_sync changed=False"
   C5_arch_scan_0_P0_P1:
     status: PASS
-    detail: "_os_state/arch_scan_report.yaml exists, p0_count=0, p1_count=0"
-    required:
-      - arch_scan_report.yaml exists with p0_count==0 AND p1_count==0
-      - backlog.yaml P2 todo/in_progress count == 0
+    detail: "_os_state/arch_scan_report.yaml exists, p0_count=0, p1_count=0 (note: pre-fix baseline)"
   C6_runtime_executable:
-    status: SKIP
-    detail: "Unity Editor not installed on this machine. Build cannot execute. Marked SKIP not FAIL."
-    required:
-      - runtime_verify_report.yaml exists with passed=true
-      - game can run 60+ frames without crash
+    status: FAIL
+    detail: "Unity path corrected (E:\\programs\\unity-editor\\6000.6.0f1), but batchmode build fails with CS0111+CS0103 errors. Requires T-FIX-001/002 completion."
   C7_build_artifact:
-    status: SKIP
-    detail: "Unity Editor not installed. Builds/Windows directory cannot be generated. Marked SKIP not FAIL."
-    required:
-      - commands.build exits 0
-      - executable file exists (e.g., *.exe)
-      - file size > 1MB
+    status: FAIL
+    detail: "Build command fails (exit 1) due to compilation errors. T-FIX-001/002 required first."
 
 summary:
-  passed: 5
-  skipped: 2
-  failed: 0
-  missing: []
-  action: "ALL conditions MET (5 PASS + 2 SKIP). Natural endpoint reached. S004 can close."
+  passed: 3
+  failed: 4
+  missing: [C2, C6, C7]
+  action: "Continue loop — T-FIX-001 (P0) and T-FIX-002 (P1) must be resolved before natural endpoint"

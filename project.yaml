@@ -43,7 +43,7 @@ autonomy:
 commands:
   asset_generation: ''
   asset_placeholder: ''
-  build: C:/Program Files/Unity/Hub/Editor/6000.6.0f1/Editor/Unity.exe -batchmode -quit -projectPath . -executeMethod BuildScript.BuildWindows
+  build: E:\\programs\\unity-editor\\6000.6.0f1\\Editor\\Unity.exe -batchmode -quit -projectPath . -executeMethod BuildScript.BuildWindows
     -logFile -
   check: dotnet build Assets/contra_3d.sln -v q --nologo
   check_hardcoded: python adapter/tools/check_hardcoded.py --src-dir Assets/Scripts/
@@ -52,10 +52,10 @@ commands:
     P0
   demo: ''
   metrics: python adapter/tools/collect_metrics.py --dashboard --project-root F:/AI_Projects/projects/contra_3d
-  release: C:/Program Files/Unity/Hub/Editor/6000.6.0f1/Editor/Unity.exe -batchmode -quit -projectPath . -executeMethod BuildScript.BuildWindowsRelease
+  release: E:\\programs\\unity-editor\\6000.6.0f1\\Editor\\Unity.exe -batchmode -quit -projectPath . -executeMethod BuildScript.BuildWindowsRelease
     -logFile -
-  run: C:/Program Files/Unity/Hub/Editor/6000.6.0f1/Editor/Unity.exe -projectPath .
-  test: C:/Program Files/Unity/Hub/Editor/6000.6.0f1/Editor/Unity.exe -batchmode -projectPath . -runTests -testPlatform EditMode
+  run: E:\\programs\\unity-editor\\6000.6.0f1\\Editor\\Unity.exe -projectPath .
+  test: E:\\programs\\unity-editor\\6000.6.0f1\\Editor\\Unity.exe -batchmode -projectPath . -runTests -testPlatform EditMode
     -testResults Results/editmode.xml -logFile -
   visual_verify: ''
   wasm: ''

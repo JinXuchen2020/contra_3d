@@ -26,3 +26,10 @@ env_id: dsh
 [10:00:18] [NATURAL_END] 7条件检查: C1✓ C2✓ C3✓ C4✓ C5✓ C6(SKIP) C7(SKIP)
 [10:00:19] [NATURAL_END] 全部条件满足(5 PASS + 2 SKIP). 自然终点达成.
 [10:00:20] [STOP] Session S004 completed — natural endpoint. 237/237 tasks, 283/290 tests PASS, BDD 32/32 adopted.
+[10:15:01] [LOOP] Unity path fix: project.yaml env paths updated (C:/Program Files/Unity → E:/programs/unity-editor)
+[10:15:02] [LOOP] state: idle → audit_ingest → analyze (dotnet: 0/0, tests: 283/290 PASS)
+[10:15:03] [VERIFY] Unity batchmode build FAIL: CS0111 (PlaytestSession duplicate in Playtest/ vs Playtest/Playtest/), CS0103 (AotHelper missing)
+[10:15:04] [TASK] T-FIX-001: todo (P0) — Fix Playtest/ duplicate file compilation errors
+[10:15:05] [TASK] T-FIX-002: todo (P1) — Fix AotHelper missing in Unity Services package
+[10:15:06] [NATURAL_END] Re-check: C1✓ C2✗(2 todo) C3✓ C4✓ C5✓ C6✗ C7✗
+[10:15:07] [NATURAL_END] 停止关闭 — 2 个修复任务待处理，继续循环

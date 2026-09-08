@@ -5306,3 +5306,32 @@ tasks:
   source: auto_audit
   title: '执行 build 命令生成 Windows 可执行文件到 Builds/Windows/contra_3d.exe (>1MB)'
   type: audit_fix
+- depends_on: []
+  estimated_effort: M
+  id: T-FIX-001
+  milestone: M3
+  priority: P0
+  status: todo
+  title: '修复 Unity batchmode 编译错误：Playtest/ 目录重复文件导致 CS0111 冲突'
+  description: |
+    Unity batchmode 构建失败，报错：
+    - CS0111: PlaytestSession 在 Assets/Scripts/Core/Playtest/PlaytestSession.cs 和 Assets/Scripts/Core/Playtest/Playtest/PlaytestSession.cs 中重复定义
+    - CS0111: HeadlessPlaytestAgent 在 Assets/Scripts/Core/Playtest/HeadlessPlaytestAgent.cs 和 Assets/Scripts/Core/Playtest/Playtest/HeadlessPlaytestAgent.cs 中重复定义
+    - CS0111: PlaytestMetrics 可能在 Assets/Scripts/Core/Playtest/PlaytestMetrics.cs 和 Assets/Scripts/Core/Playtest/Playtest/PlaytestMetrics.cs 中重复定义
+    原因：单源码迁移 (ARCH-P0-002) 复制了 Playtest/ 子目录，但未删除旧的嵌套副本。
+    修复：删除 Assets/Scripts/Core/Playtest/Playtest/ 子目录下的所有 .cs 文件（保留 .meta），保留 Assets/Scripts/Core/Playtest/*.cs 的单一版本。
+    验证：Unity batchmode 构建 exit 0，无 CS0111 错误。
+  type: fix
+- depends_on: []
+  estimated_effort: S
+  id: T-FIX-002
+  milestone: M3
+  priority: P1
+  status: todo
+  title: '修复 Unity batchmode 编译错误：com.unity.services.core AotHelper 缺失'
+  description: |
+    Unity batchmode 构建额外报错：
+    - Library/PackageCache/com.unity.services.core@3464cb68d709/Editor/Core/Environments/Client/Http/JsonHelpers.cs: error CS0103: The name 'AotHelper' does not exist in the current context
+    这是 Unity Services 包的已知问题，可能需要在 ProjectSettings 中禁用 AOT 相关选项或升级 Unity Services 包版本。
+    如无法在 Editor 编译期修复，考虑将 Unity.Services.Core 从 Editor 编译中排除。
+  type: fix
