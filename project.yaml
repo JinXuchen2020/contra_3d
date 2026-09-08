@@ -1,4 +1,12 @@
 architecture_review:
+  csharp:
+    forbid_public_in_internal_ns: true
+    forbid_source_path_divergence: true
+    max_file_lines: 300
+    max_monobehaviour_methods: 10
+    require_asmdef_per_feature: true
+    require_test_asmdef: true
+    source_path_strategy: option_a_single_source
   enabled: true
   forbid_allow_dead_code_without_future: true
   forbid_back_edge_in_dependency: true
@@ -31,20 +39,20 @@ autonomy:
 commands:
   asset_generation: ''
   asset_placeholder: ''
-  build: 'C:/Program Files/Unity/Hub/Editor/6000.6.0f1/Editor/Unity.exe -batchmode -quit -projectPath . -executeMethod BuildScript.BuildWindows -logFile -'
+  build: C:/Program Files/Unity/Hub/Editor/6000.6.0f1/Editor/Unity.exe -batchmode -quit -projectPath . -executeMethod BuildScript.BuildWindows
+    -logFile -
   check: dotnet build src/contra_3d.sln -v q --nologo
   check_hardcoded: python adapter/tools/check_hardcoded.py --src-dir src/
-  check_warnings: python adapter/tools/check_warnings.py --build-command 'dotnet build
-    src/contra_3d.sln -v q' --module-priority P0
+  check_source_divergence: python adapter/tools/check_source_path_divergence.py --project-root . --output _os_state/source_divergence_report.yaml
+  check_warnings: python adapter/tools/check_warnings.py --build-command 'dotnet build src/contra_3d.sln -v q' --module-priority
+    P0
   demo: ''
   metrics: python adapter/tools/collect_metrics.py --dashboard --project-root F:/AI_Projects/projects/contra_3d
-  release: C:/Program Files/Unity/Hub/Editor/6000.6.0f1/Editor/Unity.exe -batchmode
-    -quit -projectPath . -executeMethod BuildScript.BuildWindowsRelease -logFile -
-  run: C:/Program Files/Unity/Hub/Editor/6000.6.0f1/Editor/Unity.exe -projectPath
-    .
-  test: C:/Program Files/Unity/Hub/Editor/6000.6.0f1/Editor/Unity.exe -batchmode -projectPath
-    . -runTests -testPlatform EditMode -testResults Results/editmode.xml -logFile
-    -
+  release: C:/Program Files/Unity/Hub/Editor/6000.6.0f1/Editor/Unity.exe -batchmode -quit -projectPath . -executeMethod BuildScript.BuildWindowsRelease
+    -logFile -
+  run: C:/Program Files/Unity/Hub/Editor/6000.6.0f1/Editor/Unity.exe -projectPath .
+  test: C:/Program Files/Unity/Hub/Editor/6000.6.0f1/Editor/Unity.exe -batchmode -projectPath . -runTests -testPlatform EditMode
+    -testResults Results/editmode.xml -logFile -
   visual_verify: ''
   wasm: ''
 data_flow: []
