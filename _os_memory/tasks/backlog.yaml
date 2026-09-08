@@ -5330,7 +5330,7 @@ tasks:
     c) 排查 SaveData.cs 为何被双重编译（可能是 asmdef 引用问题或 Assets/ 根目录包含规则）
     d) 重新运行 Unity batchmode 构建验证
   type: fix
-- depends_on: []
+- depends_on: [T-FIX-001]
   estimated_effort: S
   id: T-FIX-002
   milestone: M3
@@ -5340,6 +5340,25 @@ tasks:
   description: |
     Unity batchmode 构建额外报错：
     - Library/PackageCache/com.unity.services.core@3464cb68d709/Editor/Core/Environments/Client/Http/JsonHelpers.cs: error CS0103: The name 'AotHelper' does not exist in the current context
-    这是 Unity Services 包的已知问题，可能需要在 ProjectSettings 中禁用 AOT 相关选项或升级 Unity Services 包版本。
-    如无法在 Editor 编译期修复，考虑将 Unity.Services.Core 从 Editor 编译中排除。
+    这是 Unity Services 包的已知问题。尝试方案：
+    a) 在 ProjectSettings/EditorSettings.asset 中设置 `m_AotOptions: ""`
+    b) 升级 com.unity.services.core 到最新版本
+    c) 如无法修复，考虑将 Unity.Services.Core 从 Editor 编译中排除
+  type: fix
+- depends_on: []
+  estimated_effort: M
+  id: T-FIX-003
+  milestone: M3
+  priority: P1
+  status: todo
+  title: '修复 Unity Bee 将测试文件纳入 Core 程序集编译导致 CS1503/CS0019 类型冲突'
+  description: |
+    Unity batchmode 构建失败原因：Unity Bee 编译器将 Assets/Scripts/Core/Tests/ 下的测试源文件纳入 Contra3D.Core.dll 编译，
+    同时引用预编译的 Contra3D.Core.dll，导致同一类型（Vector3、EnemyDefinition 等）被双重定义。
+    根因：Contra3D.Core.asmdef 未配置 excludeAssemblies 或 includePlatforms 来排除测试代码。
+    修复方案：
+    a) 将测试项目移到 Assets/ 之外（如 project root/Tests/），防止 Bee 自动发现测试源文件
+    b) 或修改 Contra3D.Core.asmdef 添加 excludeReferences 阻止 Bee 引用测试 DLL
+    c) 或创建 Editor 脚本使用 OnGeneratedCSProject 过滤测试文件
+    注意：dotnet build 不受影响（只编译 csproj 定义的源文件），dotnet test 通过 283/290 PASS。
   type: fix

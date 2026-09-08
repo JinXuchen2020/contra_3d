@@ -38,9 +38,9 @@
         "test_count": 290,
         "test_passed": 283,
         "test_skipped": 7,
-        "note": "S004 loop 1: audit tasks done. Unity batchmode build has 2 errors (CS0111 duplicates + CS0103 AotHelper). T-FIX-001/002 created.",
-        "last_verify_result": "pass",
-        "last_verified_at": "2026-09-09T10:15:00+08:00"
+        "note": "S004 loop 3: T-FIX-001 applied (Playtest dup deleted, GenerateAssemblyInfo=false). dotnet: 0/0, tests: 283/290 PASS. Unity batchmode: CS0019/CS1503 (Bee compiles tests into Core) + CS0103 (AotHelper). T-FIX-002/003 P1 pending.",
+        "last_verify_result": "fail",
+        "last_verified_at": "2026-09-09T11:00:00+08:00"
     },
     "execution_lock": {
         "locked": false,

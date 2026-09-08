@@ -42,3 +42,9 @@ env_id: dsh
 [10:20:07] [VERIFY] Unity batchmode build: CS0579(obj缓存) + CS0101/CS0111(Playtest重复) + CS0436(Vector3冲突) + CS0103(AotHelper)
 [10:20:08] [TASK] T-FIX-001 描述更新: 新增 CS0579 obj缓存 + CS0436 双重编译问题
 [10:20:09] [NATURAL_END] 重新检查: C1✓ C2✗ C3✓ C4✓ C5✓ C6✗ C7✗ — 继续循环
+[10:30:01] [FIX] T-FIX-001: 删除 Playtest/Playtest/*.cs 重复文件 + GenerateAssemblyInfo=false + csproj Exclude Playtest/Playtest
+[10:30:02] [VERIFY] dotnet build: 0 errors, 0 warnings. dotnet test: 283/290 PASS, 7 SKIP
+[10:30:03] [VERIFY] Unity batchmode: CS0019/CS1503/CS0103 (Bee 将测试文件纳入 Core 编译 + AotHelper 缺失)
+[10:30:04] [TASK] T-FIX-002 (P1): AotHelper missing in com.unity.services.core
+[10:30:05] [TASK] T-FIX-003 (P1): Unity Bee includes test source files in Core assembly → type conflicts
+[10:30:06] [NATURAL_END] 重新检查: C1✓ C2✗ C3✓ C4✓ C5✓ C6✗ C7✗ — 继续循环
