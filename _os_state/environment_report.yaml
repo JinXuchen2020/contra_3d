@@ -1,0 +1,101 @@
+generated_at: '2026-09-08T03:21:26.276541+00:00'
+platform: Windows
+hostname: BJB-XX-JQ
+python_path: D:\Users\BIAOWU1\.workbuddy\binaries\python\versions\3.13.12\python.exe
+project_root: E:\Freelancer\AI_Projects\projects\contra_3d
+framework: unity
+language: csharp
+tier1_must_pass:
+  python:
+    available: true
+    version: '3.13'
+    ok: true
+    path: D:\Users\BIAOWU1\.workbuddy\binaries\python\versions\3.13.12\python.exe
+    error: null
+  dotnet:
+    available: true
+    version: 9.0.304
+    ok: true
+    path: dotnet
+    error: null
+  unity_project:
+    available: true
+    ok: true
+    path: E:\Freelancer\AI_Projects\projects\contra_3d\Assets\contra_3d.sln
+    error: null
+  unity_editor:
+    available: true
+    version: E:/programs/unity-editor\6000.6.0f1\Editor\Unity.exe
+    ok: true
+    path: E:/programs/unity-editor\6000.6.0f1\Editor\Unity.exe
+    error: null
+tier2_asset_pipeline:
+  blender:
+    available: false
+    version: null
+    impact: L2 程序化 GLB 不可用
+  pygltflib:
+    available: true
+    version: 1.16.5
+    impact: null
+  numpy:
+    available: true
+    version: 2.5.0
+    impact: null
+  mss:
+    available: true
+    version: 10.2.0
+    impact: null
+  Pillow:
+    available: true
+    version: 12.2.0
+    impact: null
+  ai_3d_meshy:
+    available: false
+    path: null
+    impact: L1 AI 3D (Meshy) 不可用
+  ai_3d_multimodal:
+    available: true
+    note: 需要通过 connect_cloud_service 工具在 Runtime 层检测
+tier3_optional:
+  sccache:
+    available: false
+    version: null
+    impact: 编译无增量缓存，建议安装
+    auto_fix:
+      action: 包管理器安装 sccache
+      risk: low
+  git:
+    available: true
+    version: 2.41.0
+    impact: null
+  disk_space:
+    available: true
+    free_gb: 19.68
+    ok: true
+    impact: null
+auto_fix:
+  fixed: []
+  failed: []
+  actions_needed:
+  - dependency: blender
+    action: 手动安装
+    auto: false
+    reason: L2 程序化 GLB 不可用
+  - dependency: ai_3d_meshy
+    action: 手动安装
+    auto: false
+    reason: L1 AI 3D (Meshy) 不可用
+asset_pipeline_capability:
+  effective_tiers:
+    h0: true
+    l1_ai_3d: false
+    l2_procedural_python: true
+    l3_dotnet_inline: true
+  animation:
+    skeletal: true
+    procedural: true
+  recommendation:
+    strategy: h0_primary_l2_fallback
+    description: H0 人工导入 + L2 程序化降级 (pip install pygltflib numpy 可解锁)
+exit_code: 0

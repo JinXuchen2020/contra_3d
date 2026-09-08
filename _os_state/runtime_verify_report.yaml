@@ -1,11 +1,17 @@
 # Runtime Verify Report — contra_3d
-verified_at: "2026-09-09T10:15:00+08:00"
-passed: true
+verified_at: "2026-09-09T10:30:00+08:00"
+passed: false
 scenarios: {}
 metrics:
   build:
     success: false
-    note: "Unity editor not installed on this machine. Build command cannot execute."
+    note: "Unity batchmode build failed with 4 error categories after Unity path correction"
+    errors:
+      - "CS0579: Duplicate assembly attributes in Assets/Scripts/Core/obj/Debug/netstandard2.1/Contra3D.Core.AssemblyInfo.cs (stale build cache)"
+      - "CS0101: Namespace 'Contra3D.Core.Playtest' contains duplicate definitions for HeadlessPlaytestAgent, PlaytestMetrics, PlaytestReport (Playtest/ vs Playtest/Playtest/)"
+      - "CS0111: Type already defines member (PlaytestSession, HeadlessPlaytestAgent, PlaytestMetrics) — duplicate type files"
+      - "CS0436: Vector3/SaveData/ProjectileSystemConfig type conflicts — files in Assets/Scripts/Core/ double-compiled into both assembly and Unity Editor context"
+      - "CS0103: AotHelper does not exist in com.unity.services.core@3464cb68d709 (Unity Services package bug)"
     output_path: null
     file_size_mb: 0
   tests:
@@ -18,14 +24,19 @@ metrics:
     warnings: 0
     errors: 0
     exit_code: 0
+    note: "dotnet build (Assets/contra_3d.sln) passes; Unity batchmode fails"
+  environment:
+    unity_editor: "E:/programs/unity-editor/6000.6.0f1/Editor/Unity.exe"
+    dotnet: "9.0.304"
+    python: "3.13"
 errors:
-  critical: []
-  warnings:
-    - "C6 (runtime_verify): Unity Editor unavailable — build command skipped. Marked as SKIPPED not FAIL."
-    - "C7 (build artifact): Builds/Windows/contra_3d.exe not generated — Unity not available on this machine."
+  critical:
+    - "Unity batchmode build failed (exit 1) — see T-FIX-001 (P0) and T-FIX-002 (P1)"
+  warnings: []
 notes:
-  - "Build command: C:/Program Files/Unity/Hub/Editor/6000.6.0f1/Editor/Unity.exe (not found on system)"
-  - "dotnet build: 0 errors, 0 warnings (Compiles OK)"
-  - "dotnet test: 283 PASS, 7 SKIP, 290 total (Tests OK)"
-  - "C6/C7 SKIPPED: Unity editor not installed. When Unity becomes available, re-run build."
-  - "C1-C5 PASS: creative_expansion=false, backlog empty (audit tasks resolved), quality baseline met, BDD pipeline pass, arch_scan 0 P0/P1"
+  - "Unity Editor: E:/programs/unity-editor/6000.6.0f1/Editor/Unity.exe (found via env check Phase 2 re-run)"
+  - "dotnet build: 0 errors, 0 warnings (Assets/contra_3d.sln)"
+  - "dotnet test: 283 PASS, 7 SKIP, 290 total"
+  - "T-FIX-001 (P0): Fix Playtest/ duplicates + obj/ cache cleanup + AssemblyInfo conflicts"
+  - "T-FIX-002 (P1): Fix AotHelper missing in com.unity.services.core"
+  - "Build artifact: not yet generated — blocked by compile errors"

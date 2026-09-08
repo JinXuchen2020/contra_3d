@@ -5312,15 +5312,23 @@ tasks:
   milestone: M3
   priority: P0
   status: todo
-  title: '修复 Unity batchmode 编译错误：Playtest/ 目录重复文件导致 CS0111 冲突'
+  title: '修复 Unity batchmode 编译错误：Playtest/ 重复 + obj/ 缓存 + AssemblyInfo 冲突'
   description: |
-    Unity batchmode 构建失败，报错：
-    - CS0111: PlaytestSession 在 Assets/Scripts/Core/Playtest/PlaytestSession.cs 和 Assets/Scripts/Core/Playtest/Playtest/PlaytestSession.cs 中重复定义
-    - CS0111: HeadlessPlaytestAgent 在 Assets/Scripts/Core/Playtest/HeadlessPlaytestAgent.cs 和 Assets/Scripts/Core/Playtest/Playtest/HeadlessPlaytestAgent.cs 中重复定义
-    - CS0111: PlaytestMetrics 可能在 Assets/Scripts/Core/Playtest/PlaytestMetrics.cs 和 Assets/Scripts/Core/Playtest/Playtest/PlaytestMetrics.cs 中重复定义
-    原因：单源码迁移 (ARCH-P0-002) 复制了 Playtest/ 子目录，但未删除旧的嵌套副本。
-    修复：删除 Assets/Scripts/Core/Playtest/Playtest/ 子目录下的所有 .cs 文件（保留 .meta），保留 Assets/Scripts/Core/Playtest/*.cs 的单一版本。
-    验证：Unity batchmode 构建 exit 0，无 CS0111 错误。
+    Unity batchmode 构建失败，完整错误清单：
+    1. CS0579 (obj/缓存): Assets/Scripts/Core/obj/Debug/netstandard2.1/Contra3D.Core.AssemblyInfo.cs 中重复 attribute
+       → 删除 obj/Debug 目录清除缓存
+    2. CS0101 (Playtest/Playtest/ 重复):
+       - Contra3D.Core.Playtest.HeadlessPlaytestAgent 在 Playtest/ 和 Playtest/Playtest/ 中重复定义
+       - Contra3D.Core.Playtest.PlaytestMetrics 在 Playtest/ 和 Playtest/Playtest/ 中重复定义
+       - Contra3D.Core.Playtest.PlaytestReport 在 Playtest/ 和 Playtest/Playtest/ 中重复定义
+    3. CS0111 (构造函数/方法重复): PlaytestSession, HeadlessPlaytestAgent, PlaytestMetrics 在两个目录中
+    4. CS0436 (Vector3/SaveData 类型冲突): Assets/Scripts/Core/SaveData.cs 与 Contra3D.Core 程序集中的 Vector3 冲突
+       → 原因: Unity 将 .cs 文件同时加入 Editor 编译和程序集，导致同一类型被双重编译
+    修复步骤:
+    a) 删除 Assets/Scripts/Core/Playtest/Playtest/ 下所有 .cs 文件（保留 .meta）
+    b) 删除 Assets/Scripts/Core/obj/Debug/ 缓存目录
+    c) 排查 SaveData.cs 为何被双重编译（可能是 asmdef 引用问题或 Assets/ 根目录包含规则）
+    d) 重新运行 Unity batchmode 构建验证
   type: fix
 - depends_on: []
   estimated_effort: S

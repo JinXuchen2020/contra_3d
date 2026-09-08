@@ -1,5 +1,5 @@
-# Natural End Check — S004 (re-checked after Unity path fix)
-checked_at: 2026-09-09T10:25:00+08:00
+# Natural End Check — S004 (after Unity path fix and env re-check)
+checked_at: 2026-09-09T10:30:00+08:00
 
 conditions:
   C1_creative_expansion:
@@ -7,25 +7,25 @@ conditions:
     detail: creative_expansion=false (project.yaml.autonomy)
   C2_backlog_empty:
     status: FAIL
-    detail: "todo=2 (T-FIX-001, T-FIX-002), in_progress=0"
+    detail: "todo=2 (T-FIX-001 P0, T-FIX-002 P1), in_progress=0"
   C3_quality_baseline:
     status: PASS
-    detail: "dotnet: 0 warnings, 0 errors. dead_code=0. Unity compile errors pending fix."
+    detail: "dotnet: 0 warnings, 0 errors. dead_code=0. Unity batchmode has 4 error categories."
   C4_BDD_pipeline:
     status: PASS
     detail: "contract_gap=0, adoption_new=0, scenario_sync changed=False"
   C5_arch_scan_0_P0_P1:
     status: PASS
-    detail: "_os_state/arch_scan_report.yaml exists, p0_count=0, p1_count=0 (note: pre-fix baseline)"
+    detail: "_os_state/arch_scan_report.yaml exists, p0_count=0, p1_count=0"
   C6_runtime_executable:
     status: FAIL
-    detail: "Unity path corrected (E:\\programs\\unity-editor\\6000.6.0f1), but batchmode build fails with CS0111+CS0103 errors. Requires T-FIX-001/002 completion."
+    detail: "Unity Editor found (E:/programs/unity-editor/6000.6.0f1). Batchmode build FAILS: CS0579/CS0101/CS0111/CS0436/CS0103 errors. Blocked by T-FIX-001/002."
   C7_build_artifact:
     status: FAIL
-    detail: "Build command fails (exit 1) due to compilation errors. T-FIX-001/002 required first."
+    detail: "Build command fails (exit 1). No Builds/Windows/contra_3d.exe. Requires T-FIX-001/002."
 
 summary:
-  passed: 3
-  failed: 4
+  passed: 4
+  failed: 3
   missing: [C2, C6, C7]
   action: "Continue loop — T-FIX-001 (P0) and T-FIX-002 (P1) must be resolved before natural endpoint"

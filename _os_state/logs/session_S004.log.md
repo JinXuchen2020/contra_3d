@@ -33,3 +33,12 @@ env_id: dsh
 [10:15:05] [TASK] T-FIX-002: todo (P1) — Fix AotHelper missing in Unity Services package
 [10:15:06] [NATURAL_END] Re-check: C1✓ C2✗(2 todo) C3✓ C4✓ C5✓ C6✗ C7✗
 [10:15:07] [NATURAL_END] 停止关闭 — 2 个修复任务待处理，继续循环
+[10:20:01] [LOOP] 用户反馈: Phase 2 环境检测应使用 check_environment.py 完整检测 Unity 路径
+[10:20:02] [FIX] framework_checks.py: check_unity_editor 新增多盘符搜索 (D:/E:/F:/ + AppData + 项目根盘符)
+[10:20:03] [FIX] framework_checks.py: check_unity_project 优先选择 Assets/*.sln 而非根目录旧 sln
+[10:20:04] [FIX] framework_checks.py: unity_editor 加入 tier1_optional 清单
+[10:20:05] [FIX] framework_checks.py: check_node_project 变量名 bug (_project_root vs project_root)
+[10:20:06] [P2] env_recheck: python 3.13✅ dotnet 9.0.304✅ unity_project OK✅ unity_editor E:/programs/unity-editor✅
+[10:20:07] [VERIFY] Unity batchmode build: CS0579(obj缓存) + CS0101/CS0111(Playtest重复) + CS0436(Vector3冲突) + CS0103(AotHelper)
+[10:20:08] [TASK] T-FIX-001 描述更新: 新增 CS0579 obj缓存 + CS0436 双重编译问题
+[10:20:09] [NATURAL_END] 重新检查: C1✓ C2✗ C3✓ C4✓ C5✓ C6✗ C7✗ — 继续循环
