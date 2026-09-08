@@ -5246,8 +5246,8 @@ tasks:
   id: ARCH-P0-004
   milestone: quality_block
   priority: P0
-  result: '已更新 project.yaml: source=Assets/Scripts/, check=dotnet build Assets/contra_3d.sln，删除 src/ 目录'
-  status: todo
+  result: '已更新 project.yaml (source/tests/build/check 路径全部指向 Assets/Scripts/)，删除 src/ 目录 (33 files)，.gitignore 清理，tests 283 pass / 7 skip'
+  status: completed
   title: '[P0] 单源码迁移 Step 4: 更新 project.yaml 命令路径 + 删除 src/ 目录'
   type: refactor
 - _arch_key: P0:migration_step5_verify
