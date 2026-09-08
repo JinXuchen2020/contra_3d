@@ -52,3 +52,20 @@ S004 Boot Phase 0-6 执行完成。contra_3d 是 Unity/C# shooter 项目（非 R
 3. `framework_checks.py`: `unity_editor` 加入 `UNITY_TIER1_OPTIONAL`
 4. `framework_checks.py`: 修复 `check_node_project` 中 `_project_root` vs `project_root` 变量名 bug
 **教训**：Phase 2 环境检测必须完整执行 `check_environment.py --framework unity`，不能因 Rust 检查失败就跳过。对于非 Rust 项目，必须强制指定框架参数或确保 project.yaml.framework.name 被正确读取。首次检测失败时应该 `--framework unity` 强制覆盖，而不是自行生成最小报告。
+## #6 — 2026-09-09 | S004-unity-batchmode | critical
+**问题**：Unity batchmode 构建失败，Bee 编译器将 Assets/Scripts/Core/Tests/ 下的测试 .cs 文件纳入 Contra3D.Core.dll 编译，同时引用预编译的 Contra3D.Core.dll，导致同一类型（Vector3、EnemyDefinition、HealthDamageSystem）被双重定义。
+**错误表现**：
+- CS0019: `HealthDamageSystem ?? HealthDamageSystem` operator conflict
+- CS1503: `Contra3D.Core.Vector3 [AiSystem.cs]` vs `Contra3D.Core.Vector3 [Contra3D.Core.dll]` type mismatch
+- CS0103: `AotHelper` missing in com.unity.services.core@3464cb68d709
+**根因**：Contra3D.Core.asmdef 的目录范围覆盖 Assets/Scripts/Core/，Bee 自动发现所有 .cs 文件（包括 Tests/ 子目录）编译为单个 Contra3D.Core.dll。dotnet build 不受影响（只编译 csproj 定义的源文件）。
+**尝试的修复**：
+1. 将 Tests 移到 Assets/ 之外 → Bee 仍通过 ProjectReference 找到测试 DLL
+2. 创建 Tests asmdef (excludePlatforms: Editor) → Bee 回退到从源编译 Core，路径错误
+3. 添加 excludePackages 到 Core asmdef → 无效
+**可行方案**：
+- 方案A: 创建 Editor 脚本使用 OnGeneratedCSProject 在 csproj 生成后移除 Test 引用
+- 方案B: 将 Tests 目录移到与 Assets/ 平级的 project root/Tests/，修改 csproj 引用路径
+- 方案C: 修改 Core asmdef 添加 explicit includeAssets 限制范围（需验证 Bee 行为）
+- 方案D: 临时禁用 Unity.Services.Core.Editor 包（解决 AotHelper）
+**教训**：asmdef 的"目录范围"不等于"编译范围"——Bee 会扫描 asmdef 目录下所有 .cs 文件，不区分测试/生产代码。dotnet 和 Unity Bee 是两个独立的编译系统，各自有不同的文件发现和引用逻辑。
