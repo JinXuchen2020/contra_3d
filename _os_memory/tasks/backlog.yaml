@@ -1,4 +1,4 @@
-tasks:
+﻿tasks:
 - depends_on: []
   estimated_effort: L
   id: T-SYS-001
@@ -4927,7 +4927,7 @@ tasks:
   id: ARCH-P1-008
   milestone: quality_block
   priority: P1
-  result: 'Completed: Vigilance + EnemyDefinition builder'
+  result: 'EnemyDefinition Builder exists in both src/ and Assets/Scripts/ paths.'
   status: completed
   title: '[P1] Arch: AiSystem.cs'
   type: refactor
@@ -4982,7 +4982,7 @@ tasks:
   id: ARCH-P1-017
   milestone: quality_block
   priority: P1
-  result: 'Completed: EnemyDefinition Builder pattern'
+  result: 'EnemyDefinition Builder exists in both src/ and Assets/Scripts/ paths.'
   status: completed
   title: '[P1] Arch: AiSystem.cs'
   type: refactor
@@ -5213,8 +5213,7 @@ tasks:
   id: ARCH-P0-001
   milestone: quality_block
   priority: P0
-  result: 已复制 AudioSystem.cs, CameraSystem.cs, EnemyLoader.cs, EnemyWeaponSystem.cs, IRandomProvider.cs, SaveData.cs, SaveLoader.cs
-  status: todo
+  result: Copied 7 files from src/Core/ to Assets/Scripts/Core/ (AudioSystem, CameraSystem, EnemyLoader, EnemyWeaponSystem, IRandomProvider, SaveData, SaveLoader).
   title: '[P0] 单源码迁移 Step 1: 复制 src/Core/ 新增文件到 Assets/Scripts/Core/'
   type: refactor
 - _arch_key: P0:migration_step2_copy_dirs
