@@ -6040,18 +6040,20 @@ tasks:
   milestone: M4
   type: refactor_package
 - id: T-ARCH-D8-APPLYSPREAD
-  status: todo
+  status: completed
   priority: P1
-  title: "Extract ApplySpread to VectorExtensions (3 duplicates)"
+  title: "Extract ApplySpread to VectorExtensions (duplicates)"
   description: |
     P1 from architect full_scan D8: ApplySpread duplicated in
-    CombatSystem.cs:293, EnemyWeaponSystem.cs:125, HeadlessPlaytestAgent.cs:87.
+    CombatSystem.cs:293, EnemyWeaponSystem.cs:125.
     Action: Extract to Contra3D.Core.VectorExtensions.ApplySpread(...).
   source: Architect full_scan D8 (2026-07-18)
   depends_on: []
   estimated_effort: S
   milestone: M4
   type: refactor
+  completed_at: '2026-09-10T14:05:00+08:00'
+  result: VectorExtensions.ApplySpread extension method extracted; 2 private duplicates removed from CombatSystem.cs + EnemyWeaponSystem.cs; all 290 tests pass (283 pass, 7 skip).
 - id: T-ARCH-D8-YAML-PARSER
   status: todo
   priority: P1

@@ -104,7 +104,7 @@ namespace Contra3D.Core
             // Apply spread to direction
             if (_weapons.TryGetValue(ws.WeaponId, out var def))
             {
-                direction = ApplySpread(direction, def.Spread, _random);
+                direction = direction.ApplySpread(def.Spread, _random);
             }
 
             // Set cooldown
@@ -122,13 +122,5 @@ namespace Contra3D.Core
             return requests;
         }
 
-        private static Vector3 ApplySpread(Vector3 direction, float spreadDeg, IRandomProvider random)
-        {
-            if (spreadDeg <= 0f) return direction;
-            float spreadRad = spreadDeg * (float)Math.PI / 180f;
-            float dx = (float)(random.NextDouble() * 2 - 1) * spreadRad;
-            float dz = (float)(random.NextDouble() * 2 - 1) * spreadRad;
-            return Vector3.Normalize(new Vector3(direction.X + dx, direction.Y, direction.Z + dz));
-        }
     }
 }

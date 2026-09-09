@@ -109,7 +109,7 @@ namespace Contra3D.Combat
             if (result != WeaponActionResult.Success)
                 return (result, default, null);
 
-            direction = ApplySpread(direction, fireEvent.SpreadDeg, _random);
+            direction = direction.ApplySpread(fireEvent.SpreadDeg, _random);
 
             if (fireEvent.IsHitscan)
             {
@@ -135,7 +135,7 @@ namespace Contra3D.Combat
             if (result != WeaponActionResult.Success)
                 return (result, null, null);
 
-            direction = ApplySpread(direction, fireEvent.SpreadDeg, _random);
+            direction = direction.ApplySpread(fireEvent.SpreadDeg, _random);
 
             if (fireEvent.IsHitscan)
             {
@@ -290,13 +290,5 @@ namespace Contra3D.Combat
             }
         }
 
-        private static Vector3 ApplySpread(Vector3 direction, float spreadDeg, IRandomProvider random)
-        {
-            if (spreadDeg <= 0f) return direction;
-            float spreadRad = spreadDeg * (float)Math.PI / 180f;
-            float dx = (float)(random.NextDouble() * 2 - 1) * spreadRad;
-            float dz = (float)(random.NextDouble() * 2 - 1) * spreadRad;
-            return Vector3.Normalize(new Vector3(direction.X + dx, direction.Y, direction.Z + dz));
-        }
     }
 }
