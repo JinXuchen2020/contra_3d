@@ -69,6 +69,11 @@ env: claude (DSH container)
 [12:25:08] [LOOP] Backlog: 14 todo active tasks. Highest priority: T-ARCH-D1-MAPLOADER (P1, D1 module size).
 [12:25:09] [TASK] T-ARCH-D1-MAPLOADER: todo → in_progress.
 [12:25:10] [SPAWN] Developer Agent → T-ARCH-D1-MAPLOADER (extract validation helpers from MapLoader.cs 487L)
+[12:35:00] [DEV] T-ARCH-D1-MAPLOADER complete: Created MapValidator.cs (64L), MapLoader reduced 487→384L. Build PASS, tests PASS.
+[12:35:01] [LOOP] state: dev_complete → report. Health check: PASS.
+[12:35:02] [LOOP] select_task → T-ARCH-D1-AISYSTEM (P1, AiSystem.cs 462L exceeds threshold).
+[12:35:03] [TASK] T-ARCH-D1-AISYSTEM: todo → in_progress.
+[12:35:04] [SPAWN] Developer Agent → T-ARCH-D1-AISYSTEM (split AI type handlers from AiSystem.cs 462L)
 [LOOP] waiting for system-reminder to continue.
 <system-reminder>autonomous_loop_active</system-reminder>
 
@@ -83,3 +88,29 @@ env: claude (DSH container)
 ### Lesson Learned
 > **每次 spawn Architect Agent 执行 full_scan 前，Master 必须先读 `src/core/agents/architect_agent.md`**
 > 确认 full_scan 模式要求：维度 1-7（csharp_unity.md）+ 维度 8-10（csharp_unity_extended.md）+ 维度 11-15（functionality_auditor.py + genre_knowledge/shooter_base.yaml）
+
+---
+## 教训 #2: Boot Phase 6 被跳过
+
+### 现象
+S009 boot 日志中只有 `[P0]` → `[P1]` → `[P5]` → `[LOOP]`，**没有 `[P6]` 条目**。
+但 session.json.boot_phases 包含 "P6_boot_complete"，guardrail_marker.yaml 也 status=passed。
+
+### 根因
+`os_launcher.md` §"你的第一轮动作" 第 744 行：
+```
+启动后立即执行 Boot Phase 5 的流程（见下方）。
+完成后 report 当前状态并等待下一轮自动化触发。
+```
+只说了 Phase 5，没说 Phase 6。LLM 严格按字面执行 → P5 完成后停止等待"下一轮触发"。
+但 P6 的循环机制（hooks/transition/guardrail）从未被拉起。
+
+### 修复（已提交 `1e5ad17`）
+os_launcher.md 改写为显式要求 Phase 5 + Phase 6，列出 P6 子步骤：
+6.1 选择循环策略 → 6.2 持久化自治标记 → 6.3 执行循环机制 → 6.5 过渡指令 → 6.6 Exit 验证
+添加 [HARD GATE] 禁止跳过 P6。
+
+### 影响
+- S009 当前 session 仍正常运行（micro_loop=11，14个 backlog 任务待处理）
+- 未来的 boot 提示词若使用新版 os_launcher.md 协议，不会再出现此问题
+- guardrail_marker.yaml 在 S009 中是循环启动后手动写的（非机械触发），下次 boot 会正确由 p6_mechanical_trigger.py 写入
