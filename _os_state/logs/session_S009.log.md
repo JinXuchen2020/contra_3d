@@ -41,9 +41,11 @@ env: claude (DSH container)
 [12:08:42] [NAT-END] ALL 7 CONDITIONS MET.
 [12:08:43] [NAT-END] Natural End passed → triggering Architect full_scan (scan #1/5)...
 [12:08:44] [SPAWN] Architect Agent → natural_end full_scan (scan #1/5)
-[12:08:45] [LOOP] Waiting for Architect Agent full_scan...
-[12:20:00] [ARCH] Full scan #1/5 complete (Architect Agent spawned, NOT faked).
-[12:20:01] [ARCH] Results: P0=1, P1=2, P2=3 (6 total violations)
+[12:08:45] [LOOP] ⚠️ Protocol violation: Master did NOT read architect_agent.md before spawn.
+[12:08:46] [LOOP]   Expected: full 15-dim scan (D1-7 + D8-10 + D11-15) per architect_agent.md:26-27
+[12:08:47] [LOOP]   Actual:    only 7-dim scan (D1-7 only, diff-mode default path) — subagent received no mode=full_scan context
+[12:20:00] [ARCH] Full scan #1/5 complete — BUT ONLY 7 DIMENSIONS EXECUTED (protocol violation).
+[12:20:01] [ARCH] Results: P0=1, P1=2, P2=3 (6 total violations, incomplete — missed D8-15 entirely)
 [12:20:02] [ARCH] P0-001: Duplicate AI system (AiSystem vs AISystem) — blocking
 [12:20:03] [ARCH] P1-001: AISpawnConfig namespace/location mismatch
 [12:20:04] [ARCH] P1-002: ApplySpread method duplicated
@@ -56,7 +58,7 @@ env: claude (DSH container)
 [12:20:07] [LOOP] scan_count=1/5, backlog has 3 active tasks. select_task → T-ARCH-P0-001.
 [12:20:08] [TASK] T-ARCH-P0-001: todo → in_progress.
 [12:20:09] [SPAWN] Developer Agent → T-ARCH-P0-001 (fix duplicate AI system)
-[12:25:00] [ARCH] Full 15-dim scan (scan #2/5) complete: P0=0, P1=4, P2=7.
+[12:25:00] [ARCH] Full 15-dim scan (scan #2/5) complete: P0=0, P1=4, P2=7. ✅ Protocol followed — Master read architect_agent.md before spawn.
 [12:25:01] [ARCH] T-ARCH-P0-001 RECLASSIFIED: AiSystem(Core) vs AISystem(Runtime) = correct layering, NOT duplicate. Reverted AISystem.cs refactor.
 [12:25:02] [ARCH] New backlog tasks from 15-dim scan: 20 tasks (P1:4, P2:7, P3:2)
 [12:25:03] [ARCH] Key P1: MapLoader(487L) exceed threshold, AiSystem(462L) exceed threshold, ApplySpread×3 duplicate, rendering BDD gap
@@ -69,3 +71,15 @@ env: claude (DSH container)
 [12:25:10] [SPAWN] Developer Agent → T-ARCH-D1-MAPLOADER (extract validation helpers from MapLoader.cs 487L)
 [LOOP] waiting for system-reminder to continue.
 <system-reminder>autonomous_loop_active</system-reminder>
+
+---
+## 协议纠正记录
+### Scan #1 违规
+- **原因**: Master 在 spawn Architect Agent 前未读 `src/core/agents/architect_agent.md`
+- **后果**: subagent 仅执行维度 1-7（mode=diff 默认路径），遗漏维度 8-15
+- **额外错误**: 将分层架构的 AiSystem(AI namespace wrapper) vs AISystem(Core 纯逻辑层)误判为"重复实现" → P0 误报
+- **修复**: Scan #2 重新执行完整 15 维扫描，P0 误报已 reclassified，AISystem.cs 已 git checkout 还原
+
+### Lesson Learned
+> **每次 spawn Architect Agent 执行 full_scan 前，Master 必须先读 `src/core/agents/architect_agent.md`**
+> 确认 full_scan 模式要求：维度 1-7（csharp_unity.md）+ 维度 8-10（csharp_unity_extended.md）+ 维度 11-15（functionality_auditor.py + genre_knowledge/shooter_base.yaml）
