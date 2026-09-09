@@ -63,7 +63,7 @@ env: claude (DSH container)
 [12:25:04] [LOOP] Health check: PASS. scan_count=2/5. Backlog has 20 active tasks.
 [12:25:05] [LOOP] state: report → micro_loop_decision. select_task → T-ARCH-D1-MAPLOADER (P1, top priority).
 [12:25:06] [TASK] T-ARCH-D1-MAPLOADER: todo → in_progress.
-[12:25:07] [DE-DUP] T-ARCH-P1-001 covered by T-ARCH-D7-AI-NS, T-ARCH-P1-002 covered by T-ARCH-D8-APPLYSPREAD → marked completed
+[12:25:07] [DE-DUP] T-ARCH-P1-001→completed (covered by T-ARCH-D7-AI-NS), T-ARCH-P1-002→completed (covered by T-ARCH-D8-APPLYSPREAD)
 [12:25:08] [LOOP] Backlog: 14 todo active tasks. Highest priority: T-ARCH-D1-MAPLOADER (P1, D1 module size).
 [12:25:09] [TASK] T-ARCH-D1-MAPLOADER: todo → in_progress.
 [12:25:10] [SPAWN] Developer Agent → T-ARCH-D1-MAPLOADER (extract validation helpers from MapLoader.cs 487L)

@@ -5851,7 +5851,9 @@ tasks:
   milestone: M3
   type: fix
 - id: T-ARCH-P1-001
-  status: todo
+  status: completed
+  completed_at: "2026-09-10T12:25:00+08:00"
+  result: "covered by T-ARCH-D7-AI-NS from 15-dim full scan"
   priority: P1
   title: "Fix AISpawnConfig namespace-location mismatch"
   description: |
@@ -5865,7 +5867,9 @@ tasks:
   milestone: M3
   type: fix
 - id: T-ARCH-P1-002
-  status: todo
+  status: completed
+  completed_at: "2026-09-10T12:25:00+08:00"
+  result: "covered by T-ARCH-D8-APPLYSPREAD from 15-dim full scan"
   priority: P1
   title: "Extract ApplySpread to shared utility class"
   description: |
