@@ -1,4 +1,5 @@
 architecture_review:
+  coupling_threshold: 10
   csharp:
     forbid_public_in_internal_ns: true
     forbid_source_path_divergence: true
@@ -8,6 +9,7 @@ architecture_review:
     require_test_asmdef: true
     source_path_strategy: option_a_single_source
   enabled: true
+  event_leak_threshold: 3
   forbid_allow_dead_code_without_future: true
   forbid_back_edge_in_dependency: true
   forbid_empty_plugin_impl: true
@@ -15,11 +17,9 @@ architecture_review:
   max_file_lines: 500
   max_plugins_per_file: 5
   max_pub_types_per_non_api_module: 5
-  require_prelude_module: false
-  coupling_threshold: 10
-  type_spread_threshold: 5
-  event_leak_threshold: 3
   optimization_proposal_interval: 10
+  require_prelude_module: false
+  type_spread_threshold: 5
 asset_config:
   asset_dirs:
   - assets/models/
@@ -38,6 +38,7 @@ autonomy:
   max_creative_cycles: 20
   max_micro_loops: 20
   max_rounds: null
+  max_full_scans_per_session: 5
   stop_on_blocked: true
   stop_on_idle: true
 commands:
@@ -70,9 +71,9 @@ ecs_registry:
   events: []
   states: []
   systems: []
-env: opencode
+env: claude
 external_loop:
-  run_cmd: ""
+  run_cmd: python ..\..\Universal-AI-OS\src\adapter\env\claude_autocontinue.py
 framework:
   build_file: Assets/contra_3d.sln
   lock_file: ProjectSettings/ProjectVersion.txt

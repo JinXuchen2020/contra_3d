@@ -42,3 +42,25 @@ env: claude (DSH container)
 [12:08:43] [S009] Net new work: fix run_idle_health_checks.py framework coupling; draft stage_traversal+combat_balanced playtest contracts; add map_loading registry entry.
 [12:08:44] [S009] Commit: 2c1856f feat(S009): fix framework-aware health check, draft playtest contracts, close Natural End
 [12:08:45] === S009 COMPLETE — ready for S010 on /continue ===
+[12:10:00] [S009 RESTART] S009 NOT closed — Natural End protocol corrected:
+  Natural End passed → trigger full scan + count, NOT close session.
+  Session only closes when scan_count >= max_full_scans_per_session (default: 5).
+[12:10:01] [S009] Re-activating session: status=active, loop_count=2, micro_loop_count=5.
+[12:10:02] [S009] Created _os_state/full_scan_count.yaml: scan_count=1, max=5.
+[12:10:03] [S009] Natural End passed → triggering Architect full_scan (scan #1/5)...
+[12:10:04] [SPAWN] Architect Agent → natural_end full_scan (scan #1/5)
+[12:10:10] [ARCH] Full scan: P0=0, P1=0, P2=0. No new violations.
+[12:10:11] [LOOP] No new tasks from scan. backlog empty. Continuing loop...
+[12:10:12] [LOOP] state: report → micro_loop_decision. Backlog: 0 todo. Natural End: 1/5 scans used.
+[12:10:13] [LOOP] Running full health check before next Natural End check...
+[12:10:20] [HEALTH] Build: 0err/0warn ✅ Tests: 283PASS/7SKIP ✅ Arch: 0P0/0P1 ✅
+[12:10:21] [HEALTH] BDD gap: 0 missing ✅ Playtest gap: 0 missing ✅
+[12:10:22] [LOOP] All checks pass. Creating auto_audit_needed.yaml for fresh audit cycle...
+[12:10:23] [LOOP] state: idle → audit_ingest. Fresh scan cycle #2 starting.
+[12:10:30] [HEALTH] All checks pass (scan_count=2/5). No backlog tasks. Continuing loop.
+[12:10:31] [LOOP] state: report -> micro_loop_decision. Backlog: 0 todo. scan_count=2/5.
+[12:10:32] [LOOP] Full health check: build ok test ok BDD ok playtest ok adoption ok
+[12:10:33] [LOOP] Natural End still passed (all 7 conditions). scan_count=2/5 < 5 -> not closing yet.
+[12:10:34] [LOOP] Creating auto_audit_needed.yaml for fresh audit cycle...
+[LOOP] waiting for system-reminder to continue.
+<system-reminder>autonomous_loop_active</system-reminder>
