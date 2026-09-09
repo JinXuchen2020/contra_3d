@@ -27,7 +27,7 @@ namespace Contra3D.Core
         public const float DefaultCollisionBoundX = 25.0f;
 
         /// <summary>SpawnPoint 最小间距（米）。</summary>
-        private const float MinSpawnDistance = 5.0f;
+        internal const float MinSpawnDistance = 5.0f;
 
         /// <summary>
         /// 从 YAML 文件路径加载地图定义。
@@ -385,73 +385,16 @@ namespace Contra3D.Core
 
         #region Validation
 
-        private static List<MapValidationError> ValidateMap(ParsedMap m)
-        {
-            var errors = new List<MapValidationError>();
-            float bound = m.CollisionBoundX > 0f ? m.CollisionBoundX : DefaultCollisionBoundX;
-
-            if (m.SpawnPoints.Count < 2)
-                errors.Add(new MapValidationError("spawn_points",
-                    $"Need at least 2 spawn points, got {m.SpawnPoints.Count}."));
-
-            for (int i = 0; i < m.SpawnPoints.Count; i++)
-            {
-                SpawnPoint sp = m.SpawnPoints[i];
-                if (Math.Abs(sp.X) > bound)
-                    errors.Add(new MapValidationError($"spawn_points[{i}].x",
-                        $"Coordinate {sp.X} is outside collision boundary ±{bound}."));
-                if (Math.Abs(sp.Z) > bound)
-                    errors.Add(new MapValidationError($"spawn_points[{i}].z",
-                        $"Coordinate {sp.Z} is outside collision boundary ±{bound}."));
-
-                for (int j = i + 1; j < m.SpawnPoints.Count; j++)
-                {
-                    float dist = sp.DistanceTo(m.SpawnPoints[j]);
-                    if (dist < MinSpawnDistance)
-                        errors.Add(new MapValidationError($"spawn_points[{i}]↔spawn_points[{j}]",
-                            $"Distance {dist:F2}m is below minimum {MinSpawnDistance}m."));
-                }
-            }
-
-            int minCoverCount = (m.SpawnPoints.Count + 1) / 2; // ceil(spawnCount / 2)
-            if (m.CoverPoints.Count < minCoverCount)
-                errors.Add(new MapValidationError("cover_points",
-                    $"Need at least {minCoverCount} cover points (≥50% of {m.SpawnPoints.Count} spawns), got {m.CoverPoints.Count}."));
-
-            for (int i = 0; i < m.CoverPoints.Count; i++)
-            {
-                CoverPoint cp = m.CoverPoints[i];
-                if (Math.Abs(cp.X) > bound)
-                    errors.Add(new MapValidationError($"cover_points[{i}].x",
-                        $"Coordinate {cp.X} is outside collision boundary ±{bound}."));
-                if (Math.Abs(cp.Z) > bound)
-                    errors.Add(new MapValidationError($"cover_points[{i}].z",
-                        $"Coordinate {cp.Z} is outside collision boundary ±{bound}."));
-            }
-
-            if (m.PickupLocations.Count > 20)
-                errors.Add(new MapValidationError("pickup_locations",
-                    $"Too many pickups: {m.PickupLocations.Count} (max 20)."));
-
-            for (int i = 0; i < m.PickupLocations.Count; i++)
-            {
-                PickupLocation pl = m.PickupLocations[i];
-                if (Math.Abs(pl.X) > bound)
-                    errors.Add(new MapValidationError($"pickup_locations[{i}].x",
-                        $"Coordinate {pl.X} is outside collision boundary ±{bound}."));
-                if (Math.Abs(pl.Z) > bound)
-                    errors.Add(new MapValidationError($"pickup_locations[{i}].z",
-                        $"Coordinate {pl.Z} is outside collision boundary ±{bound}."));
-            }
-
-            return errors;
-        }
+        /// <summary>验证 ParsedMap 并返回错误列表。委托给 MapValidator 辅助类。</summary>
+        internal static List<MapValidationError> ValidateMap(ParsedMap m) =>
+            MapValidator.Validate(m);
 
         #endregion
 
         #region Helpers
 
-        private class ParsedMap
+        /// <summary>YAML 解析期间的临时地图状态（仅供 MapValidator 访问）。</summary>
+        internal class ParsedMap
         {
             public string MapId;
             public string Name;

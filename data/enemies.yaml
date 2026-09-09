@@ -1,0 +1,77 @@
+# Enemies Seed Data — 魂斗罗 run-and-gun 敌人种子
+# 来源: templates/shooter_contra/game_data/enemies.yaml
+
+enemies:
+  - enemy_id: grunt_soldier
+    name: 亡灵步兵
+    health: 24
+    speed: 2.0
+    ai_type: patrol
+    weapons:
+      - rifle_default
+    drop_table:
+      - item: health_pack_small
+        chance: 0.10
+      - item: weapon_box
+        weapon: spread_shot
+        chance: 0.05
+      - item: none
+        chance: 0.85
+
+  - enemy_id: charger_mutant
+    name: 冲锋变异体
+    health: 36
+    speed: 4.5
+    ai_type: rusher
+    weapons: []
+    drop_table:
+      - item: health_pack_small
+        chance: 0.15
+      - item: none
+        chance: 0.85
+
+  - enemy_id: turret_sniper
+    name: 狙击哨兵
+    health: 30
+    speed: 0.0
+    ai_type: sniper
+    weapons:
+      - laser_beam
+    drop_table:
+      - item: weapon_box
+        weapon: laser_beam
+        chance: 0.12
+      - item: none
+        chance: 0.88
+
+  - enemy_id: hound_runner
+    name: 追猎猎犬
+    health: 18
+    speed: 5.0
+    ai_type: chase
+    weapons: []
+    drop_table:
+      - item: health_pack_small
+        chance: 0.08
+      - item: none
+        chance: 0.92
+
+  - enemy_id: elite_gunner
+    name: 精英重装兵
+    health: 180
+    speed: 1.8
+    ai_type: chase
+    weapons:
+      - heavy_machinegun
+      - homing_missile
+    drop_table:
+      - item: weapon_box
+        weapon: heavy_machinegun
+        chance: 0.40
+      - item: weapon_box
+        weapon: homing_missile
+        chance: 0.30
+      - item: health_pack_large
+        chance: 0.20
+      - item: none
+        chance: 0.10

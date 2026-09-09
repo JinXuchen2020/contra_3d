@@ -1,0 +1,48 @@
+# Weapons Seed Data — 魂斗罗 run-and-gun 武器种子
+# 来源: templates/shooter_contra/game_data/weapons.yaml
+
+weapons:
+  - weapon_id: rifle_default
+    name: 默认突击步枪
+    type: hitscan
+    damage: 12
+    fire_rate: 7
+    magazine_size: 30
+    reload_time: 1.5
+    spread: 1.5
+
+  - weapon_id: spread_shot
+    name: 散弹枪 (S)
+    type: projectile
+    damage: 6
+    fire_rate: 2
+    magazine_size: 8
+    reload_time: 2.2
+    spread: 12.0
+
+  - weapon_id: laser_beam
+    name: 激光 (L)
+    type: hitscan
+    damage: 35
+    fire_rate: 3
+    magazine_size: 12
+    reload_time: 2.5
+    spread: 0.0
+
+  - weapon_id: homing_missile
+    name: 追踪弹 (H)
+    type: projectile
+    damage: 15
+    fire_rate: 4
+    magazine_size: 20
+    reload_time: 1.8
+    spread: 3.0
+
+  - weapon_id: heavy_machinegun
+    name: 重机枪 (M)
+    type: hitscan
+    damage: 9
+    fire_rate: 12
+    magazine_size: 100
+    reload_time: 3.0
+    spread: 4.0
