@@ -79,18 +79,15 @@ namespace Contra3D.Core
                         SaveEnemyEntry(current, scoreTable);
 
                     current = new Dictionary<string, string>();
-                    string val = trimmed.Substring("- enemy_id:".Length).Trim();
-                    current["enemy_id"] = val.Trim('"').Trim('\'');
+                    current["enemy_id"] = YamlKeyValueParser.ParseValue(trimmed, "- enemy_id:");
                 }
                 else if (trimmed.StartsWith("enemy_id:"))
                 {
-                    string val = trimmed.Substring("enemy_id:".Length).Trim();
-                    current["enemy_id"] = val.Trim('"').Trim('\'');
+                    current["enemy_id"] = YamlKeyValueParser.ParseValue(trimmed, "enemy_id:");
                 }
                 else if (trimmed.StartsWith("score:"))
                 {
-                    string val = trimmed.Substring("score:".Length).Trim();
-                    current["score"] = val;
+                    current["score"] = YamlKeyValueParser.ParseValue(trimmed, "score:");
                 }
             }
 

@@ -59,27 +59,26 @@ namespace Contra3D.Core
                         }
                     }
                     current = new Dictionary<string, string>();
-                    string val = trimmed.Substring("- weapon_id:".Length).Trim();
-                    current["weapon_id"] = val.Trim('"').Trim('\'');
+                    current["weapon_id"] = YamlKeyValueParser.ParseValue(trimmed, "- weapon_id:");
                 }
                 else if (trimmed.StartsWith("name:"))
-                    current["name"] = trimmed.Substring("name:".Length).Trim().Trim('"').Trim('\'');
+                    current["name"] = YamlKeyValueParser.ParseValue(trimmed, "name:");
                 else if (trimmed.StartsWith("type:"))
-                    current["type"] = trimmed.Substring("type:".Length).Trim().ToLower();
+                    current["type"] = YamlKeyValueParser.ParseValueLower(trimmed, "type:");
                 else if (trimmed.StartsWith("damage:"))
-                    current["damage"] = trimmed.Substring("damage:".Length).Trim();
+                    current["damage"] = YamlKeyValueParser.ParseValue(trimmed, "damage:");
                 else if (trimmed.StartsWith("fire_rate:"))
-                    current["fire_rate"] = trimmed.Substring("fire_rate:".Length).Trim();
+                    current["fire_rate"] = YamlKeyValueParser.ParseValue(trimmed, "fire_rate:");
                 else if (trimmed.StartsWith("magazine_size:"))
-                    current["magazine_size"] = trimmed.Substring("magazine_size:".Length).Trim();
+                    current["magazine_size"] = YamlKeyValueParser.ParseValue(trimmed, "magazine_size:");
                 else if (trimmed.StartsWith("reload_time:"))
-                    current["reload_time"] = trimmed.Substring("reload_time:".Length).Trim();
+                    current["reload_time"] = YamlKeyValueParser.ParseValue(trimmed, "reload_time:");
                 else if (trimmed.StartsWith("spread:"))
-                    current["spread"] = trimmed.Substring("spread:".Length).Trim();
+                    current["spread"] = YamlKeyValueParser.ParseValue(trimmed, "spread:");
                 else if (trimmed.StartsWith("min_fire_interval:"))
-                    current["min_fire_interval"] = trimmed.Substring("min_fire_interval:".Length).Trim();
+                    current["min_fire_interval"] = YamlKeyValueParser.ParseValue(trimmed, "min_fire_interval:");
                 else if (trimmed.StartsWith("switch_cooldown:"))
-                    current["switch_cooldown"] = trimmed.Substring("switch_cooldown:".Length).Trim();
+                    current["switch_cooldown"] = YamlKeyValueParser.ParseValue(trimmed, "switch_cooldown:");
             }
 
             // Last entry

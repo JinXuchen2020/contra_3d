@@ -6055,7 +6055,8 @@ tasks:
   completed_at: '2026-09-10T14:05:00+08:00'
   result: VectorExtensions.ApplySpread extension method extracted; 2 private duplicates removed from CombatSystem.cs + EnemyWeaponSystem.cs; all 290 tests pass (283 pass, 7 skip).
 - id: T-ARCH-D8-YAML-PARSER
-  status: todo
+  status: completed
+  completed_at: '2026-09-10T14:40:00+08:00'
   priority: P1
   title: "Extract YamlKeyValueParser<T> generic utility (3 YAML loaders)"
   description: |
@@ -6067,6 +6068,7 @@ tasks:
   estimated_effort: M
   milestone: M4
   type: refactor
+  result: YamlKeyValueParser static utility extracted to Assets/Scripts/Core/YamlKeyValueParser.cs with ParseValue/ParseValueLower; 22 call sites deduped across MapLoader/WeaponLoader/EnemyLoader; dead ParseVal private method removed from MapLoader; build 0 errors 0 warnings; all 290 tests pass (283 pass, 7 skip).
 - id: T-ARCH-D8-SINGLETON
   status: todo
   priority: P2

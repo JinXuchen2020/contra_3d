@@ -158,7 +158,7 @@ namespace Contra3D.Core
                     FlushCurrentCover();
                     FlushCurrentPickup();
                     current = new ParsedMap();
-                    string id = line.Substring("- map_id:".Length).Trim().Trim('"').Trim('\'');
+                    string id = YamlKeyValueParser.ParseValue(line, "- map_id:");
                     current.MapId = id;
                     inMapBlock = true;
                     inSpawn = false;
@@ -199,12 +199,12 @@ namespace Contra3D.Core
                 // Inline map-level keys
                 if (line.StartsWith("name:"))
                 {
-                    current.Name = line.Substring("name:".Length).Trim().Trim('"').Trim('\'');
+                    current.Name = YamlKeyValueParser.ParseValue(line, "name:");
                     continue;
                 }
                 if (line.StartsWith("collision_bound_x:"))
                 {
-                    string val = line.Substring("collision_bound_x:".Length).Trim();
+                    string val = YamlKeyValueParser.ParseValue(line, "collision_bound_x:");
                     float.TryParse(val, out float cbx);
                     current.CollisionBoundX = cbx;
                     continue;
@@ -242,17 +242,17 @@ namespace Contra3D.Core
                     if (inSpawn)
                     {
                         StartNewEntry("spawn");
-                        currentSpawn["x"] = ParseVal(line.Substring("- x:".Length));
+                        currentSpawn["x"] = YamlKeyValueParser.ParseValue(line, "- x:");
                     }
                     else if (inCover)
                     {
                         StartNewEntry("cover");
-                        currentCover["x"] = ParseVal(line.Substring("- x:".Length));
+                        currentCover["x"] = YamlKeyValueParser.ParseValue(line, "- x:");
                     }
                     else if (inPickup)
                     {
                         StartNewEntry("pickup");
-                        currentPickup["x"] = ParseVal(line.Substring("- x:".Length));
+                        currentPickup["x"] = YamlKeyValueParser.ParseValue(line, "- x:");
                     }
                     continue;
                 }
@@ -333,11 +333,6 @@ namespace Contra3D.Core
                 string val = p.Substring(ci + 1).Trim().Trim('"').Trim('\'');
                 dict[key] = val;
             }
-        }
-
-        private static string ParseVal(string raw)
-        {
-            return raw.Trim().Trim('"').Trim('\'');
         }
 
         private static SpawnPoint ParseSpawnPoint(Dictionary<string, string> f)
