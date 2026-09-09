@@ -1,0 +1,40 @@
+# stage_traversal.playtest.yaml — 关卡遍历 Playtest 契约
+# contra_3d (shooter/Unity/C#)
+# 由 S009 loop 1 health check playtest_gap_check 发现缺失，T-PLAYTEST-001 起草
+# source anchors: templates/game_capabilities.yaml, templates/system_design/ai_system.md, templates/schemas/map.yaml
+
+coverage_targets:
+  - id: st_stage_full_traversal
+    e2e: true
+    description: "完整关卡遍历：从出生点到 Boss 房间"
+    source: templates/system_design/ai_system.md#ai_type+感知系统
+    steps:
+      - "Map m_stage01 loaded (spawn at (0,0,0), boss_room at (100,0,50))"
+      - "Player starts at spawn with rifle_default, HP=100, lives=3"
+      - "grunt_soldier (patrol) and charger_mutant (rusher) spawned"
+      - "Player moves through patrol zone, enemies transition to Combat"
+      - "Player reaches checkpoint at (50,0,25), interacts → saved"
+      - "Player continues to boss_room at (100,0,50)"
+    expect:
+      - "Player position reaches boss_room boundary (< 5m from target)"
+      - "Checkpoint state persisted (position, HP, weapon)"
+      - "Enemies either dead or recycled"
+      - "Boss room trigger fires (boss_spawn event)"
+      - "HUD displays correct state throughout"
+
+  - id: st_checkpoint_respawn
+    e2e: true
+    description: "死亡后从检查点重生并继续关卡（魂斗罗续关传统）"
+    source: templates/game_data/enemies.yaml#drop_table
+    steps:
+      - "Player reached checkpoint at (50,0,25), lives=3, score=1200"
+      - "Player at (70,0,30) fighting turret_sniper (hitscan laser_beam, damage=35)"
+      - "Player takes 3 hits (105 > HP 100) → death event fired"
+    expect:
+      - "Player respawns at checkpoint + 3m offset"
+      - "HP restored to 100"
+      - "Current weapon retained (laser_beam, not reset)"
+      - "Score preserved at 1200"
+      - "Lives decremented 3→2"
+      - "Game continues (no Game Over, lives > 0)"
+      - "turret_sniper still active (not reset)"

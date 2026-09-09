@@ -1,33 +1,6 @@
-checked_at: '2026-09-08T10:52:14.055122'
-failures:
-- action: 'Create backlog fix task: fix failing unit tests (rc={rc})'
-  check: cargo_test_lib
-  detail: 'error: could not find `Cargo.toml` in `E:\Freelancer\AI_Projects\projects\contra_3d`
-    or any parent directory
-
-    '
-  severity: P0
-  summary: 'cargo test --lib failed: error: could not find `Cargo.toml` in `E:\Freelancer\AI_Projects\projects\contra_3d`
-    or any parent directory
-
-    '
-- action: 'Create backlog fix task: fix failing integration tests (rc={rc})'
-  check: cargo_test_integration
-  detail: 'error: could not find `Cargo.toml` in `E:\Freelancer\AI_Projects\projects\contra_3d`
-    or any parent directory
-
-    '
-  severity: P0
-  summary: 'cargo test integration failed: error: could not find `Cargo.toml` in `E:\Freelancer\AI_Projects\projects\contra_3d`
-    or any parent directory
-
-    '
-overall: fail
+checked_at: '2026-09-09T10:17:42.978993'
+failures: []
+overall: pass
 skipped:
-- contract_gap_check.py not found, skipping bdd
-- contract_gap_check.py not found, skipping playtest
-- protocol_adoption_scanner.py not found, skipping bdd
-- protocol_adoption_scanner.py not found, skipping playtest
-- check_event_chain.py not found
-- collect_metrics.py not found
+- 'event_chain: skipped (not a Rust/Cargo project)'
 warnings: []

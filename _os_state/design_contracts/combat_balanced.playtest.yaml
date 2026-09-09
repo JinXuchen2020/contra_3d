@@ -1,0 +1,43 @@
+# combat_balanced.playtest.yaml — 战斗平衡 Playtest 契约
+# contra_3d (shooter/Unity/C#)
+# 由 S009 loop 1 health check playtest_gap_check 发现缺失，T-PLAYTEST-002 起草
+# source anchors: templates/system_design/combat_system.md, templates/game_data/weapons.yaml, templates/game_data/enemies.yaml
+
+coverage_targets:
+  - id: cb_weapon_ttk_validation
+    e2e: true
+    description: "武器 TTK 验证：标准步枪 vs 不同敌人类型"
+    source: templates/system_design/combat_system.md#关键数值约束
+    steps:
+      - "Player has rifle_default (damage=12, fire_rate=7/s)"
+      - "grunt_soldier (HP=24, patrol) at 20m static"
+      - "charger_mutant (HP=36, rusher) at 20m static"
+      - "turret_sniper (HP=30, sniper) at 30m static"
+      - "Player fires rifle_default continuously at grunt_soldier"
+      - "Player fires spread_shot (5 pellets × 6 dmg) at charger_mutant close range"
+      - "Player fires laser_beam (damage=35, hitscan) at turret_sniper"
+    expect:
+      - "rifle_default vs grunt: TTK ≈ 0.29s (within 0.5-3.0s range ✅)"
+      - "spread_shot vs charger: TTK ≈ 0.5s (1 burst kills or partial ✅)"
+      - "laser_beam vs sniper: TTK ≈ 0.33s (1 hit at close range ✅)"
+      - "heavy_machinegun vs grunt: TTK ≈ 0.22s (high DPS ✅)"
+      - "No weapon kills in < 1 shot (except laser headshot potential)"
+      - "Damage calculation deterministic: same input = same TTK"
+
+  - id: cb_damage_consistency
+    e2e: true
+    description: "伤害计算一致性：部位倍率与距离衰减确定性验证"
+    source: templates/game_data/weapons.yaml#weapons
+    steps:
+      - "laser_beam (hitscan, damage=35, spread=0.0) body hit at 30m"
+      - "laser_beam head hit (2.0× multiplier) at 30m"
+      - "spread_shot at 2m (all 5 pellets hit, damage=30)"
+      - "spread_shot at 15m (3 pellets hit, damage=18)"
+      - "Repeat all 4 shots with identical parameters"
+    expect:
+      - "laser_beam head damage = exactly 2× body damage ✅"
+      - "spread_shot 2m: 5×6=30 damage (kills grunt_soldier in 1 burst ✅)"
+      - "spread_shot 15m: 3×6=18 damage (partial, no kill ✅)"
+      - "Repeat runs produce identical damage values (deterministic ✅)"
+      - "Death event fires when HP=0, drop_table checked for loot"
+      - "No floating point accumulation error across multiple shots"

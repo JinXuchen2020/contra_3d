@@ -362,3 +362,54 @@ systems:
           signal: hud_score
           field: score
           equals: '100'
+  map_loading:
+    - id: rg_map_loading_valid_yaml_loads
+      description: >-
+        MapLoader loads a valid YAML map definition and returns a complete
+        MapDefinition with SceneLoadedEvent broadcast. Verifies
+        valid_yaml_loads_successfully BDD scenario (T-BDD-ADOPT):
+        data/maps/maps.yaml with map_id="level_01" → MapDefinition populated,
+        all fields (size, enemies, pickups, spawn_points, cover_points) filled.
+      setup: []
+      steps:
+        - step: load_map
+          path: "data/maps/maps.yaml"
+          map_id: "level_01"
+        - step: render_frames
+          count: 5
+      expect:
+        - check: game_signal
+          signal: scene_loaded
+          field: map_id
+          equals: "level_01"
+        - check: state_changed
+          field: map_definition.size
+          not_null: true
+        - check: state_changed
+          field: map_definition.spawn_points.count
+          greater_than: 0
+
+    - id: rg_map_loading_invalid_reference_fails_gracefully
+      description: >-
+        MapLoader rejects invalid weapon/enemy/pickup references with
+        MapValidationError list instead of throwing. Verifies
+        invalid_reference_returns_validation_errors BDD scenario (T-BDD-ADOPT):
+        referencing non-existent weapon="nonexistent_rifle" → structured errors.
+      setup: []
+      steps:
+        - step: load_map_invalid
+          path: "data/maps/maps_invalid.yaml"
+          map_id: "level_bad"
+          invalid_ref: "nonexistent_rifle"
+      expect:
+        - check: state_changed
+          field: validation_errors.count
+          greater_than: 0
+        - check: game_signal
+          signal: map_load_failed
+          field: error_type
+          equals: "MapValidationError"
+        - check: game_signal
+          signal: map_load_failed
+          field: missing_ref
+          equals: "nonexistent_rifle"

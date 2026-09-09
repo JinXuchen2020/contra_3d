@@ -5686,3 +5686,145 @@ tasks:
   source: P5.6 Runtime Verification
   completed_at: '2026-09-09T05:54:00+08:00'
   result: 'Removed non-existent Tests project reference from contra_3d.sln. dotnet build now passes (0 errors, 0 warnings).'
+- depends_on: []
+  description: |
+    Health check (run_idle_health_checks.py, fixed framework-aware version) found
+    playtest gap: stage_traversal and combat_balanced have no playtest.yaml contracts.
+    Both systems are expected by project.yaml validation_protocols.playtest.expected_systems.
+
+    Draft _os_state/design_contracts/stage_traversal.playtest.yaml with:
+      - >= 2 e2e scenarios (min_e2e_per_system from project.yaml)
+      - Each scenario must have source anchor to templates/system_design/ or templates/game_data/
+      - Cover: full stage traversal (map load → player moves through → checkpoint → exit/boss room)
+
+    Draft _os_state/design_contracts/combat_balanced.playtest.yaml with:
+      - >= 2 e2e scenarios
+      - Source anchor to templates/system_design/combat_system.md and templates/game_data/weapons.yaml
+      - Cover: weapon balance validation (TTK within target range, damage timeline correct)
+  estimated_effort: M
+  id: T-PLAYTEST-001
+  milestone: M3
+  priority: P1
+  source: run_idle_health_checks.py playtest_gap_check (S009 loop 1)
+  status: completed
+  completed_at: '2026-09-10T12:06:40+08:00'
+  result: 'stage_traversal.playtest.yaml written with 2 e2e scenarios (st_stage_full_traversal, st_checkpoint_respawn), both with source anchors.'
+  title: "Draft stage_traversal playtest contract (design_contracts/stage_traversal.playtest.yaml)"
+  type: bdd_contract
+- depends_on: [T-PLAYTEST-001]
+  description: |
+    Playtest contract for combat_balanced system. Must have >= 2 e2e scenarios with source
+    anchors to combat_system.md and weapons.yaml.
+
+    Cover: weapon balance (TTK 0.5-3.0s for standard enemies), damage consistency,
+    hitscan vs projectile behavior under playtest conditions.
+  estimated_effort: M
+  id: T-PLAYTEST-002
+  milestone: M3
+  priority: P1
+  source: run_idle_health_checks.py playtest_gap_check (S009 loop 1)
+  status: completed
+  completed_at: '2026-09-10T12:07:05+08:00'
+  result: 'combat_balanced.playtest.yaml written with 2 e2e scenarios (cb_weapon_ttk_validation, cb_damage_consistency), both with source anchors.'
+  title: "Draft combat_balanced playtest contract (design_contracts/combat_balanced.playtest.yaml)"
+  type: bdd_contract
+
+- task_id: T-PLAYTEST-ADOPT-ab1368
+  title: 'Playtest 覆盖区: combat_balanced.playtest / cb_weapon_ttk_validation'
+  priority: P1
+  status: deferred
+  deferred_reason: 'Requires Unity Editor for playtest execution (environment limitation). Playtest contracts drafted; execution deferred to editor-enabled environment.'
+  type: playtest_scenario
+  source: templates/system_design/combat_system.md#关键数值约束
+  location: playtest 协议 / system=combat_balanced.playtest (step 实现在对应模块)
+  depends_on: []
+  estimated_effort: 0.5-2 小时
+  description: "BDD/Playtest 行为契约 adoption (由 protocol_adoption_scanner.py 确定性建):\n\
+    protocol: playtest\nsystem: combat_balanced.playtest\nscenario: cb_weapon_ttk_validation\n\
+    source 锚点: templates/system_design/combat_system.md#关键数值约束\ncoverage_target: \n\
+    coverage_type: \n注: 场景锚定真实需求/spec/现有测试, 禁止自由发挥。"
+  acceptance_criteria:
+  - 该 playtest 覆盖区在 playtest_report.yaml 达到阈值 (win_rate/fun_score/...)
+  - 不破坏相关公共 API / 其他 scenario
+- task_id: T-PLAYTEST-ADOPT-d4b363
+  title: 'Playtest 覆盖区: combat_balanced.playtest / cb_damage_consistency'
+  priority: P1
+  status: deferred
+  deferred_reason: 'Requires Unity Editor for playtest execution (environment limitation). Playtest contracts drafted; execution deferred to editor-enabled environment.'
+  type: playtest_scenario
+  source: templates/game_data/weapons.yaml#weapons
+  location: playtest 协议 / system=combat_balanced.playtest (step 实现在对应模块)
+  depends_on: []
+  estimated_effort: 0.5-2 小时
+  description: "BDD/Playtest 行为契约 adoption (由 protocol_adoption_scanner.py 确定性建):\n\
+    protocol: playtest\nsystem: combat_balanced.playtest\nscenario: cb_damage_consistency\n\
+    source 锚点: templates/game_data/weapons.yaml#weapons\ncoverage_target: \ncoverage_type:\
+    \ \n注: 场景锚定真实需求/spec/现有测试, 禁止自由发挥。"
+  acceptance_criteria:
+  - 该 playtest 覆盖区在 playtest_report.yaml 达到阈值 (win_rate/fun_score/...)
+  - 不破坏相关公共 API / 其他 scenario
+- task_id: T-PLAYTEST-ADOPT-01693e
+  title: 'Playtest 覆盖区: stage_traversal.playtest / st_stage_full_traversal'
+  priority: P1
+  status: deferred
+  deferred_reason: 'Requires Unity Editor for playtest execution (environment limitation). Playtest contracts drafted; execution deferred to editor-enabled environment.'
+  type: playtest_scenario
+  source: templates/system_design/ai_system.md#ai_type+感知系统
+  location: playtest 协议 / system=stage_traversal.playtest (step 实现在对应模块)
+  depends_on: []
+  estimated_effort: 0.5-2 小时
+  description: "BDD/Playtest 行为契约 adoption (由 protocol_adoption_scanner.py 确定性建):\n\
+    protocol: playtest\nsystem: stage_traversal.playtest\nscenario: st_stage_full_traversal\n\
+    source 锚点: templates/system_design/ai_system.md#ai_type+感知系统\ncoverage_target:\
+    \ \ncoverage_type: \n注: 场景锚定真实需求/spec/现有测试, 禁止自由发挥。"
+  acceptance_criteria:
+  - 该 playtest 覆盖区在 playtest_report.yaml 达到阈值 (win_rate/fun_score/...)
+  - 不破坏相关公共 API / 其他 scenario
+- task_id: T-PLAYTEST-ADOPT-b1404b
+  title: 'Playtest 覆盖区: stage_traversal.playtest / st_checkpoint_respawn'
+  priority: P1
+  status: deferred
+  deferred_reason: 'Requires Unity Editor for playtest execution (environment limitation). Playtest contracts drafted; execution deferred to editor-enabled environment.'
+  type: playtest_scenario
+  source: templates/game_data/enemies.yaml#drop_table
+  location: playtest 协议 / system=stage_traversal.playtest (step 实现在对应模块)
+  depends_on: []
+  estimated_effort: 0.5-2 小时
+  description: "BDD/Playtest 行为契约 adoption (由 protocol_adoption_scanner.py 确定性建):\n\
+    protocol: playtest\nsystem: stage_traversal.playtest\nscenario: st_checkpoint_respawn\n\
+    source 锚点: templates/game_data/enemies.yaml#drop_table\ncoverage_target: \ncoverage_type:\
+    \ \n注: 场景锚定真实需求/spec/现有测试, 禁止自由发挥。"
+  acceptance_criteria:
+  - 该 playtest 覆盖区在 playtest_report.yaml 达到阈值 (win_rate/fun_score/...)
+  - 不破坏相关公共 API / 其他 scenario
+- task_id: T-BDD-REG-723f62
+  title: 'registry_entry: map_loading — missing harness-native template'
+  priority: P0
+  status: completed
+  completed_at: '2026-09-10T12:08:10+08:00'
+  result: 'Added 2 harness-native registry entries under systems:map_loading in bdd_scenario_registry.yaml.'
+  type: bdd_registry_entry
+  source: protocol_adoption_scanner.py registry_gap_check
+  location: _os_state/bdd_scenario_registry.yaml systems.map_loading
+  depends_on: []
+  estimated_effort: 0.5-1 小时
+  description: "BDD registry gap fix (由 protocol_adoption_scanner.py 确定性检测):\nsystem:\
+    \ map_loading\ncontract_file: _os_state/design_contracts/map_loading.bdd.yaml\n\
+    e2e_scenarios: 2\naction: add harness-native registry entry to _os_state/bdd_scenario_registry.yaml\n\
+    \  under 'systems:' key, following existing patterns (rg_djinn_visible, etc.)\n\
+    template pattern: id/description/setup(steps+spawn)/steps(render_frames)/expect(entity_visible\
+    \ or game_signal)\nnote: registry entries are deterministic templates, not LLM-inferred.\
+    \ Follow the schema from real_game_scenario_sync.py."
+  acceptance_criteria:
+  - registry entry added under systems:map_loading key
+  - entry has at least 1 harness-native scenario with id/description/setup/steps/expect
+  - real_game_scenario_sync.py --check returns changed=True for this system
+  priority: P0
+  status: completed
+  completed_at: '2026-09-10T12:08:10+08:00'
+  result: 'Duplicate entry removed. Original T-BDD-REG-723f62 completed above.'
+  type: bdd_registry_entry
+  source: protocol_adoption_scanner.py registry_gap_check
+  location: _os_state/bdd_scenario_registry.yaml systems.map_loading
+  depends_on: []
+  estimated_effort: 0.5-1 小时
