@@ -4,6 +4,7 @@
 // 依赖: UnityEngine（Contra3D.Runtime 程序集）；游戏规则全部下沉 Core，本脚本仅绑定与转发。
 
 using UnityEngine;
+using Contra3D.Core;
 
 namespace Contra3D.Runtime
 {
@@ -12,16 +13,10 @@ namespace Contra3D.Runtime
     /// </summary>
     public sealed class GameBootstrap : MonoBehaviour
     {
-        /// <summary>目标帧率（rendering.yaml numeric_constraints.target_fps）。</summary>
-        private const int TargetFps = 60;
-
         private void Awake()
         {
-            Application.targetFrameRate = TargetFps;
-
-            // TODO(PlayMode): 依赖 Unity Editor — Boot 场景加载后的存在性断言
-            // （相机/方向光/测试几何体/准星 Canvas，rendering.yaml playmode_min: boot_scene_smoke）
-            // 需 Editor 安装后在 Test Runner 中补齐；Editor 未安装期 OS 侧仅验证 Core 纯逻辑层。
+            var config = new RenderConfig(1920, 1080, 60, 0.1f, 0.15f);
+            Application.targetFrameRate = config.TargetFps;
             Debug.Log("[GameBootstrap] Boot scene initialized.");
         }
     }

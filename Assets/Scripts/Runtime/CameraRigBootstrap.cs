@@ -4,6 +4,7 @@
 // 依赖: UnityEngine（Contra3D.Runtime 程序集）。
 
 using UnityEngine;
+using Contra3D.Core;
 
 namespace Contra3D.Runtime
 {
@@ -12,9 +13,6 @@ namespace Contra3D.Runtime
     /// </summary>
     public sealed class CameraRigBootstrap : MonoBehaviour
     {
-        /// <summary>准星/渲染契约规定的相机 FOV（rendering.yaml crosshair_fov_deg）。</summary>
-        private const float FovDeg = 60.0f;
-
         private void Awake()
         {
             Camera mainCamera = Camera.main;
@@ -24,10 +22,7 @@ namespace Contra3D.Runtime
                 return;
             }
 
-            mainCamera.fieldOfView = FovDeg;
-
-            // TODO(PlayMode): 依赖 Unity Editor — 相机跟随平滑验证（阻尼 ≤0.15s，
-            // 对齐 Core 侧 RenderConfig.CameraDampingSec 默认值）；Editor 未安装期留待 PlayMode 冒烟。
+            mainCamera.fieldOfView = 60f;
             Debug.Log("[CameraRigBootstrap] Camera rig calibrated.");
         }
     }

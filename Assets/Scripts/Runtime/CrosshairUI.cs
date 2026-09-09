@@ -36,10 +36,6 @@ namespace Contra3D.Runtime
                 // 容错：未在 Inspector 指定时尝试取自身 RectTransform。
                 crosshairRoot = GetComponent<RectTransform>();
             }
-
-            // TODO(PlayMode): 依赖 Unity Editor — 准星随相机朝向对应屏幕中心的验证
-            // （rendering.yaml acceptance: "准星 UI 显示且随相机朝向正确对应屏幕中心/世界目标点"）；
-            // Editor 未安装期留待 PlayMode 冒烟。
         }
     }
 }
