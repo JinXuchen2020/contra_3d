@@ -6195,6 +6195,106 @@ tasks:
   milestone: M4
   type: test
   result: Added maps_spawn_close.yaml test data + BDD scenario rg_map_loading_spawn_point_spacing_validation to registry + unit test Load_SpawnCloseYamlFile_ThrowsValidationError_BDD_spawn_point_spacing. All 301 tests pass.
+- id: T-TEST-SKIP-001
+  status: todo
+  priority: P1
+  title: "Unskip Load_InvalidReference_ReturnsValidationErrorList_BDD_invalid_reference_returns_validation_errors (MapLoaderTests.cs L646)"
+  description: |
+    P1 from C3 quality baseline: test_skipped=7, test_passed!=test_count.
+    MapLoader does not validate weapon/enemy/pickup references against schemas.
+    Contract requires returning List<MapValidationError> instead of throwing.
+    Gap: schema validation layer missing. Action: implement schema reference validation
+    in MapLoader and update test to verify.
+  source: C3 test_skipped check — MapLoaderTests.cs L646
+  depends_on: []
+  estimated_effort: S
+  milestone: M4
+  type: feature
+- id: T-TEST-SKIP-002
+  status: todo
+  priority: P1
+  title: "Unskip Load_CoverPointOverlapsSpawn_ReturnsValidationError_BDD_cover_point_no_overlap_with_spawn (MapLoaderTests.cs L653)"
+  description: |
+    P1 from C3 quality baseline: test_skipped=7.
+    MapLoader does not check CoverPoint-SpawnPoint distance. Contract requires >=2m distance.
+    Gap: overlap check missing from ValidateMap. Action: add cover-spawn distance validation
+    to MapValidator.Validate() and update test.
+  source: C3 test_skipped check — MapLoaderTests.cs L653
+  depends_on: []
+  estimated_effort: S
+  milestone: M4
+  type: feature
+- id: T-TEST-SKIP-003
+  status: todo
+  priority: P1
+  title: "Unskip Load_SuccessfulMap_BroadcastsSceneLoadedEvent_BDD_scene_loaded_event_broadcast (MapLoaderTests.cs L660)"
+  description: |
+    P1 from C3 quality baseline: test_skipped=7.
+    No SceneLoadedEvent or MapManager in Core layer. Contract requires MapManager to
+    broadcast SceneLoadedEvent after MapLoader returns MapDefinition. Gap: event system missing.
+    Action: implement lightweight SceneLoadedEvent in Core and broadcast it from MapLoader.
+  source: C3 test_skipped check — MapLoaderTests.cs L660
+  depends_on: []
+  estimated_effort: M
+  milestone: M4
+  type: feature
+- id: T-TEST-SKIP-004
+  status: todo
+  priority: P1
+  title: "Unskip Load_SpawnPointWithTriggerType_ValidatesTypeAndTrigger_BDD_spawn_point_type_classification (MapLoaderTests.cs L667)"
+  description: |
+    P1 from C3 quality baseline: test_skipped=7.
+    SpawnPoint has no 'type' field (patrol/ambush/trigger/reinforce) and no 'trigger' field.
+    Contract requires type enum validation and trigger non-null for non-patrol types.
+    Gap: SpawnPoint struct needs extension. Action: add type/trigger to SpawnPoint,
+    add validation, update test.
+  source: C3 test_skipped check — MapLoaderTests.cs L667
+  depends_on: []
+  estimated_effort: S
+  milestone: M4
+  type: feature
+- id: T-TEST-SKIP-005
+  status: todo
+  priority: P1
+  title: "Unskip Load_CoverPointWithInvalidFacingNormal_ReturnsValidationError_BDD_cover_point_facing_normal_valid (MapLoaderTests.cs L674)"
+  description: |
+    P1 from C3 quality baseline: test_skipped=7.
+    CoverPoint has no facing_normal field. Contract requires facing_normal to be a unit vector.
+    Gap: CoverPoint struct needs extension. Action: add facing_normal to CoverPoint,
+    add validation, update test.
+  source: C3 test_skipped check — MapLoaderTests.cs L674
+  depends_on: []
+  estimated_effort: S
+  milestone: M4
+  type: feature
+- id: T-TEST-SKIP-006
+  status: todo
+  priority: P1
+  title: "Unskip Load_PatrolPathWithBlockedSegment_ReturnsWarning_BDD_patrol_path_waypoint_validation (MapLoaderTests.cs L681)"
+  description: |
+    P1 from C3 quality baseline: test_skipped=7.
+    No PatrolPath type in MapTypes. Contract requires waypoint validation
+    (position/wait_s/speed) and segment collision pre-check. Gap: PatrolPath model missing.
+    Action: add PatrolPath to MapTypes, implement validation, update test.
+  source: C3 test_skipped check — MapLoaderTests.cs L681
+  depends_on: []
+  estimated_effort: M
+  milestone: M4
+  type: feature
+- id: T-TEST-SKIP-007
+  status: todo
+  priority: P1
+  title: "Unskip Load_EncounterZoneWithLock_FlaggedForRuntime_BDD_encounter_zone_lock_blocks_retreat (MapLoaderTests.cs L688)"
+  description: |
+    P1 from C3 quality baseline: test_skipped=7.
+    No EncounterZone type in MapTypes or MapDefinition. Contract requires EncounterZone
+    with bounds, on_enter, and lock fields. Gap: EncounterZone model missing.
+    Action: add EncounterZone to MapTypes, implement lock support, update test.
+  source: C3 test_skipped check — MapLoaderTests.cs L688
+  depends_on: []
+  estimated_effort: M
+  milestone: M4
+  type: feature
 - id: T-FUNC-P3-EDITOR
   status: deferred
   priority: P3
