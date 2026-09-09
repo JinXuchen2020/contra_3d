@@ -5935,13 +5935,11 @@ tasks:
   milestone: M4
   type: refactor
 - id: T-ARCH-D1-AISYSTEM
-  status: todo
+  status: completed
+  completed_at: '2026-09-10T14:30:00+08:00'
   priority: P1
   title: "AiSystem.cs (462L) exceeds 300-line threshold + fix brace bug"
-  description: |
-    P1 from architect full_scan D1: AiSystem.cs is 462 lines. Also has a
-    missing closing brace at line 425 (UpdateRusher method).
-    Action: Split per-AI-type handlers; fix brace mismatch.
+  result: AiSystem.cs split into partial class with AiSystem.Handlers.cs (extracts UpdatePatrol/Chase/Sniper/Rusher). Brace bug fixed (GetCommand indentation). File reduced 462→180L. Build PASS, tests PASS (283/290). Committed.
   source: Architect full_scan D1 (2026-07-18)
   depends_on: []
   estimated_effort: M
