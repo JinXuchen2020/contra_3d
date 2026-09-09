@@ -5924,13 +5924,11 @@ tasks:
   type: test
 # ── 2026-07-18 Full 15-Dimension Scan Tasks ──────────────────────────────
 - id: T-ARCH-D1-MAPLOADER
-  status: todo
+  status: completed
+  completed_at: '2026-09-10T14:00:00+08:00'
   priority: P1
   title: "MapLoader.cs (487L) exceeds 300-line threshold"
-  description: |
-    P1 from architect full_scan D1: MapLoader.cs is 487 lines, exceeding
-    project.yaml csharp.max_file_lines=300. Parsing and validation logic mixed.
-    Action: Extract MapValidator and MapParser into separate partial classes.
+  result: MapValidator.cs extracted (64L). MapLoader.cs reduced 487→384L. Build PASS, tests PASS. Committed e44805b.
   source: Architect full_scan D1 (2026-07-18)
   depends_on: []
   estimated_effort: M
