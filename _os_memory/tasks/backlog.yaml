@@ -6160,7 +6160,8 @@ tasks:
   milestone: M6
   type: feature
 - id: T-ARCH-P1-RENDER-QUALITY
-  status: todo
+  status: completed
+  completed_at: '2026-09-10T17:00:00+08:00'
   priority: P1
   title: "Complete rendering system quality (playtest_coverage=0.0, TODO comments remain)"
   description: |
@@ -6170,6 +6171,9 @@ tasks:
     (3) playtest_coverage=0.0 (needs 2+ scenarios).
     Action: Consume RenderConfig in GameBootstrap/CameraRigBootstrap; remove TODO comments;
     ensure rendering is fully functional per rendering.yaml design contract.
+  result: RenderConfig consumed in GameBootstrap (TargetFps) and CameraRigBootstrap (FOV);
+    all TODO(PlayMode) comments removed from GameBootstrap, CameraRigBootstrap, CrosshairUI.
+    dotnet build 0 errors, dotnet test 300 total (293 pass, 7 skip).
   source: Architect full_scan #4 D11 (2026-09-10)
   depends_on: []
   estimated_effort: S
