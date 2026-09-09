@@ -8,7 +8,6 @@ namespace Contra3D.AI
     /// 敌人 AI 系统 — Unity Runtime 层集成。
     /// 职责：桥接 Core.AiSystem 与 Unity GameObject，处理刷兵、感知、状态同步。
     /// 实例化设计（推荐用于测试），支持依赖注入。
-    /// 通过 <see cref="Default"/> 提供共享实例以兼容现有静态调用风格。
     /// </summary>
     public sealed class AISystem
     {
@@ -20,9 +19,6 @@ namespace Contra3D.AI
         private int _rusherCount;
         private readonly AISpawnConfig _config;
         private readonly IRandomProvider _random;
-
-        /// <summary>共享默认实例（向后兼容静态调用风格）。</summary>
-        public static readonly AISystem Default = new AISystem();
 
         /// <summary>当前活跃敌人数量。</summary>
         public int ActiveCount => _activeCount;

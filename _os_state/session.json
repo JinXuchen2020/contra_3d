@@ -6,8 +6,8 @@
     "previous_completion_note": "S009 closed at loop=4/micro_loop=11 during T-ARCH-D1-AISYSTEM. 14 active backlog tasks from 15-dim arch scan.",
     "started_at": "2026-09-10T14:00:00+08:00",
     "current_phase": "execute",
-    "current_task_id": "T-ARCH-D8-YAML-PARSER",
-    "loop_count": 5,
+    "current_task_id": "T-ARCH-D8-SINGLETON",
+    "loop_count": 6,
     "micro_loop_count": 0,
     "status": "active",
     "run_mode": "auto",
@@ -38,8 +38,8 @@
         "test_passed": 283,
         "test_skipped": 7,
         "last_verify_result": "pass",
-        "last_verified_at": "2026-09-10T14:35:00+08:00",
-        "note": "S010 loop 5: T-ARCH-D8-YAML-PARSER completed. YamlKeyValueParser<T> extracted (ParseValue/ParseValueLower) from MapLoader/WeaponLoader/EnemyLoader; 22 call sites deduped, dead ParseVal removed. 290 tests pass (283 pass, 7 skip), build clean."
+        "last_verified_at": "2026-09-10T14:40:00+08:00",
+        "note": "S010 loop 6: T-ARCH-D8-SINGLETON completed (AISystem.Default singleton removed; build clean; 290 tests pass)."
     },
     "quality_blocker_reason": null,
     "override_quality_block": false,
@@ -53,12 +53,12 @@
     "last_task_id": "T-ARCH-D8-YAML-PARSER",
     "last_task_status": "completed",
     "last_verify_result": "pass",
-    "last_verified_at": "2026-09-10T14:35:00+08:00",
-    "boot_note": "S010 boot complete. env_id=claude. Phase 6 autonomous loop running. Loop 5: T-ARCH-D8-YAML-PARSER completed. Next task: T-ARCH-D8-SINGLETON.",
+    "last_verified_at": "2026-09-10T14:40:00+08:00",
+    "boot_note": "S010 boot complete. env_id=claude. Phase 6 autonomous loop running. Loop 6: T-ARCH-D8-SINGLETON completed.",
     "playtest_adoption": {
         "status": "drafted",
         "coverage_targets_total": 4,
-        "tasks_closed": 3,
+        "tasks_closed": 4,
         "report_path": "_os_state/design_contracts/"
     },
     "dev_arch_counter": 0,

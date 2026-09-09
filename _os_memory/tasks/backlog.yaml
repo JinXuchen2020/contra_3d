@@ -6070,7 +6070,8 @@ tasks:
   type: refactor
   result: YamlKeyValueParser static utility extracted to Assets/Scripts/Core/YamlKeyValueParser.cs with ParseValue/ParseValueLower; 22 call sites deduped across MapLoader/WeaponLoader/EnemyLoader; dead ParseVal private method removed from MapLoader; build 0 errors 0 warnings; all 290 tests pass (283 pass, 7 skip).
 - id: T-ARCH-D8-SINGLETON
-  status: todo
+  status: completed
+  completed_at: '2026-09-10T15:00:00+08:00'
   priority: P2
   title: "Remove AISystem.Default static singleton"
   description: |
@@ -6082,6 +6083,7 @@ tasks:
   estimated_effort: S
   milestone: M4
   type: refactor
+  result: AISystem.Default static singleton removed from AISystem.cs; XML comment updated; build 0 errors 0 warnings; all 290 tests pass (283 pass, 7 skip).
 - id: T-FUNC-P1-RENDER
   status: todo
   priority: P1
