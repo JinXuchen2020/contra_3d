@@ -278,6 +278,22 @@ maps:
             Assert.Contains("not found", ex.Message);
         }
 
+        [Fact]
+        public void Load_SpawnCloseYamlFile_ThrowsValidationError_BDD_spawn_point_spacing()
+        {
+            // given: maps_spawn_close.yaml with spawn points 2m apart (< 5m minimum)
+            string testAssemblyDir = System.IO.Path.GetDirectoryName(typeof(MapLoaderTests).Assembly.Location);
+            string projectRoot = System.IO.Path.GetFullPath(System.IO.Path.Combine(testAssemblyDir, "..", "..", "..", "..", ".."));
+            string yamlPath = System.IO.Path.Combine(projectRoot, "data", "maps", "maps_spawn_close.yaml");
+
+            // when: MapLoader.Load called on file with close spawn points
+            var ex = Assert.Throws<MapLoader.MapLoadException>(() => MapLoader.Load(yamlPath));
+
+            // then: returns error about spawn point distance
+            Assert.Contains("spawn_points", ex.Message, StringComparison.OrdinalIgnoreCase);
+            Assert.Contains("minimum", ex.Message, StringComparison.OrdinalIgnoreCase);
+        }
+
         #endregion
 
         #region MapDefinition immutability

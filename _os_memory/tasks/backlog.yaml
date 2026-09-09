@@ -6180,7 +6180,8 @@ tasks:
   milestone: M4
   type: refactor
 - id: T-ARCH-P1-MAP-BDD-GAP
-  status: todo
+  status: completed
+  completed_at: '2026-09-10T17:00:00+08:00'
   priority: P1
   title: "Add map_loading spawn_point_spacing BDD scenario (coverage 0.5→2.0)"
   description: |
@@ -6193,6 +6194,7 @@ tasks:
   estimated_effort: S
   milestone: M4
   type: test
+  result: Added maps_spawn_close.yaml test data + BDD scenario rg_map_loading_spawn_point_spacing_validation to registry + unit test Load_SpawnCloseYamlFile_ThrowsValidationError_BDD_spawn_point_spacing. All 301 tests pass.
 - id: T-FUNC-P3-EDITOR
   status: deferred
   priority: P3

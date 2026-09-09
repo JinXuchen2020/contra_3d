@@ -1,0 +1,11 @@
+maps:
+  - map_id: "level_spawn_close"
+    name: "Spawn Points Too Close"
+    collision_bound_x: 25.0
+    spawn_points:
+      - {x: 0, y: 0, z: 0, team: player}
+      - {x: 2, y: 0, z: 0, team: player}
+    cover_points:
+      - {x: 5, y: 0, z: 5}
+      - {x: -5, y: 0, z: 5}
+    pickups: []

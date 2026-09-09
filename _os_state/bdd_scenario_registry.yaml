@@ -414,6 +414,30 @@ systems:
           field: missing_ref
           equals: "nonexistent_rifle"
 
+    - id: rg_map_loading_spawn_point_spacing_validation
+      description: >-
+        MapLoader rejects maps where spawn points are closer than 5m apart.
+        Verifies spawn_point_spacing_must_be_validated BDD scenario (T-ARCH-P1-MAP-BDD-GAP):
+        loading maps_spawn_close.yaml → MapValidationError for spawn point distance.
+      setup: []
+      steps:
+        - step: load_map
+          path: "data/maps/maps_spawn_close.yaml"
+          map_id: "level_spawn_close"
+          expect_failure: true
+      expect:
+        - check: state_changed
+          field: validation_errors.count
+          greater_than: 0
+        - check: game_signal
+          signal: map_load_failed
+          field: error_type
+          equals: "MapValidationError"
+        - check: game_signal
+          signal: map_load_failed
+          field: contains
+          contains: "spawn_points"
+
   rendering:
     - id: rg_rendering_crosshair_at_center
       description: >-

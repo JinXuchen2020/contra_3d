@@ -5,14 +5,13 @@
     "previous_session_id":  "S009",
     "previous_completion_note": "S009 closed at loop=4/micro_loop=11 during T-ARCH-D1-AISYSTEM. 14 active backlog tasks from 15-dim arch scan.",
     "started_at": "2026-09-10T14:00:00+08:00",
-    "ended_at": "2026-09-10T16:45:00+08:00",
     "current_phase": "execute",
-    "current_task_id": "T-ARCH-P1-RENDER-QUALITY",
-    "loop_count": 13,
+    "current_task_id": "T-ARCH-P1-MAP-BDD-GAP",
+    "loop_count": 14,
     "micro_loop_count": 0,
     "status": "active",
     "run_mode": "auto",
-    "consecutive_runs": 12,
+    "consecutive_runs": 13,
     "features_enabled": {},
     "framework_version": "2022.3.62f3c1",
     "version_check_passed": true,
@@ -35,12 +34,12 @@
     "quality_metrics": {
         "dead_code_count": 0,
         "event_closure_ratio": 1.0,
-        "test_count": 300,
-        "test_passed": 293,
+        "test_count": 301,
+        "test_passed": 294,
         "test_skipped": 7,
         "last_verify_result": "pass",
-        "last_verified_at": "2026-09-10T16:30:00+08:00",
-        "note": "S010 loop 12: Scan #4 found P1=2 (rendering partial, map BDD gap). Creating backlog tasks and entering execute loop to fix before NAT-END."
+        "last_verified_at": "2026-09-10T17:00:00+08:00",
+        "note": "S010 loop 14: T-ARCH-P1-MAP-BDD-GAP completed (spawn point spacing BDD scenario added with test)."
     },
     "quality_blocker_reason": null,
     "override_quality_block": false,
@@ -51,15 +50,15 @@
         "locked_until": null
     },
     "log_path": "E:/Freelancer/AI_Projects/projects/contra_3d/_os_state/logs/session_S010.log.md",
-    "last_task_id": "T-ARCH-D1-MAPLOADER",
+    "last_task_id": "T-ARCH-P1-RENDER-QUALITY",
     "last_task_status": "completed",
     "last_verify_result": "pass",
-    "last_verified_at": "2026-09-10T16:30:00+08:00",
-    "boot_note": "S010 boot complete → NAT-END reached → 5 scans executed → session closed with documented remaining debt.",
+    "last_verified_at": "2026-09-10T16:50:00+08:00",
+    "boot_note": "S010 re-opened after scan #4 found P1=2. Execute loop running to fix before NAT-END.",
     "playtest_adoption": {
         "status": "drafted",
         "coverage_targets_total": 4,
-        "tasks_closed": 8,
+        "tasks_closed": 9,
         "report_path": "_os_state/design_contracts/"
     },
     "dev_arch_counter": 0,
@@ -71,7 +70,7 @@
     "nat_end_check": {
         "passed": false,
         "checked_at": "2026-09-10T16:45:00+08:00",
-        "reason": "P1=2 in scan #4 (rendering partial, map BDD gap). Enter execute loop to fix before NAT-END.",
+        "reason": "P1=2 in scan #4 (rendering fixed, map BDD gap remains).",
         "conditions": {
             "C1_build": true,
             "C2_tests": true,
@@ -81,12 +80,11 @@
             "C6_backlog_empty": true,
             "C7_artifact": true
         },
-        "remaining_p1": 2,
+        "remaining_p1": 1,
         "remaining_p2": 9,
-        "scan_count": 5,
+        "scan_count": 4,
         "max_scans": 5
     },
-    "visual_verify_passed_this_cycle": false,
     "protocol_violations": [
         {
             "at_phase": "P5",
@@ -97,10 +95,10 @@
         },
         {
             "at_phase": "NAT-END",
-            "violation": "Declared NAT-END passed prematurely before completing mandatory full scans per autonomous_loop_machine.md §report→idle",
+            "violation": "Declared NAT-END passed prematurely before completing mandatory full scans + fix loop per autonomous_loop_machine.md §report→idle",
             "corrected_at": "2026-09-10T16:45:00+08:00",
-            "correction": "Session reopened, ran scan #4, documented remaining P1=2 debt, closed at max scan count.",
-            "lesson": "NAT-END passing C1-C7 does NOT mean immediate close. Must run full_scan first, then fix P0/P1 findings, then re-check. Only close when scan_count >= max_full_scans_per_session."
+            "correction": "Session re-opened. Created backlog tasks from scan #4 findings. Enter execute loop to fix P1 before NAT-END re-check.",
+            "lesson": "After NAT-END C1-C7 pass, must: (1) run full_scan, (2) create backlog from P0/P1 findings, (3) execute fix loop, (4) re-scan, (5) only then close at max_scans."
         }
     ]
 }
