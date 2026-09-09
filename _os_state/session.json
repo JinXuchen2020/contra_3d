@@ -1,8 +1,8 @@
 {
-    "version":  "1.0",
-    "project":  "contra_3d",
-    "session_id":  "S010",
-    "previous_session_id":  "S009",
+    "version": "1.0",
+    "project": "contra_3d",
+    "session_id": "S010",
+    "previous_session_id": "S009",
     "previous_completion_note": "S009 closed at loop=4/micro_loop=11 during T-ARCH-D1-AISYSTEM. 14 active backlog tasks from 15-dim arch scan.",
     "started_at": "2026-09-10T14:00:00+08:00",
     "ended_at": "2026-09-10T17:00:00+08:00",
@@ -85,7 +85,8 @@
         "final_p0": 0,
         "final_p1": 0,
         "final_p2": 9,
-        "report_path": "_os_state/natural_end_report_S010.md"
+        "report_path": "_os_state/natural_end_report_S010.md",
+        "p2_note": "P2=9 left as debt at S010 close — protocol violation, now fixed"
     },
     "visual_verify_passed_this_cycle": false,
     "protocol_violations": [
@@ -109,6 +110,13 @@
             "corrected_at": "2026-09-10T17:15:00+08:00",
             "correction": "Updated Universal-AI-OS protocol: C5 now informational-only. P0/P1 findings trigger audit_ingest→backlog (no scan quota). Only NAT-END confirm scans consume quota.",
             "lesson": "Full scan quota (max_full_scans_per_session) is reserved for NAT-END confirm scans ONLY. C5 must be non-blocking to avoid wasting scans on architecture debt that belongs in the execute loop."
+        },
+        {
+            "at_phase": "protocol",
+            "violation": "NAT-END closed with P2=9 remaining as tech debt; full_scan findings should create backlog tasks at ALL severities, not skip P2/P3",
+            "corrected_at": "2026-09-10T17:30:00+08:00",
+            "correction": "Updated Universal-AI-OS protocol: ALL severities (P0-P3) from full_scan create backlog tasks. Session closes only when backlog empty AND scan_count >= max.",
+            "lesson": "Never mark any severity as tech debt to skip. Every full_scan finding must enter the execute loop. P2 debt = lost quality that users will encounter."
         }
     ]
 }
