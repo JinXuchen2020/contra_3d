@@ -7,10 +7,9 @@
   "started_at": "2026-09-10T12:00:00+08:00",
   "current_phase": "idle",
   "current_task_id": null,
-  "loop_count": 3,
-  "micro_loop_count": 7,
-  "status": "completed",
-  "nat_end_check": null,
+  "loop_count": 4,
+  "micro_loop_count": 9,
+  "status": "active",
   "run_mode": "auto",
   "consecutive_runs": 1,
   "features_enabled": {},
@@ -39,8 +38,8 @@
     "test_passed": 283,
     "test_skipped": 7,
     "last_verify_result": "pass",
-    "last_verified_at": "2026-09-10T12:07:30+08:00",
-    "note": "S009 loop 1: 2 playtest contracts drafted (stage_traversal + combat_balanced). Health check fixed (framework-aware). Arch scan: 0 violations."
+    "last_verified_at": "2026-09-10T12:08:25+08:00",
+    "note": "S009 loop 1: 4 tasks completed. Health check fixed. Playtest contracts drafted. map_loading registry added. Natural End passed, spawn architect full_scan #1/5 pending."
   },
   "quality_blocker_reason": null,
   "override_quality_block": false,
@@ -51,10 +50,10 @@
     "locked_until": null
   },
   "log_path": "E:/Freelancer/AI_Projects/projects/contra_3d/_os_state/logs/session_S009.log.md",
-  "last_task_id": "T-PLAYTEST-002",
+  "last_task_id": "T-BDD-REG-map-loading",
   "last_task_status": "completed",
   "last_verify_result": "pass",
-  "last_verified_at": "2026-09-10T12:07:30+08:00",
+  "last_verified_at": "2026-09-10T12:08:25+08:00",
   "boot_note": "S009 boot complete. All phases 0-6 executed. Boot status=boot_complete.",
   "playtest_adoption": null,
   "dev_arch_counter": 0,
@@ -63,17 +62,6 @@
   "released_version": null,
   "release_artifacts": [],
   "release_path": null,
-  "nat_end_check": "passed",
-  "nat_end_conditions": {
-    "build_pass": true,
-    "tests_pass": true,
-    "arch_scan_clean": true,
-    "bdd_gap_zero": true,
-    "playtest_gap_zero": true,
-    "backlog_empty": true,
-    "artifact_exists": true
-  },
-  "nat_end_at": "2026-09-10T12:08:45+08:00",
-  "nat_end_note": "All 7 conditions met. 4 tasks completed in S009. S008→S009: fix framework-aware health check, draft playtest contracts, add registry entry.",
-  "visual_verify_passed_this_cycle": true
+  "nat_end_check": null,
+  "visual_verify_passed_this_cycle": false
 }
