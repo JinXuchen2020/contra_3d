@@ -5828,3 +5828,343 @@ tasks:
   location: _os_state/bdd_scenario_registry.yaml systems.map_loading
   depends_on: []
   estimated_effort: 0.5-1 小时
+- id: T-ARCH-P0-001
+  status: completed
+  completed_at: '2026-09-10T12:25:00+08:00'
+  result: 'RECLASSIFIED as false positive by 15-dim full scan. AiSystem (Core pure logic) and AISystem (Runtime wrapper) serve different layers. AISystem.cs refactor reverted via git checkout.'
+  priority: P0
+  title: "Fix duplicate AI system: merge AiSystem (Core) and AISystem (Runtime)"
+  description: |
+    Architect full_scan (scan #1/5) found P0 violation:
+    Two AI system implementations with identical state machine logic:
+    - AI/AISystem.cs (Contra3D.AI) — Runtime wrapper with spawn queue
+    - Core/AiSystem.cs (Contra3D.Core) — Pure logic with weapon cooldown
+
+    Both contain identical UpdatePatrol/UpdateChase/UpdateSniper/UpdateRusher methods.
+
+    Action: Consolidate into single implementation. Keep pure logic in Core AiSystem,
+    move spawn queue/anti-camping logic to thin Runtime wrapper, or delete redundant AISystem.
+    Source: _os_state/arch_scan_report.yaml P0-001.
+  source: Architect full_scan scan #1/5 (S009 Natural End)
+  depends_on: []
+  estimated_effort: M
+  milestone: M3
+  type: fix
+- id: T-ARCH-P1-001
+  status: todo
+  priority: P1
+  title: "Fix AISpawnConfig namespace-location mismatch"
+  description: |
+    P1 violation from architect full_scan:
+    AI/AISpawnConfig.cs is in AI/ directory but declared in Contra3D.Core namespace.
+    This violates asmdef boundary convention.
+    Action: Move AISpawnConfig.cs to Core/ directory OR create Contra3D.AI asmdef.
+  source: Architect full_scan scan #1/5 (S009 Natural End)
+  depends_on: []
+  estimated_effort: S
+  milestone: M3
+  type: fix
+- id: T-ARCH-P1-002
+  status: todo
+  priority: P1
+  title: "Extract ApplySpread to shared utility class"
+  description: |
+    P1 violation from architect full_scan:
+    ApplySpread method is duplicated in CombatSystem.cs and EnemyWeaponSystem.cs.
+    Action: Extract to static utility class (e.g., VectorExtensions or SpreadCalculator
+    in Core namespace) and replace both implementations with calls to the shared method.
+  source: Architect full_scan scan #1/5 (S009 Natural End)
+  depends_on: []
+  estimated_effort: S
+  milestone: M3
+  type: refactor
+- id: T-ARCH-P2-001
+  status: deferred
+  priority: P2
+  title: "Split Core module into sub-namespaces (large module debt)"
+  description: |
+    P2 tech debt from architect full_scan:
+    Core/ directory has 30+ files spanning combat, AI, audio, camera, HUD, map, save systems.
+    Action (deferred): Consider splitting into sub-folders Combat/, AI/, Audio/, etc.
+    This is a large refactor; deferred to next session.
+  source: Architect full_scan scan #1/5 (S009 Natural End)
+  depends_on: []
+  estimated_effort: L
+  milestone: M4
+  type: refactor
+- id: T-ARCH-P2-002
+  status: deferred
+  priority: P2
+  title: "Unify YAML parser pattern across MapLoader/WeaponLoader/EnemyLoader"
+  description: |
+    P2 tech debt from architect full_scan:
+    Three Loader classes use identical text parsing pattern (string.Split + state machine).
+    Action (deferred): Extract common YAML parser base class or utility method.
+  source: Architect full_scan scan #1/5 (S009 Natural End)
+  depends_on: []
+  estimated_effort: S
+  milestone: M4
+  type: refactor
+- id: T-ARCH-P2-003
+  status: deferred
+  priority: P2
+  title: "Add tests for EnemyWeaponSystem and AISpawnConfig"
+  description: |
+    P2 tech debt from architect full_scan:
+    EnemyWeaponSystem and AISpawnConfig lack direct unit tests.
+    Action (deferred): Add targeted unit tests for these systems.
+  source: Architect full_scan scan #1/5 (S009 Natural End)
+  depends_on: []
+  estimated_effort: S
+  milestone: M4
+  type: test
+# ── 2026-07-18 Full 15-Dimension Scan Tasks ──────────────────────────────
+- id: T-ARCH-D1-MAPLOADER
+  status: todo
+  priority: P1
+  title: "MapLoader.cs (487L) exceeds 300-line threshold"
+  description: |
+    P1 from architect full_scan D1: MapLoader.cs is 487 lines, exceeding
+    project.yaml csharp.max_file_lines=300. Parsing and validation logic mixed.
+    Action: Extract MapValidator and MapParser into separate partial classes.
+  source: Architect full_scan D1 (2026-07-18)
+  depends_on: []
+  estimated_effort: M
+  milestone: M4
+  type: refactor
+- id: T-ARCH-D1-AISYSTEM
+  status: todo
+  priority: P1
+  title: "AiSystem.cs (462L) exceeds 300-line threshold + fix brace bug"
+  description: |
+    P1 from architect full_scan D1: AiSystem.cs is 462 lines. Also has a
+    missing closing brace at line 425 (UpdateRusher method).
+    Action: Split per-AI-type handlers; fix brace mismatch.
+  source: Architect full_scan D1 (2026-07-18)
+  depends_on: []
+  estimated_effort: M
+  milestone: M4
+  type: refactor
+- id: T-ARCH-D1-PROJECTILE
+  status: todo
+  priority: P2
+  title: "ProjectileTypes.cs (324L) exceeds 300-line threshold"
+  description: |
+    P2 from architect full_scan D1: Combines ProjectileDefinition,
+    ProjectileState, ProjectileSystemConfig, and ProjectileSystem in one file.
+    Action: Split into separate files.
+  source: Architect full_scan D1 (2026-07-18)
+  depends_on: []
+  estimated_effort: S
+  milestone: M4
+  type: refactor
+- id: T-ARCH-D5-VISIBILITY
+  status: todo
+  priority: P2
+  title: "Fix public mutable property exposure (HUDUpdater, AudioSystem, CombatSystem)"
+  description: |
+    P2 from architect full_scan D5:
+    - HUDUpdater.State exposes mutable internal reference
+    - AudioSystem.MaxSfxConcurrency has public setter with default
+    - CombatSystem.Score/Kills/HitscanMaxDistance allow external mutation
+    Action: Use private set or constructor injection.
+  source: Architect full_scan D5 (2026-07-18)
+  depends_on: []
+  estimated_effort: S
+  milestone: M4
+  type: refactor
+- id: T-ARCH-D7-AI-NS
+  status: todo
+  priority: P2
+  title: "Fix AI/AISystem.cs namespace-location mismatch"
+  description: |
+    P2 from architect full_scan D7: File in AI/ dir, namespace Contra3D.AI,
+    compiles into Contra3D.Core asmdef via csproj include.
+    Action: Move to Core/ or create Contra3D.AI.asmdef.
+  source: Architect full_scan D7 (2026-07-18)
+  depends_on: []
+  estimated_effort: S
+  milestone: M4
+  type: refactor_package
+- id: T-ARCH-D7-COMBAT-NS
+  status: todo
+  priority: P2
+  title: "Fix Combat/CombatSystem.cs namespace-location mismatch"
+  description: |
+    P2 from architect full_scan D7: File in Combat/ dir, namespace Contra3D.Combat,
+    compiles into Contra3D.Core asmdef.
+    Action: Create Contra3D.Combat.asmdef or move to Core/.
+  source: Architect full_scan D7 (2026-07-18)
+  depends_on: []
+  estimated_effort: S
+  milestone: M4
+  type: refactor_package
+- id: T-ARCH-D7-AISPAWN
+  status: todo
+  priority: P2
+  title: "Fix AI/AISpawnConfig.cs namespace-location mismatch"
+  description: |
+    P2 from architect full_scan D7: File in AI/ dir but namespace Contra3D.Core.
+    Action: Move to Core/AISpawnConfig.cs.
+  source: Architect full_scan D7 (2026-07-18)
+  depends_on: []
+  estimated_effort: S
+  milestone: M4
+  type: refactor_package
+- id: T-ARCH-D7-TEST-ASMDEF
+  status: todo
+  priority: P2
+  title: "Create Contra3D.Core.Tests.asmdef for Unity Test Runner"
+  description: |
+    P2 from architect full_scan D7: Test project exists as standalone .NET
+    project but lacks .asmdef for Unity Test Runner integration.
+    Action: Create Assets/Scripts/Tests/Contra3D.Core.Tests.asmdef
+    with testAssembly: true, references: [Contra3D.Core].
+  source: Architect full_scan D7 (2026-07-18)
+  depends_on: []
+  estimated_effort: S
+  milestone: M4
+  type: refactor_package
+- id: T-ARCH-D7-EDITOR-ASMDEF
+  status: todo
+  priority: P2
+  title: "Create Editor.asmdef for Assets/Editor/ isolation"
+  description: |
+    P2 from architect full_scan D7: Assets/Editor/AotHelperStub.cs uses
+    UnityEditor namespace but no Editor.asmdef isolates it.
+    Action: Create Assets/Editor/Contra3D.Editor.asmdef
+    with includePlatforms: [Editor].
+  source: Architect full_scan D7 (2026-07-18)
+  depends_on: []
+  estimated_effort: S
+  milestone: M4
+  type: refactor_package
+- id: T-ARCH-D8-APPLYSPREAD
+  status: todo
+  priority: P1
+  title: "Extract ApplySpread to VectorExtensions (3 duplicates)"
+  description: |
+    P1 from architect full_scan D8: ApplySpread duplicated in
+    CombatSystem.cs:293, EnemyWeaponSystem.cs:125, HeadlessPlaytestAgent.cs:87.
+    Action: Extract to Contra3D.Core.VectorExtensions.ApplySpread(...).
+  source: Architect full_scan D8 (2026-07-18)
+  depends_on: []
+  estimated_effort: S
+  milestone: M4
+  type: refactor
+- id: T-ARCH-D8-YAML-PARSER
+  status: todo
+  priority: P1
+  title: "Extract YamlKeyValueParser<T> generic utility (3 YAML loaders)"
+  description: |
+    P1 from architect full_scan D8: MapLoader, WeaponLoader, EnemyLoader
+    all implement identical line-by-line YAML parsing.
+    Action: Extract generic parser utility.
+  source: Architect full_scan D8 (2026-07-18)
+  depends_on: []
+  estimated_effort: M
+  milestone: M4
+  type: refactor
+- id: T-ARCH-D8-SINGLETON
+  status: todo
+  priority: P2
+  title: "Remove AISystem.Default static singleton"
+  description: |
+    P2 from architect full_scan D8/D10: AISystem.Default creates implicit
+    shared mutable state, hard to mock in tests.
+    Action: Remove Default; require constructor DI.
+  source: Architect full_scan D8+D10 (2026-07-18)
+  depends_on: []
+  estimated_effort: S
+  milestone: M4
+  type: refactor
+- id: T-FUNC-P1-RENDER
+  status: todo
+  priority: P1
+  title: "Complete rendering system + BDD scenarios (0/2 coverage)"
+  description: |
+    P1 from architect full_scan D11/D13: Rendering core system incomplete.
+    Only GameBootstrap (targetFrameRate=60) and CameraRigBootstrap (FOV=60).
+    No URP config, no post-processing. Zero BDD coverage.
+    Action: Complete per rendering_system.md; add 2 BDD scenarios.
+  source: Architect full_scan D11+D13 (2026-07-18)
+  depends_on: []
+  estimated_effort: M
+  milestone: M4
+  type: feature
+- id: T-FUNC-P1-MAP-BDD
+  status: todo
+  priority: P1
+  title: "Add map_loading BDD scenario (1/2 coverage)"
+  description: |
+    P1 from architect full_scan D13: map_loading has 1 BDD scenario vs
+    minimum 2 required. Missing: spawn point spacing validation.
+    Action: Add map validation BDD scenario.
+  source: Architect full_scan D13 (2026-07-18)
+  depends_on: []
+  estimated_effort: S
+  milestone: M4
+  type: test
+- id: T-FUNC-P2-EVENT-BUS
+  status: deferred
+  priority: P2
+  title: "Implement event bus system (recommended system)"
+  description: |
+    P2 from architect full_scan D11/D14: No centralized event bus.
+    Direct method calls between CombatSystem→WeaponSystem→ProjectileSystem
+    create tight coupling.
+    Action: Add ScriptableObject event channels or MessagePipe.
+  source: Architect full_scan D11+D14 (2026-07-18)
+  depends_on: []
+  estimated_effort: L
+  milestone: M5
+  type: feature
+- id: T-FUNC-P2-POOLING
+  status: deferred
+  priority: P2
+  title: "Implement generic object pooling (recommended system)"
+  description: |
+    P2 from architect full_scan D11/D14: ProjectileSystem has built-in pool
+    but enemies/pickups/VFX lack pooling.
+    Action: Add ObjectPool<T> utility class.
+  source: Architect full_scan D11+D14 (2026-07-18)
+  depends_on: []
+  estimated_effort: M
+  milestone: M5
+  type: feature
+- id: T-FUNC-P2-VFX
+  status: deferred
+  priority: P2
+  title: "Implement VFX/effect system (recommended system)"
+  description: |
+    P2 from architect full_scan D11/D14: No visual feedback beyond hit marker.
+    Action: Add Unity VFX Graph or particle system integration.
+  source: Architect full_scan D11+D14 (2026-07-18)
+  depends_on: []
+  estimated_effort: M
+  milestone: M5
+  type: feature
+- id: T-FUNC-P3-REPLAY
+  status: deferred
+  priority: P3
+  title: "Optional: replay system"
+  description: |
+    P3 from architect full_scan D11/D14: Deterministic frame-recorded replay.
+    Low priority for alpha.
+  source: Architect full_scan D11+D14 (2026-07-18)
+  depends_on: []
+  estimated_effort: L
+  milestone: M6
+  type: feature
+- id: T-FUNC-P3-EDITOR
+  status: deferred
+  priority: P3
+  title: "Optional: editor extensions"
+  description: |
+    P3 from architect full_scan D11/D14: Custom Inspectors for MapLoader,
+    EnemyLoader for design-time validation.
+  source: Architect full_scan D11+D14 (2026-07-18)
+  depends_on: []
+  estimated_effort: M
+  milestone: M6
+  type: feature
