@@ -102,6 +102,13 @@
             "corrected_at": "2026-09-10T16:45:00+08:00",
             "correction": "Session re-opened. Created backlog tasks from scan #4. Ran execute loop (2 tasks). Ran scan #5 confirming P1=0. Then closed.",
             "lesson": "Correct NAT-END flow: C1-C7 pass → run full_scan → create backlog from P0/P1 → execute fix loop → re-scan → NAT-END re-check → close at max_scans. NEVER skip execute after scan findings. NEVER close before all P1 resolved."
+        },
+        {
+            "at_phase": "protocol",
+            "violation": "C5 arch_scan was blocking — each NAT-END pass consumed a full scan quota slot even when only observing existing data",
+            "corrected_at": "2026-09-10T17:15:00+08:00",
+            "correction": "Updated Universal-AI-OS protocol: C5 now informational-only. P0/P1 findings trigger audit_ingest→backlog (no scan quota). Only NAT-END confirm scans consume quota.",
+            "lesson": "Full scan quota (max_full_scans_per_session) is reserved for NAT-END confirm scans ONLY. C5 must be non-blocking to avoid wasting scans on architecture debt that belongs in the execute loop."
         }
     ]
 }
