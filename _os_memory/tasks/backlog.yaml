@@ -6085,7 +6085,8 @@ tasks:
   type: refactor
   result: AISystem.Default static singleton removed from AISystem.cs; XML comment updated; build 0 errors 0 warnings; all 290 tests pass (283 pass, 7 skip).
 - id: T-FUNC-P1-RENDER
-  status: todo
+  status: completed
+  completed_at: '2026-09-10T15:30:00+08:00'
   priority: P1
   title: "Complete rendering system + BDD scenarios (0/2 coverage)"
   description: |
@@ -6098,6 +6099,7 @@ tasks:
   estimated_effort: M
   milestone: M4
   type: feature
+  result: Core layer complete: RenderConfig, CameraParams, ViewSnapshot, CrosshairSolver. Runtime: CameraFollow, ViewSyncSystem. Tests: 10 new (CrosshairSolverTests 5 + RenderConfigTests 5). BDD registry: 2 rendering scenarios added. dotnet build 0 errors, dotnet test 300 total (293 pass, 7 skip). Registry entry rg_rendering_crosshair_at_center and rg_rendering_target_fps_set added.
 - id: T-FUNC-P1-MAP-BDD
   status: todo
   priority: P1

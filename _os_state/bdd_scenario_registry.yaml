@@ -413,3 +413,36 @@ systems:
           signal: map_load_failed
           field: missing_ref
           equals: "nonexistent_rifle"
+
+  rendering:
+    - id: rg_rendering_crosshair_at_center
+      description: >-
+        CrosshairSolver.GetCrosshairScreenPos always returns screen center [0.5, 0.5]
+        regardless of aim direction. Verifies crosshair_rendered_at_center BDD scenario.
+      setup:
+        - spawn_entity: { type: camera, position: [0, 2, -5], fov: 60 }
+      steps:
+        - step: render_frames
+          count: 5
+      expect:
+        - check: game_signal
+          signal: crosshair_screen_pos
+          field: x
+          equals: '0.5'
+        - check: game_signal
+          signal: crosshair_screen_pos
+          field: y
+          equals: '0.5'
+
+    - id: rg_rendering_target_fps_set
+      description: >-
+        GameBootstrap sets Application.targetFrameRate to 60 at startup.
+        Verifies target_fps_set_to_60 BDD scenario.
+      setup: []
+      steps:
+        - step: render_frames
+          count: 3
+      expect:
+        - check: state_changed
+          field: target_frame_rate
+          equals: '60'
