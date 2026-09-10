@@ -7,6 +7,19 @@ namespace Contra3D.Core
     /// <remarks>维度 1 修复：将 ValidateMap 从 487 行单文件拆出，降低 MapLoader 体积。</remarks>
     internal static class MapValidator
     {
+        /// <summary>已知的有效拾取物 ID 集合（来自武器/道具定义数据）。</summary>
+        internal static readonly HashSet<string> ValidPickupIds = new HashSet<string>(System.StringComparer.OrdinalIgnoreCase)
+        {
+            "p_weapon_shotgun",
+            "p_weapon_laser",
+            "p_weapon_heavy_machinegun",
+            "p_health_small",
+            "p_health_large",
+            "p_ammo_rifle",
+            "p_armor_light",
+            "p_powerup_barrier"
+        };
+
         /// <summary>验证地图定义，返回全部错误列表（空表示通过）。</summary>
         public static List<MapValidationError> Validate(MapLoader.ParsedMap m)
         {
@@ -65,6 +78,11 @@ namespace Contra3D.Core
                 if (Math.Abs(pl.Z) > bound)
                     errors.Add(new MapValidationError($"pickup_locations[{i}].z",
                         $"Coordinate {pl.Z} is outside collision boundary ±{bound}."));
+
+                // Validate spawn_id reference against known valid IDs
+                if (!string.IsNullOrWhiteSpace(pl.SpawnId) && !ValidPickupIds.Contains(pl.SpawnId))
+                    errors.Add(new MapValidationError($"pickup_locations[{i}].spawn_id",
+                        $"Reference '{pl.SpawnId}' is not a known valid pickup ID."));
             }
 
             return errors;

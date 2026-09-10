@@ -643,10 +643,44 @@ maps:
         }
 
         // T-BDD-ADOPT-bdd_invalid_ref — invalid_reference_returns_validation_errors
-        [Fact(Skip = "Feature not yet implemented: MapLoader does not validate weapon/enemy/pickup references against schemas. Contract requires returning List<MapValidationError> instead of throwing. Gap: schema validation layer missing.")]
+        [Fact]
         public void Load_InvalidReference_ReturnsValidationErrorList_BDD_invalid_reference_returns_validation_errors()
         {
-            Assert.True(true, "SKIPPED: Schema reference validation not yet implemented in MapLoader");
+            // given: map YAML with an invalid spawn_id reference (nonexistent_rifle)
+            string yaml = @"
+maps:
+  - map_id: level_bad
+    name: ""BadRef""
+    spawn_points:
+      - {x: 0, y: 0, z: 0, team: player}
+      - {x: 10, y: 0, z: 0, team: enemy}
+      - {x: 20, y: 0, z: 0, team: enemy}
+    cover_points:
+      - {x: 5, y: 0, z: 2}
+      - {x: 15, y: 0, z: -2}
+    pickup_locations:
+      - {x: 5, y: 1, z: 0, type: weapon, spawn_id: nonexistent_rifle}
+    navmesh: ""
+";
+            // when: TryLoadFromString called
+            var (def, errors) = MapLoader.TryLoadFromString(yaml);
+
+            // then: returns null def and at least one validation error
+            Assert.Null(def);
+            Assert.NotEmpty(errors);
+            Assert.True(errors.Count > 0, $"Expected >0 errors, got {errors.Count}");
+
+            // then: contains error about the missing reference
+            bool found = false;
+            foreach (var e in errors)
+            {
+                if (e.Path.Contains("spawn_id") && e.Message.Contains("nonexistent_rifle"))
+                {
+                    found = true;
+                    break;
+                }
+            }
+            Assert.True(found, $"Expected error mentioning 'nonexistent_rifle' in spawn_id path, got: {string.Join("; ", errors)}");
         }
 
         // T-BDD-ADOPT-bdd_cover_overlap — cover_point_no_overlap_with_spawn

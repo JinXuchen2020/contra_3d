@@ -236,6 +236,12 @@ namespace Contra3D.Core
                     if (inPickup) currentPickup["type"] = val;
                     continue;
                 }
+                if (line.StartsWith("spawn_id:") || line.StartsWith("  spawn_id:"))
+                {
+                    string val = line.Substring(line.IndexOf(':') + 1).Trim().Trim('"').Trim('\'');
+                    if (inPickup) currentPickup["spawn_id"] = val;
+                    continue;
+                }
             }
 
             FlushCurrentSpawn();
@@ -300,7 +306,8 @@ namespace Contra3D.Core
                 "ammo" => PickupType.Ammo,
                 _ => PickupType.Weapon
             };
-            return new PickupLocation(x, y, z, type);
+            f.TryGetValue("spawn_id", out var spawnId);
+            return new PickupLocation(x, y, z, type, spawnId);
         }
 
         private static float ParseFloat(Dictionary<string, string> f, string key, float fallback)

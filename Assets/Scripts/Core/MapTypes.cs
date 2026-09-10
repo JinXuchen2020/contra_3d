@@ -108,15 +108,19 @@ namespace Contra3D.Core
         /// <summary>拾取物类型。</summary>
         public PickupType Type { get; }
 
+        /// <summary>引用到已定义的有效拾取物 ID（如 "p_weapon_shotgun"）。</summary>
+        public string SpawnId { get; }
+
         /// <summary>
         /// 创建拾取点。
         /// </summary>
-        public PickupLocation(float x, float y, float z, PickupType type)
+        public PickupLocation(float x, float y, float z, PickupType type, string spawnId = null)
         {
             X = x;
             Y = y;
             Z = z;
             Type = type;
+            SpawnId = spawnId;
         }
     }
 

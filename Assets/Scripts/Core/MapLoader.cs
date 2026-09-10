@@ -73,6 +73,36 @@ namespace Contra3D.Core
                 first.CollisionBoundX);
         }
 
+        /// <summary>
+        /// 从 YAML 字符串加载地图定义，不抛出异常。
+        /// 校验通过返回 <c>(def, null)</c>；否则返回 <c>(null, errors)</c>。
+        /// </summary>
+        public static (MapDefinition definition, List<MapValidationError> errors) TryLoadFromString(string yamlContent)
+        {
+            var maps = ParseMaps(yamlContent);
+            if (maps.Count == 0)
+                return (null, new List<MapValidationError>
+                {
+                    new MapValidationError("maps", "No map entries found in YAML.")
+                });
+
+            var first = maps[0];
+            if (first.CollisionBoundX <= 0f)
+                first.CollisionBoundX = DefaultCollisionBoundX;
+            var errors = ValidateMap(first);
+            if (errors.Count > 0)
+                return (null, errors);
+
+            var def = new MapDefinition(
+                first.MapId,
+                first.Name,
+                first.SpawnPoints.ToArray(),
+                first.CoverPoints.ToArray(),
+                first.PickupLocations.ToArray(),
+                first.CollisionBoundX);
+            return (def, null);
+        }
+
         #region Validation
 
         /// <summary>验证 ParsedMap 并返回错误列表。委托给 MapValidator 辅助类。</summary>
