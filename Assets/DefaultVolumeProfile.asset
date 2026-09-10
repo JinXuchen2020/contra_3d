@@ -12,4 +12,75 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d7fd9488000d3734a9e00ee676215985, type: 3}
   m_Name: DefaultVolumeProfile
   m_EditorClassIdentifier: Unity.RenderPipelines.Core.Runtime::UnityEngine.Rendering.VolumeProfile
-  components: []
+  components:
+  - {fileID: 114864614370866376}
+  - {fileID: 114413456309226490}
+  - {fileID: 114613716494752088}
+--- !u!114 &114864614370866376
+UnityEngine.Rendering.Universal.Bloom:
+  m_ObjectHideFlags: 3
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_DeferredShadingMode: 0
+  m_SkipIterations: 1
+  m_Threshold: 0.9
+  m_Intensity: 0.5
+  m_Spread: 1.0
+  m_BlendType: 0
+  m_TapDown: 1
+  m_Resample: 1
+  m_TextureSize: 256
+  m_Compact: 0
+  m_UseSeparateBlend: 0
+  m_FilterType: 0
+--- !u!114 &114413456309226490
+UnityEngine.Rendering.Vignette:
+  m_ObjectHideFlags: 3
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_Mode: 0
+  m_Color: {r: 0, g: 0, b: 0, a: 1}
+  m_Center: {x: 0.5, y: 0.5}
+  m_Intensity: 0.3
+  m_Smoothing: 0.1
+  m_Mask: {fileID: 0}
+  m_Opacity: 1
+  m_VerticalOffset: 0
+  m_MaskRotation: 0
+  m_MaskOffset: {x: 0, y: 0}
+  m_MaskWidth: 1
+  m_MaskHeight: 1
+--- !u!114 &114613716494752088
+UnityEngine.Rendering.Universal.ColorAdjustments:
+  m_ObjectHideFlags: 3
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_PostProcessingEffects: 0
+  m_Mode: 0
+  m_Exposure: 0
+  m_Temperature: 0
+  m_Tint: 0
+  m_HueShift: 0
+  m_Saturation: 0
+  m_Contrast: 0
+  m_ShadowMix: 0
+  m_HighlightMix: 0
+  m_BlackClip: 0
+  m_HighlightClip: 0
+  m_Gamma: 1
+  m_Lift: {x: 1, y: 1, z: 1, w: 0}
+  m_Gamma: {x: 1, y: 1, z: 1, w: 0}
+  m_Gain: {x: 1, y: 1, z: 1, w: 0}
+  m_WheelTotal: {x: 0, y: 0, z: 0, w: 0}
+  m_WheelShadow: {x: 0, y: 0, z: 0, w: 0}
+  m_WheelMidtone: {x: 0, y: 0, z: 0, w: 0}
+  m_WheelHighlight: {x: 0, y: 0, z: 0, w: 0}

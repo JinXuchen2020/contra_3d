@@ -22,8 +22,9 @@ namespace Contra3D.Runtime
                 return;
             }
 
-            mainCamera.fieldOfView = 60f;
-            Debug.Log("[CameraRigBootstrap] Camera rig calibrated.");
+            var config = RenderConfig.Default;
+            mainCamera.fieldOfView = config.DefaultFovDeg;
+            Debug.Log($"[CameraRigBootstrap] Camera rig calibrated. FOV={config.DefaultFovDeg} deg.");
         }
     }
 }

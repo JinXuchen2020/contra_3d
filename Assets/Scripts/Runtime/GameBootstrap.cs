@@ -15,9 +15,9 @@ namespace Contra3D.Runtime
     {
         private void Awake()
         {
-            var config = new RenderConfig(1920, 1080, 60, 0.1f, 0.15f);
+            var config = RenderConfig.Default;
             Application.targetFrameRate = config.TargetFps;
-            Debug.Log("[GameBootstrap] Boot scene initialized.");
+            Debug.Log($"[GameBootstrap] Boot scene initialized. Config valid: {config.Validate()}");
         }
     }
 }
