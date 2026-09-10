@@ -33,7 +33,7 @@ namespace Contra3D.Combat
         public EnemyWeaponSystem EnemyWeaponSystem => _enemyWeaponSystem;
 
         /// <summary>Expose internal HealthDamageSystem for PlaytestSession use.</summary>
-        public HealthDamageSystem GetHealthDamageSystem() => _healthDamageSystem;
+        internal HealthDamageSystem GetHealthDamageSystem() => _healthDamageSystem;
         public IReadOnlyList<DeathEvent> RecentDeaths => _recentDeaths;
 
         private readonly List<DeathEvent> _recentDeaths = new();
