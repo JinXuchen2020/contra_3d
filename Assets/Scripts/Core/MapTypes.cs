@@ -29,6 +29,22 @@ namespace Contra3D.Core
         Ammo
     }
 
+    /// <summary>出生点类型。</summary>
+    public enum SpawnType
+    {
+        /// <summary>巡逻 — 无需 trigger。</summary>
+        Patrol,
+
+        /// <summary>伏击 — 必须有 trigger。</summary>
+        Ambush,
+
+        /// <summary>触发激活 — 必须有 trigger。</summary>
+        Trigger,
+
+        /// <summary>增援 — 必须有 trigger。</summary>
+        Reinforce
+    }
+
     /// <summary>
     /// 地图出生点。不可变值对象。
     /// </summary>
@@ -46,15 +62,23 @@ namespace Contra3D.Core
         /// <summary>所属队伍。</summary>
         public SpawnTeam Team { get; }
 
+        /// <summary>出生点类型。</summary>
+        public SpawnType Type { get; }
+
+        /// <summary>触发关联 ID（如 "zone_01"）；Patrol 类型可为空。</summary>
+        public string Trigger { get; }
+
         /// <summary>
         /// 创建出生点。失败时抛 <see cref="ArgumentException"/>。
         /// </summary>
-        public SpawnPoint(float x, float y, float z, SpawnTeam team)
+        public SpawnPoint(float x, float y, float z, SpawnTeam team, SpawnType type = SpawnType.Patrol, string trigger = null)
         {
             X = x;
             Y = y;
             Z = z;
             Team = team;
+            Type = type;
+            Trigger = trigger;
         }
 
         /// <summary>与另一出生点的水平距离（忽略 Y）。</summary>

@@ -754,10 +754,62 @@ maps:
         private static void MapLoader_OnSceneLoaded_Handler(SceneLoadedEvent @event) { }
 
         // T-BDD-ADOPT-bdd_spawn_type — spawn_point_type_classification
-        [Fact(Skip = "Feature not yet implemented: SpawnPoint has no 'type' field (patrol/ambush/trigger/reinforce) and no 'trigger' field. Contract requires type enum validation and trigger non-null for non-patrol types. Gap: SpawnPoint struct needs extension.")]
+        [Fact]
         public void Load_SpawnPointWithTriggerType_ValidatesTypeAndTrigger_BDD_spawn_point_type_classification()
         {
-            Assert.True(true, "SKIPPED: SpawnPoint type/trigger classification not yet implemented (SpawnPoint has no type field)");
+            // given: valid map with patrol (no trigger) and reinforce (with trigger)
+            string validYaml = @"
+maps:
+  - map_id: m_spawn_test
+    name: ""SpawnType Test""
+    spawn_points:
+      - {x: 0, y: 0, z: 0, team: player, type: patrol}
+      - {x: 10, y: 0, z: 0, team: enemy, type: reinforce, trigger: zone_01}
+    cover_points:
+      - {x: 5, y: 0, z: 0}
+    pickup_locations: []
+    navmesh: ""
+";
+            // when: TryLoadFromString called
+            var (def, errors) = MapLoader.TryLoadFromString(validYaml);
+
+            // then: valid map loads successfully
+            Assert.NotNull(def);
+            Assert.Null(errors);
+            Assert.Equal(SpawnType.Patrol, def.SpawnPoints[0].Type);
+            Assert.Null(def.SpawnPoints[0].Trigger);
+            Assert.Equal(SpawnType.Reinforce, def.SpawnPoints[1].Type);
+            Assert.Equal("zone_01", def.SpawnPoints[1].Trigger);
+
+            // given: invalid map — ambush type without trigger
+            string invalidYaml = @"
+maps:
+  - map_id: m_spawn_bad
+    name: ""Bad Spawn Type""
+    spawn_points:
+      - {x: 0, y: 0, z: 0, team: player, type: patrol}
+      - {x: 10, y: 0, z: 0, team: enemy, type: ambush}
+    cover_points:
+      - {x: 5, y: 0, z: 0}
+    pickup_locations: []
+    navmesh: ""
+";
+            // when: TryLoadFromString called
+            var (def2, errors2) = MapLoader.TryLoadFromString(invalidYaml);
+
+            // then: returns null def because ambush without trigger is invalid
+            Assert.Null(def2);
+            Assert.NotEmpty(errors2);
+            bool foundTriggerError = false;
+            foreach (var e in errors2)
+            {
+                if (e.Path.Contains("spawn_points[1].trigger") && e.Message.ToLower().Contains("ambush"))
+                {
+                    foundTriggerError = true;
+                    break;
+                }
+            }
+            Assert.True(foundTriggerError, $"Expected trigger error for ambush spawn, got: {string.Join("; ", errors2)}");
         }
 
         // T-BDD-ADOPT-bdd_cover_normal — cover_point_facing_normal_valid

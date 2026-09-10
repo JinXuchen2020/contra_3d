@@ -40,6 +40,11 @@ namespace Contra3D.Core
                     errors.Add(new MapValidationError($"spawn_points[{i}].z",
                         $"Coordinate {sp.Z} is outside collision boundary ±{bound}."));
 
+                // Non-patrol spawn types require a non-empty trigger
+                if (sp.Type != SpawnType.Patrol && string.IsNullOrWhiteSpace(sp.Trigger))
+                    errors.Add(new MapValidationError($"spawn_points[{i}].trigger",
+                        $"SpawnPoint of type '{sp.Type}' requires a non-empty trigger."));
+
                 for (int j = i + 1; j < m.SpawnPoints.Count; j++)
                 {
                     float dist = sp.DistanceTo(m.SpawnPoints[j]);

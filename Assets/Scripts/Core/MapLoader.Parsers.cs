@@ -234,6 +234,13 @@ namespace Contra3D.Core
                 {
                     string val = line.Substring(line.IndexOf(':') + 1).Trim().ToLower();
                     if (inPickup) currentPickup["type"] = val;
+                    else if (inSpawn) currentSpawn["type"] = val;
+                    continue;
+                }
+                if (line.StartsWith("trigger:") || line.StartsWith("  trigger:"))
+                {
+                    string val = line.Substring(line.IndexOf(':') + 1).Trim().Trim('"').Trim('\'');
+                    if (inSpawn) currentSpawn["trigger"] = val;
                     continue;
                 }
                 if (line.StartsWith("spawn_id:") || line.StartsWith("  spawn_id:"))
@@ -283,7 +290,16 @@ namespace Contra3D.Core
             float z = ParseFloat(f, "z", 0f);
             string teamStr = f.TryGetValue("team", out var t) ? t.ToLower() : "player";
             SpawnTeam team = teamStr == "enemy" ? SpawnTeam.Enemy : SpawnTeam.Player;
-            return new SpawnPoint(x, y, z, team);
+            string typeStr = f.TryGetValue("type", out var typ) ? typ.ToLower() : "patrol";
+            SpawnType type = typeStr switch
+            {
+                "ambush" => SpawnType.Ambush,
+                "trigger" => SpawnType.Trigger,
+                "reinforce" => SpawnType.Reinforce,
+                _ => SpawnType.Patrol
+            };
+            f.TryGetValue("trigger", out var trigger);
+            return new SpawnPoint(x, y, z, team, type, trigger);
         }
 
         private static CoverPoint ParseCoverPoint(Dictionary<string, string> f)
