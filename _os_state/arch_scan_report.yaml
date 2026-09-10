@@ -1,8 +1,7 @@
 # Architect Agent Full Scan Report — contra_3d
-## Generated: 2026-09-10T16:30:00+08:00 | Mode: full_scan | Dimensions: 1-15
+## Generated: 2026-09-10T18:00:00+08:00 | Mode: full_scan | Dimensions: 1-15
 ## Adapter: csharp_unity.md + csharp_unity_extended.md
-## Scan #4 — MapLoader split verification
-## Scan #5 — Final NAT_END confirm: P1 resolved (rendering consumed + map BDD gap fixed)
+## Scan #1 — P6 restart first scan (scan_count reset to 0)
 
 ---
 
@@ -10,36 +9,29 @@
 
 | Metric | Value |
 |--------|-------|
-| Total Source Files (Assets/Scripts) | 48 .cs files (47 + 1 partial) |
-| Total Test Files | 16 .cs files |
-| Assembly Definitions | 3 (Contra3D.Core, Contra3D.Runtime, Contra3D.Core.Playtest) |
+| Total Source Files (Assets/Scripts) | 48 .cs files (46 + 2 partial: MapLoader, AiSystem) |
+| Total Test Files | 18 .cs files |
+| Assembly Definitions | 4 (Contra3D.Core, Contra3D.Runtime, Contra3D.Core.Playtest, Contra3D.Core.Tests) |
 | Compilation Status | PASS (0 errors, 0 warnings) |
 | **P0 Violations** | **0** |
-| **P1 Violations** | **0** |
-| **P2 Violations** | **9** |
+| **P1 Violations** | **1** |
+| **P2 Violations** | **7** |
+| **P3 Violations** | **1** |
 | **Total Issues** | **9** |
 | **Passed** | **false** |
 
-### Scan Comparison (scan #3 → scan #4)
-| | Scan #3 | Scan #4 | Δ |
-|--|---------|---------|---|
-| Source Files | 47 | 48 (+1 partial) | +1 |
-| Test Files | 16 | 16 | — |
-| P0 | 0 | 0 | — |
-| P1 | 4 | 2 | -2 (MapLoader resolved) |
-| P2 | 11 | 9 | -2 (MapLoader+ProjectileTypes resolved) |
-| Total | 15 | 11 | -4 |
-
-### Scan Comparison (scan #4 → scan #5)
-| | Scan #4 | Scan #5 | Δ |
-|--|---------|---------|---|
+### Scan Comparison (scan #5 → scan #1 P6 restart)
+| | Scan #5 | Scan #1 (P6) | Δ |
+|--|---------|-------------|---|
 | Source Files | 48 | 48 | — |
+| Test Files | 16 | 18 | +2 |
 | P0 | 0 | 0 | — |
-| P1 | 2 | 0 | -2 (rendering consumed + map BDD gap fixed) |
-| P2 | 9 | 9 | — |
+| P1 | 0 | 1 | +1 (MapLoader.Parsers.cs regressed to 526L) |
+| P2 | 9 | 7 | -2 (D7 resolved: AISpawnConfig ns + 2 asmdefs) |
+| P3 | 2 | 1 | -1 (editor/replay deferred, new empty-method P3) |
 | Total | 11 | 9 | -2 |
 
-**Progress**: 2 issues resolved this scan (T-FUNC-P1-RENDER: RenderConfig consumed + TODO removed; T-FUNC-P1-MAP-BDD: spawn_point_spacing BDD scenario added to registry). All P1 issues resolved. 8 total resolved across 5 scans.
+**Progress**: 3 issues resolved (D7-AISpawnConfig namespace, D7-TestAsmdef, D7-EditorAsmdef). 1 new P1 regression (MapLoader.Parsers.cs grew from 285L to 526L, exceeding 500L global max). 1 new P3 (ViewSyncSystem.Despawn empty body). Net: -2 total issues.
 
 ---
 
@@ -48,30 +40,35 @@
 ```yaml
 checks:
   module_size:
-    passed: true
+    passed: false
     threshold_lines: 300  # project.yaml csharp.max_file_lines
     global_threshold: 500 # project.yaml architecture_review.max_file_lines
-    violations: []
-    resolved:
-      - file: "Assets/Scripts/Core/MapLoader.cs"
-        prev_lines: 425
-        current: "Split into MapLoader.cs (97L) + MapLoader.Parsers.cs (285L), both partial class"
-        severity: "RESOLVED"
-      - file: "Assets/Scripts/Core/ProjectileTypes.cs"
-        prev_lines: 324
-        current: 280
-        severity: "RESOLVED"
+    violations:
+      - file: "Assets/Scripts/Core/MapLoader.Parsers.cs"
+        line_count: 526
+        severity: "P1"
+        issue: "Exceeds BOTH 300L per-module threshold AND 500L global max. Grew from 285L (scan #4) to 526L — parser logic regressed."
     near_threshold:
-      - file: "Assets/Scripts/AI/AISystem.cs"
+      - file: "Assets/Scripts/Core/AISystemRuntime.cs"
         line_count: 265
         pct_of_300: 88.3
+      - file: "Assets/Scripts/Core/MapTypes.cs"
+        line_count: 255
+        pct_of_300: 85.0
       - file: "Assets/Scripts/Combat/CombatSystem.cs"
         line_count: 254
         pct_of_300: 84.7
     global_max_check:
       max_file_lines_global: 500
-      all_files_under_global_max: true
-      largest_file: "MapLoader.Parsers.cs (285)"
+      all_files_under_global_max: false
+      largest_file: "MapLoader.Parsers.cs (526)"
+    resolved:
+      - file: "Assets/Scripts/Core/MapLoader.cs"
+        current: 133
+        severity: "OK"
+      - file: "Assets/Scripts/Core/ProjectileTypes.cs"
+        current: 280
+        severity: "OK (under 300L)"
 ```
 
 ## Dimension 2 — 封装边界 (Encapsulation Boundary)
@@ -83,7 +80,7 @@ checks:
     public_types_in_internal_ns: []
     violations: []
     notes:
-      - "All namespaces (Contra3D.Core, Contra3D.Runtime, Contra3D.AI, Contra3D.Combat, Contra3D.Core.Playtest) are root-level public namespaces."
+      - "All namespaces (Contra3D.Core, Contra3D.Runtime, Contra3D.Combat, Contra3D.Core.Playtest) are root-level public namespaces."
       - "No implementation-detail namespaces with leaked public types."
 ```
 
@@ -100,6 +97,7 @@ checks:
       - "[Obsolete] without message": 0 matches
     notes:
       - "Clean codebase — no hidden suppression patterns."
+      - "No TODO/FIXME/HACK comments found."
 ```
 
 ## Dimension 4 — 组件/框架健康度 (Component Hygiene)
@@ -107,13 +105,21 @@ checks:
 ```yaml
 checks:
   component_hygiene:
-    passed: true
+    passed: false
     violations:
       - file: "Assets/Scripts/Runtime/CrosshairUI.cs"
         line: 21
         severity: "P2"
         issue: "public void SetScreenPos(Vector2) on MonoBehaviour — consider internal if only called within same assembly."
-    empty_methods: []
+      - file: "Assets/Scripts/Runtime/ViewSyncSystem.cs"
+        line: 31
+        severity: "P3"
+        issue: "GameObjectPool.Despawn() has empty body with only a comment stub — incomplete implementation."
+    empty_methods:
+      - file: "Assets/Scripts/Runtime/ViewSyncSystem.cs"
+        line: 31
+        method: "Despawn(GameObject)"
+        severity: "P3"
     addlistener_leaks: []
     find_in_update: []
     notes:
@@ -148,13 +154,11 @@ checks:
         line: 17-38
         severity: "P2"
         issue: "15+ public mutable config properties (Position, Rotation, FOV, Damping, Offsets, Trauma, etc.)."
-    resolved:
-      - file: "Assets/Scripts/AI/AISystem.cs"
-        issue: "public static readonly AISystem Default = new(); — REMOVED"
-        severity: "RESOLVED"
+    resolved: []
     notes:
       - "MonoBehaviour fields correctly use [SerializeField] private pattern."
       - "Most Core logic classes use immutable structs correctly."
+      - "AISystem.Default static singleton was previously resolved (removed in prior scan)."
 ```
 
 ## Dimension 6 — 依赖方向审计 (Dependency Direction)
@@ -174,6 +178,9 @@ checks:
       Contra3D.Core.Playtest:
         references: ["Contra3D.Core", "Contra3D.Runtime"]
         depth: 2
+      Contra3D.Core.Tests:
+        references: ["Contra3D.Core"]
+        depth: 1
     cycles: []
     back_edges: []
     violations: []
@@ -184,7 +191,7 @@ checks:
 ```yaml
 checks:
   one_feature_one_package:
-    passed: false
+    passed: true
     asmdefs_found:
       - path: "Assets/Scripts/Contra3D.Core.asmdef"
         name: "Contra3D.Core"
@@ -195,23 +202,28 @@ checks:
       - path: "Assets/Scripts/Core/Playtest/Contra3D.Core.Playtest.asmdef"
         name: "Contra3D.Core.Playtest"
         file_count: 3
-    violations:
-      - id: "T-PKG-AISPAWNCONFIG-MISMATCH"
-        severity: "P2"
-        file: "Assets/Scripts/AI/AISpawnConfig.cs"
-        issue: "File in AI/ directory, namespace Contra3D.Core."
-      - id: "T-PKG-NO-TEST-ASMDEF"
-        severity: "P2"
-        issue: "Test project exists but no Unity Test Runner asmdef."
-      - id: "T-PKG-NO-EDITOR-ASMDEF"
-        severity: "P2"
-        issue: "Assets/Editor/AotHelperStub.cs uses UnityEditor without asmdef isolation."
+      - path: "Assets/Contra3D.Core.Tests.asmdef"
+        name: "Contra3D.Core.Tests"
+        file_count: 18 (test files)
+      - path: "Assets/Editor/Editor.asmdef"
+        name: "Editor"
+        file_count: 2
+    violations: []
     resolved:
-      - issue: "AISystem.cs namespace mismatch — no longer flagged (AI/ dir with Contra3D.AI ns is consistent)"
-      - issue: "CombatSystem.cs namespace mismatch — no longer flagged (Combat/ dir with Contra3D.Combat ns is consistent)"
+      - id: "T-PKG-AISPAWNCONFIG-MISMATCH"
+        severity: "RESOLVED"
+        description: "AISpawnConfig.cs moved from AI/ to Core/ directory, now consistent with Contra3D.Core namespace"
+      - id: "T-PKG-NO-TEST-ASMDEF"
+        severity: "RESOLVED"
+        description: "Contra3D.Core.Tests.asmdef now exists at Assets/Contra3D.Core.Tests.asmdef"
+      - id: "T-PKG-NO-EDITOR-ASMDEF"
+        severity: "RESOLVED"
+        description: "Editor.asmdef now exists at Assets/Editor/Editor.asmdef"
     notes:
       - "Core asmdef correctly has noEngineReferences: true."
-      - "Playtest subdirectory (Core/Playtest/) has namespace Contra3D.Core.Playtest — consistent with dir Core."
+      - "All namespace-to-directory mappings are consistent."
+      - "CombatSystem.cs in Combat/ dir with Contra3D.Combat ns — consistent."
+      - "Playtest files in Core/Playtest/ with Contra3D.Core.Playtest ns — consistent."
 ```
 
 ## Dimension 8 — 架构演进机会识别 (Architecture Evolution)
@@ -234,16 +246,7 @@ checks:
         locations:
           - "Assets/Scripts/Core/CameraSystem.cs:187-191"
         suggestion: "Use System.Numerics.Vector3 directly."
-    resolved:
-      - type: "REFACTOR_SHARED"
-        severity: "RESOLVED"
-        description: "ApplySpread duplicated 3× → extracted to VectorExtensions.ApplySpread()"
-      - type: "REFACTOR_SHARED"
-        severity: "RESOLVED"
-        description: "YAML parsing duplicated 3× → YamlKeyValueParser utility created"
-      - type: "DECOUPLE"
-        severity: "RESOLVED"
-        description: "AISystem.Default static singleton removed"
+    resolved: []
     debt_count: 2
 ```
 
@@ -252,24 +255,24 @@ checks:
 ```yaml
 checks:
   maintainability:
-    passed: true
+    passed: false
     module_scores:
       Contra3D.Core:
-        score: 72
+        score: 68
         grade: "yellow"
         breakdown:
           comment_density: 58
           test_coverage: 82
           cyclomatic_complexity: 74
-          duplication_score: 68
+          duplication_score: 65
           dependency_depth_score: 90
-        suggestion: "Duplication improved (D8 resolved). MapLoader split; ProjectileTypes now 280L."
+        suggestion: "MapLoader.Parsers.cs regression to 526L drags score down. Duplication in YAML loaders persists."
       Contra3D.Runtime:
-        score: 82
+        score: 80
         grade: "green"
         breakdown:
           comment_density: 70
-          test_coverage: 35
+          test_coverage: 30
           cyclomatic_complexity: 92
           duplication_score: 95
           dependency_depth_score: 85
@@ -282,11 +285,20 @@ checks:
           cyclomatic_complexity: 80
           duplication_score: 90
           dependency_depth_score: 72
+      Contra3D.Core.Tests:
+        score: 85
+        grade: "green"
+        breakdown:
+          comment_density: 45
+          test_coverage: 100
+          cyclomatic_complexity: 88
+          duplication_score: 85
+          dependency_depth_score: 90
     summary:
-      green_modules: 1
+      green_modules: 2
       yellow_modules: 2
       red_modules: 0
-      avg_score: 76.7
+      avg_score: 77.25
 ```
 
 ## Dimension 10 — 接口耦合密度审计 (Interface Coupling)
@@ -384,14 +396,14 @@ checks:
       projectile_system: { score: 78, grade: "yellow" }
       enemy_ai: { score: 75, grade: "yellow", notes: "AiSystem split resolved brace bug" }
       health_damage: { score: 88, grade: "green" }
-      map_loading: { score: 70, grade: "yellow", notes: "MapLoader split into partial classes (97L+285L); MapValidator extracted" }
+      map_loading: { score: 65, grade: "yellow", notes: "MapLoader.Parsers.cs regressed to 526L — needs re-split" }
       ui_hud: { score: 80, grade: "green" }
       rendering: { score: 55, grade: "yellow", notes: "RenderConfig added; still incomplete" }
     summary:
       green: 4
       yellow: 4
       red: 0
-      avg_score: 78.8
+      avg_score: 78.0
 ```
 
 ## Dimension 13 — 功能覆盖度审计 (Functionality Coverage)
@@ -475,14 +487,10 @@ checks:
   functionality_tech_debt:
     passed: false
     debt_items:
-      - id: "T-FUNC-P1-RENDER"
-        priority: "P1→RESOLVED"
-        source_dimensions: ["D11", "D13"]
-        description: "~~rendering system incomplete~~ → RESOLVED (RenderConfig consumed, TODO removed, 2 BDD scenarios registered)"
-      - id: "T-FUNC-P1-MAP-BDD"
-        priority: "P1→RESOLVED"
-        source_dimensions: ["D13"]
-        description: "~~map_loading BDD coverage 0.5~~ → RESOLVED (spawn_point_spacing_validation BDD scenario added, MapValidator implements MinSpawnDistance)"
+      - id: "T-FUNC-P1-MAPLOADER-REGR"
+        priority: "P1"
+        source_dimensions: ["D1"]
+        description: "MapLoader.Parsers.cs regressed from 285L to 526L — exceeds both 300L module and 500L global thresholds. Needs re-split."
       - id: "T-FUNC-P2-EVENT-BUS"
         priority: "P2"
         source_dimensions: ["D11", "D14"]
@@ -499,16 +507,20 @@ checks:
         priority: "P3"
         source_dimensions: ["D11", "D14"]
         description: "Optional replay system not implemented"
+      - id: "T-FUNC-P3-VIEWSYNC"
+        priority: "P3"
+        source_dimensions: ["D4"]
+        description: "ViewSyncSystem.Despawn() empty stub — incomplete implementation"
       - id: "T-FUNC-P3-EDITOR"
         priority: "P3"
         source_dimensions: ["D11", "D14"]
         description: "Optional editor extensions not implemented"
     summary:
       p0: 0
-      p1: 0  # All P1 resolved in scan #5
+      p1: 1  # NEW: MapLoader.Parsers.cs regression
       p2: 3
-      p3: 2
-      total: 5
+      p3: 3  # NEW: ViewSyncSystem empty method
+      total: 7
 ```
 
 ---
@@ -517,22 +529,22 @@ checks:
 
 | Dim | Name | Status | P0 | P1 | P2 | Key |
 |-----|------|--------|----|----|----|-----|
-| 1 | Module Size | PASS | 0 | 0 | 0 | All ≤300L; MapLoader split, ProjectileTypes→280 |
+| 1 | Module Size | FAIL | 0 | 1 | 0 | MapLoader.Parsers.cs 526L > 500L global max |
 | 2 | Encapsulation | PASS | 0 | 0 | 0 | Clean |
 | 3 | Dead Code | PASS | 0 | 0 | 0 | No suppressions |
-| 4 | Component | PARTIAL | 0 | 0 | 1 | CrosshairUI.SetScreenPos |
+| 4 | Component | PARTIAL | 0 | 0 | 1 | CrosshairUI.SetScreenPos; ViewSyncSystem.Despawn P3 |
 | 5 | Visibility | FAIL | 0 | 0 | 5 | HUDUpdater, AudioSystem, CombatSystem, HealthDamageSystem, CameraSystem |
 | 6 | Dependency | PASS | 0 | 0 | 0 | Clean DAG |
-| 7 | Physical Structure | FAIL | 0 | 0 | 3 | AISpawnConfig ns, missing asmdefs |
+| 7 | Physical Structure | PASS | 0 | 0 | 0 | All 3 prior issues resolved (AISpawnConfig ns, test asmdef, editor asmdef) |
 | 8 | Evolution | FAIL | 0 | 0 | 2 | LoadFromYaml dup, Vector3Extensions |
-| 9 | Maintainability | PARTIAL | 0 | 0 | 0 | Avg 76.7; 2 yellow modules |
+| 9 | Maintainability | PARTIAL | 0 | 0 | 0 | Avg 77.25; 2 yellow modules |
 | 10 | Coupling | PASS | 0 | 0 | 0 | No shared state |
-| 11 | Functionality | PASS | 0 | 0 | 0 | All 8 core systems implemented; rendering consumed |
-| 12 | Quality | PASS | 0 | 0 | 0 | Avg 78.8; 4 green, 4 yellow |
+| 11 | Functionality | PASS | 0 | 0 | 0 | All 8 core systems implemented |
+| 12 | Quality | PASS | 0 | 0 | 0 | Avg 78.0; 4 green, 4 yellow |
 | 13 | Coverage | PASS | 0 | 0 | 0 | All 8/8 core systems ≥ min BDD scenarios |
 | 14 | Opportunities | PASS | 0 | 0 | 0 | 4 opportunities |
-| 15 | Tech Debt | FAIL | 0 | 0 | 0 | 7 debt items (P1 resolved, now P2/P3 only) |
-| **TOTAL** | | **FAIL** | **0** | **0** | **9** | **9 issues** |
+| 15 | Tech Debt | FAIL | 0 | 1 | 3 | 1 P1 (MapLoader regressed) + 3 P2 + 3 P3 |
+| **TOTAL** | | **FAIL** | **0** | **1** | **7** | **9 issues** |
 
 ---
 
@@ -540,21 +552,23 @@ checks:
 
 | ID | Priority | Source Dims | Title |
 |----|----------|-------------|-------|
-| T-ARCH-D1-MAPLOADER | P1→RESOLVED | D1 | ~~MapLoader.cs (425 lines) exceeds 300-line threshold~~ → RESOLVED (split into MapLoader.cs 97L + MapLoader.Parsers.cs 285L) |
-| T-ARCH-D1-PROJECTILE | P2→RESOLVED | D1 | ~~ProjectileTypes.cs (324 lines) exceeds 300 threshold~~ → RESOLVED (now 280L) |
+| T-ARCH-D1-MAPLOADER-REGR | P1 | D1 | ~~MapLoader.Parsers.cs (285L)~~ → REGRESSED to 526L, exceeds 500L global max. Re-split required. |
 | T-ARCH-D5-VISIBILITY | P2 | D5 | HUDUpdater.State, AudioSystem.MaxSfxConcurrency, CombatSystem.HitscanMaxDistance, HealthDamageSystem mutable props, CameraSystem config |
-| T-ARCH-D7-AISPAWN | P2 | D7 | AI/AISpawnConfig.cs namespace mismatch — relocate to Core/ |
-| T-ARCH-D7-TEST-ASMDEF | P2 | D7 | Missing Contra3D.Core.Tests.asmdef |
-| T-ARCH-D7-EDITOR-ASMDEF | P2 | D7 | Missing Editor.asmdef for Assets/Editor/ isolation |
 | T-ARCH-D8-LOADFROMYAML | P2 | D8 | MotorConfig/ProjectileSystemConfig LoadFromYaml duplication |
 | T-ARCH-D8-VEC3EXT | P2 | D8 | CameraSystem.Vector3Extensions redundant reimplementation |
 | T-ARCH-D4-CROSSHAIR | P2 | D4 | CrosshairUI.SetScreenPos should be internal |
-| T-FUNC-P1-RENDER | P1→RESOLVED | D11,D13 | ~~Complete rendering system + add BDD scenarios~~ → RESOLVED (RenderConfig consumed in GameBootstrap, TODO comments removed, 2 BDD scenarios in registry) |
-| T-FUNC-P1-MAP-BDD | P1→RESOLVED | D13 | ~~Add map_loading BDD scenario~~ → RESOLVED (spawn_point_spacing_validation added to registry, MapValidator enforces MinSpawnDistance=5m) |
 | T-FUNC-P2-EVENT-BUS | P2 | D11,D14 | Implement event bus system |
-| T-FUNC-P2-POOLING | P2 | D11,D14 | Implement generic object pooling |
+| T-FUNC-P2-OBJECT-POOL | P2 | D11,D14 | Implement generic object pooling |
 | T-FUNC-P2-VFX | P2 | D11,D14 | Implement VFX/effect system |
+| T-FUNC-P3-VIEWSYNC | P3 | D4 | ViewSyncSystem.Despawn() empty stub — complete or remove |
 | T-FUNC-P3-REPLAY | P3 | D11,D14 | Optional: replay system |
 | T-FUNC-P3-EDITOR | P3 | D11,D14 | Optional: editor extensions |
 
-**P0: 0 | P1: 0 (All P1 issues resolved) | P2: 9 | P3: 2 | Total: 12 backlog tasks**
+**P0: 0 | P1: 1 (NEW regression) | P2: 7 | P3: 3 | Total: 12 backlog tasks**
+
+### Resolved This Scan (3 items)
+| ID | Prior Severity | Resolution |
+|----|---------------|------------|
+| T-ARCH-D7-AISPAWN | P2→RESOLVED | AISpawnConfig.cs moved from AI/ to Core/, namespace Contra3D.Core consistent with directory |
+| T-ARCH-D7-TEST-ASMDEF | P2→RESOLVED | Contra3D.Core.Tests.asmdef exists at Assets/Contra3D.Core.Tests.asmdef |
+| T-ARCH-D7-EDITOR-ASMDEF | P2→RESOLVED | Editor.asmdef exists at Assets/Editor/Editor.asmdef |
