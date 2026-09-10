@@ -16,26 +16,26 @@ namespace Contra3D.Core
     {
         public Vector3 Position { get; set; }
         public Vector3 Rotation { get; set; }
-        public Vector3 TargetPosition { get; set; }
+        public Vector3 TargetPosition { get; internal set; }
         public float FOV { get; set; }
-        public float Damping { get; set; } = 5.0f;
-        public float OffsetsRight { get; set; } = 0.6f;
-        public float OffsetsBack { get; set; } = 2.5f;
-        public float OffsetsUp { get; set; } = 1.7f;
+        public float Damping { get; internal set; } = 5.0f;
+        public float OffsetsRight { get; internal set; } = 0.6f;
+        public float OffsetsBack { get; internal set; } = 2.5f;
+        public float OffsetsUp { get; internal set; } = 1.7f;
         public CameraMode Mode { get; set; } = CameraMode.ThirdPersonFollow;
         private Vector3 _modeStartPos, _modeEndPos, _modeStartRot, _modeEndRot;
         private float _modeTransitionElapsed, _modeTransitionDuration;
         private bool _modeTransitionActive;
         private float _trauma;
         public float Trauma => _trauma;
-        public float TraumaDecayRate { get; set; } = 1.0f;
-        public float MaxTrauma { get; set; } = 1.0f;
-        public float BaseFOV { get; set; } = 60f;
-        public float MaxFOV { get; set; } = 90f;
-        public float FovSpeedThreshold { get; set; } = 8f;
-        public float FovMaxSpeed { get; set; } = 12f;
-        public float FovLerpSpeed { get; set; } = 0.1f;
-        public CameraConstraint Constraints { get; set; } = CameraConstraint.Default();
+        public float TraumaDecayRate { get; internal set; } = 1.0f;
+        public float MaxTrauma { get; internal set; } = 1.0f;
+        public float BaseFOV { get; internal set; } = 60f;
+        public float MaxFOV { get; internal set; } = 90f;
+        public float FovSpeedThreshold { get; internal set; } = 8f;
+        public float FovMaxSpeed { get; internal set; } = 12f;
+        public float FovLerpSpeed { get; internal set; } = 0.1f;
+        public CameraConstraint Constraints { get; internal set; } = CameraConstraint.Default();
         private int _splitscreenPlayers;
         private string _splitscreenMode;
         private List<(string Id, CameraRig Rig)> _splitscreenRigs;
