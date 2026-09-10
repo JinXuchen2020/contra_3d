@@ -319,6 +319,33 @@ systems:
         - check: entity_visible
           entity_type: player
 
+    - id: rg_hit_marker_on_kill_feedback
+      description: >-
+        Hit marker feedback on enemy kill: player fires and bullet hits enemy
+        hurtbox; upon lethal damage (IsDead=true) the HUDUpdater activates the
+        hit marker flag with ~100 ms duration. Verifies the UI system's
+        hit-marker feedback path (design contract:
+        hit_marker_on_hit_and_kill e2e). Headless => tests hit marker via
+        HUDUpdater unit tests (T-BDD-ADOPT).
+      setup:
+        - spawn_entity: { type: player, position: [0, 0, 0], health: 100, lives: 3 }
+        - spawn_entity: { type: enemy, position: [5, 0, 0], health: 24 }
+      steps:
+        - step: render_frames
+          count: 5
+        - step: apply_damage
+          target: enemy
+          amount: 24
+          is_lethal: true
+      expect:
+        - check: state_changed
+          field: hit_marker
+          equals: 'true'
+        - check: state_changed
+          field: hit_marker_duration
+          min_equals: '80'
+          max_equals: '120'
+
   combat:
     - id: rg_combat_damage_deterministic
       description: >-
