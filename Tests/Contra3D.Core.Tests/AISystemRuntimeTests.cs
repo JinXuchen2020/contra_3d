@@ -1,8 +1,7 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Numerics;
 using Xunit;
-using Contra3D.AI;
 using Contra3D.Core;
 
 namespace Contra3D.Core.Tests

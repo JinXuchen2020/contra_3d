@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using Contra3D.Core;
 
-namespace Contra3D.AI
+namespace Contra3D.Core
 {
     /// <summary>
     /// 敌人 AI 系统 — Unity Runtime 层集成。
