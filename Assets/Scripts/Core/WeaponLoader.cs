@@ -96,19 +96,26 @@ namespace Contra3D.Core
             return new LoadResult(weapons, firstWeaponId ?? string.Empty);
         }
 
+        private static string StripComment(string value)
+        {
+            if (value == null) return null;
+            int hashIdx = value.IndexOf('#');
+            return hashIdx >= 0 ? value.Substring(0, hashIdx).Trim() : value.Trim();
+        }
+
         private static WeaponDefinition ParseWeapon(Dictionary<string, string> fields)
         {
             if (!fields.TryGetValue("weapon_id", out var id) || string.IsNullOrEmpty(id))
                 return null;
             if (!fields.TryGetValue("name", out var name)) name = id;
             if (!fields.TryGetValue("type", out var typeStr)) typeStr = "hitscan";
-            if (!float.TryParse(fields.TryGetValue("damage", out var dmg) ? dmg : "1", out var damage)) damage = 1f;
-            if (!float.TryParse(fields.TryGetValue("fire_rate", out var fr) ? fr : "1", out var fireRate)) fireRate = 1f;
-            if (!int.TryParse(fields.TryGetValue("magazine_size", out var mag) ? mag : "30", out var magazine)) magazine = 30;
-            if (!float.TryParse(fields.TryGetValue("reload_time", out var rt) ? rt : "0", out var reloadTime)) reloadTime = 0f;
-            if (!float.TryParse(fields.TryGetValue("spread", out var sp) ? sp : "0", out var spread)) spread = 0f;
-            if (!float.TryParse(fields.TryGetValue("min_fire_interval", out var mfi) ? mfi : "0.08", out var minFireInterval)) minFireInterval = 0.08f;
-            if (!float.TryParse(fields.TryGetValue("switch_cooldown", out var sc) ? sc : "0.5", out var switchCooldown)) switchCooldown = 0.5f;
+            if (!float.TryParse(StripComment(fields.TryGetValue("damage", out var dmg) ? dmg : "1"), out var damage)) damage = 1f;
+            if (!float.TryParse(StripComment(fields.TryGetValue("fire_rate", out var fr) ? fr : "1"), out var fireRate)) fireRate = 1f;
+            if (!int.TryParse(StripComment(fields.TryGetValue("magazine_size", out var mag) ? mag : "30"), out var magazine)) magazine = 30;
+            if (!float.TryParse(StripComment(fields.TryGetValue("reload_time", out var rt) ? rt : "0"), out var reloadTime)) reloadTime = 0f;
+            if (!float.TryParse(StripComment(fields.TryGetValue("spread", out var sp) ? sp : "0"), out var spread)) spread = 0f;
+            if (!float.TryParse(StripComment(fields.TryGetValue("min_fire_interval", out var mfi) ? mfi : "0.08"), out var minFireInterval)) minFireInterval = 0.08f;
+            if (!float.TryParse(StripComment(fields.TryGetValue("switch_cooldown", out var sc) ? sc : "0.5"), out var switchCooldown)) switchCooldown = 0.5f;
 
             WeaponType type = typeStr switch
             {

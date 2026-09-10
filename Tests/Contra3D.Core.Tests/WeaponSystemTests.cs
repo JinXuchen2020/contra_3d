@@ -775,6 +775,49 @@ namespace Contra3D.Core.Tests
         }
 
         [Fact]
+        public void BDD_rg_weapons_loaded()
+        {
+            // BDD: rg_weapons_loaded (T-BDD-ADOPT)
+            // The REAL DataLoader populated the weapon library from data/weapons/
+            // (proves the production asset pipeline ran on the weapons path, not the headless Startup loader).
+            // Verifies rifle_default is present with damage=12 / fire_rate=7 / magazine_size=30.
+            // Expects weapon_library signal: weapon_count == 5.
+
+            string testAssemblyDir = System.IO.Path.GetDirectoryName(typeof(WeaponSystemTests).Assembly.Location);
+            string projectRoot = System.IO.Path.GetFullPath(System.IO.Path.Combine(testAssemblyDir, "..", "..", "..", "..", ".."));
+            string yamlPath = System.IO.Path.Combine(projectRoot, "data", "weapons", "weapons.yaml");
+
+            var result = WeaponLoader.LoadFromFile(yamlPath);
+            var weapons = result.Weapons;
+            string defaultWeaponId = result.DefaultWeaponId;
+
+            // assert: weapon_count == 5 (all 5 weapons loaded from data/weapons/)
+            Assert.Equal(5, weapons.Count);
+
+            // assert: all 5 expected weapon IDs are present
+            Assert.Contains(weapons, kvp => kvp.Key == "rifle_default");
+            Assert.Contains(weapons, kvp => kvp.Key == "spread_shot");
+            Assert.Contains(weapons, kvp => kvp.Key == "laser_beam");
+            Assert.Contains(weapons, kvp => kvp.Key == "homing_missile");
+            Assert.Contains(weapons, kvp => kvp.Key == "heavy_machinegun");
+
+            // assert: rifle_default stats match BDD contract (damage=12 / fire_rate=7 / magazine_size=30)
+            var rifle = weapons["rifle_default"];
+            Assert.Equal("rifle_default", defaultWeaponId);
+            Assert.Equal(WeaponType.Hitscan, rifle.Type);
+            Assert.Equal(12f, rifle.Damage);
+            Assert.Equal(7f, rifle.FireRate);
+            Assert.Equal(30, rifle.MagazineSize);
+            Assert.Equal(1.5f, rifle.ReloadTime);
+            Assert.Equal(1.5f, rifle.Spread);
+
+            // verify WeaponSystem initializes with loaded weapons and rifle_default as primary
+            var ws = new WeaponSystem(weapons, "rifle_default");
+            Assert.Equal("rifle_default", ws.PrimaryId);
+            Assert.Equal(30, ws.PrimaryAmmo); // magazine_size=30
+        }
+
+        [Fact]
         public void Death_ResetsToDefaultRifle_BDD_T641503()
         {
             // BDD: death_resets_to_default_rifle (T-BDD-ADOPT-641503)
