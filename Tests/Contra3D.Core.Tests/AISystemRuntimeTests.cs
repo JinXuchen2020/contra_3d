@@ -6,9 +6,9 @@ using Contra3D.Core;
 
 namespace Contra3D.Core.Tests
 {
-    public class AISystemRuntimeTests
+    public class AiRuntimeSystemRuntimeTests
     {
-        private static void RegisterDefs(AISystem ai)
+        private static void RegisterDefs(AiRuntimeSystem ai)
         {
             ai.RegisterDefinition(new EnemyDefinition("grunt", "Grunt", 24f, 2f, AiType.Patrol,
                 visionRange: 15f, attackRange: 3f, alertThreshold: 60f));
@@ -25,14 +25,14 @@ namespace Contra3D.Core.Tests
         [Fact]
         public void RegisterDefinition_Null_ThrowsArgumentNullException()
         {
-            var ai = new AISystem();
+            var ai = new AiRuntimeSystem();
             Assert.Throws<ArgumentNullException>(() => ai.RegisterDefinition(null!));
         }
 
         [Fact]
         public void RegisterDefinition_AllowsSpawn()
         {
-            var ai = new AISystem();
+            var ai = new AiRuntimeSystem();
             ai.RegisterDefinition(new EnemyDefinition("test", "Test", 10f, 1f, AiType.Patrol));
             ai.SetPlayerPosition(new Vector3(100, 0, 0));
             Assert.True(ai.TrySpawn("test", new Vector3(10, 0, 10)));
@@ -43,7 +43,7 @@ namespace Contra3D.Core.Tests
         [Fact]
         public void TrySpawn_UnknownEnemy_ReturnsFalse()
         {
-            var ai = new AISystem();
+            var ai = new AiRuntimeSystem();
             RegisterDefs(ai);
             Assert.False(ai.TrySpawn("nonexistent", Vector3.Zero));
         }
@@ -51,7 +51,7 @@ namespace Contra3D.Core.Tests
         [Fact]
         public void TrySpawn_TooCloseToPlayer_ReturnsFalse()
         {
-            var ai = new AISystem();
+            var ai = new AiRuntimeSystem();
             RegisterDefs(ai);
             ai.SetPlayerPosition(Vector3.Zero);
             Assert.False(ai.TrySpawn("grunt", Vector3.Zero));
@@ -60,7 +60,7 @@ namespace Contra3D.Core.Tests
         [Fact]
         public void TrySpawn_NormalCapEnqueues()
         {
-            var ai = new AISystem();
+            var ai = new AiRuntimeSystem();
             RegisterDefs(ai);
             ai.SetPlayerPosition(new Vector3(100, 0, 0));
             for (int i = 0; i < 12; i++)
@@ -73,7 +73,7 @@ namespace Contra3D.Core.Tests
         [Fact]
         public void TrySpawn_RusherCapEnqueues()
         {
-            var ai = new AISystem();
+            var ai = new AiRuntimeSystem();
             RegisterDefs(ai);
             ai.SetPlayerPosition(new Vector3(100, 0, 0));
             for (int i = 0; i < 4; i++)
@@ -86,7 +86,7 @@ namespace Contra3D.Core.Tests
         [Fact]
         public void TrySpawn_Successful_SetsInitialState()
         {
-            var ai = new AISystem();
+            var ai = new AiRuntimeSystem();
             RegisterDefs(ai);
             ai.SetPlayerPosition(new Vector3(100, 0, 0));
             bool spawned = ai.TrySpawn("grunt", new Vector3(10, 0, 10));
@@ -99,7 +99,7 @@ namespace Contra3D.Core.Tests
         [Fact]
         public void TrySpawn_AcceptableDistance_ReturnsTrue()
         {
-            var ai = new AISystem();
+            var ai = new AiRuntimeSystem();
             RegisterDefs(ai);
             ai.SetPlayerPosition(Vector3.Zero);
             Assert.True(ai.TrySpawn("grunt", new Vector3(10, 0, 0)));
@@ -108,7 +108,7 @@ namespace Contra3D.Core.Tests
         [Fact]
         public void TrySpawn_Boundary_5m_IsAccepted()
         {
-            var ai = new AISystem();
+            var ai = new AiRuntimeSystem();
             RegisterDefs(ai);
             ai.SetPlayerPosition(Vector3.Zero);
             Assert.True(ai.TrySpawn("grunt", new Vector3(5f, 0, 0)));
@@ -117,7 +117,7 @@ namespace Contra3D.Core.Tests
         [Fact]
         public void TrySpawn_JustInsideBoundary_4_9m_IsRejected()
         {
-            var ai = new AISystem();
+            var ai = new AiRuntimeSystem();
             RegisterDefs(ai);
             ai.SetPlayerPosition(Vector3.Zero);
             Assert.False(ai.TrySpawn("grunt", new Vector3(4.9f, 0, 0)));
@@ -128,7 +128,7 @@ namespace Contra3D.Core.Tests
         [Fact]
         public void OnEnemyDead_RemovesEntity()
         {
-            var ai = new AISystem();
+            var ai = new AiRuntimeSystem();
             RegisterDefs(ai);
             ai.SetPlayerPosition(new Vector3(100, 0, 0));
             ai.TrySpawn("grunt", new Vector3(10, 0, 10));
@@ -140,14 +140,14 @@ namespace Contra3D.Core.Tests
         [Fact]
         public void OnEnemyDead_UnknownId_IsNoOp()
         {
-            var ai = new AISystem();
+            var ai = new AiRuntimeSystem();
             ai.OnEnemyDead("nobody");
         }
 
         [Fact]
         public void OnEnemyDead_ReleasesQueuedSpawn()
         {
-            var ai = new AISystem();
+            var ai = new AiRuntimeSystem();
             RegisterDefs(ai);
             ai.SetPlayerPosition(new Vector3(100, 0, 0));
             for (int i = 0; i < 12; i++)
@@ -164,7 +164,7 @@ namespace Contra3D.Core.Tests
         [Fact]
         public void Update_Patrol_GainsVigilanceNearPlayer()
         {
-            var ai = new AISystem();
+            var ai = new AiRuntimeSystem();
             RegisterDefs(ai);
             ai.SetPlayerPosition(new Vector3(10, 0, 0));
             ai.TrySpawn("grunt", new Vector3(5, 0, 5));
@@ -176,7 +176,7 @@ namespace Contra3D.Core.Tests
         [Fact]
         public void Update_Chase_EntersChaseOrAlert()
         {
-            var ai = new AISystem();
+            var ai = new AiRuntimeSystem();
             RegisterDefs(ai);
             ai.SetPlayerPosition(new Vector3(10, 0, 0));
             ai.TrySpawn("hunter", new Vector3(5, 0, 5));
@@ -188,7 +188,7 @@ namespace Contra3D.Core.Tests
         [Fact]
         public void Update_IgnoresInvalidDt()
         {
-            var ai = new AISystem();
+            var ai = new AiRuntimeSystem();
             RegisterDefs(ai);
             ai.SetPlayerPosition(Vector3.Zero);
             ai.TrySpawn("grunt", new Vector3(10, 0, 10));
@@ -202,7 +202,7 @@ namespace Contra3D.Core.Tests
         [Fact]
         public void Update_Rusher_ReachesPlayer_Dies()
         {
-            var ai = new AISystem();
+            var ai = new AiRuntimeSystem();
             RegisterDefs(ai);
             ai.SetPlayerPosition(Vector3.Zero);
             ai.TrySpawn("rusher", new Vector3(1, 0, 0));
@@ -213,7 +213,7 @@ namespace Contra3D.Core.Tests
         [Fact]
         public void Update_Patrol_VigilanceDecaysOutOfSight()
         {
-            var ai = new AISystem();
+            var ai = new AiRuntimeSystem();
             RegisterDefs(ai);
             ai.SetPlayerPosition(new Vector3(5, 0, 0));
             ai.TrySpawn("grunt", Vector3.Zero);
@@ -230,7 +230,7 @@ namespace Contra3D.Core.Tests
         [Fact]
         public void Update_Sniper_EntersAimState()
         {
-            var ai = new AISystem();
+            var ai = new AiRuntimeSystem();
             RegisterDefs(ai);
             ai.SetPlayerPosition(new Vector3(32, 0, 0));
             ai.TrySpawn("sniper", Vector3.Zero);
@@ -244,7 +244,7 @@ namespace Contra3D.Core.Tests
         [Fact]
         public void GetCommand_UnknownEnemy_ReturnsIdle()
         {
-            var ai = new AISystem();
+            var ai = new AiRuntimeSystem();
             var cmd = ai.GetCommand("nobody");
             Assert.False(cmd.FireRequest);
         }
@@ -252,7 +252,7 @@ namespace Contra3D.Core.Tests
         [Fact]
         public void GetCommand_IdleState_ReturnsIdle()
         {
-            var ai = new AISystem();
+            var ai = new AiRuntimeSystem();
             RegisterDefs(ai);
             ai.SetPlayerPosition(new Vector3(100, 0, 0));
             ai.TrySpawn("grunt", new Vector3(10, 0, 10));
@@ -264,7 +264,7 @@ namespace Contra3D.Core.Tests
         [Fact]
         public void GetCommand_OutOfRange_ReturnsIdle()
         {
-            var ai = new AISystem();
+            var ai = new AiRuntimeSystem();
             RegisterDefs(ai);
             ai.SetPlayerPosition(new Vector3(100, 0, 0));
             ai.TrySpawn("grunt", new Vector3(5, 0, 5));
@@ -277,7 +277,7 @@ namespace Contra3D.Core.Tests
         [Fact]
         public void SetPlayerPosition_AffectsSpawnDistanceCheck()
         {
-            var ai = new AISystem();
+            var ai = new AiRuntimeSystem();
             RegisterDefs(ai);
             ai.SetPlayerPosition(Vector3.Zero);
             Assert.False(ai.TrySpawn("grunt", new Vector3(2, 0, 0)));
@@ -290,7 +290,7 @@ namespace Contra3D.Core.Tests
         [Fact]
         public void GetStates_ReturnsCurrentStates()
         {
-            var ai = new AISystem();
+            var ai = new AiRuntimeSystem();
             RegisterDefs(ai);
             ai.SetPlayerPosition(new Vector3(100, 0, 0));
             ai.TrySpawn("grunt", new Vector3(10, 0, 10));
@@ -303,7 +303,7 @@ namespace Contra3D.Core.Tests
         [Fact]
         public void GetStates_EmptyWhenNoSpawn()
         {
-            var ai = new AISystem();
+            var ai = new AiRuntimeSystem();
             RegisterDefs(ai);
             var states = ai.GetStates();
             Assert.Empty(states);
@@ -312,7 +312,7 @@ namespace Contra3D.Core.Tests
         [Fact]
         public void GetStates_RemovesDeadEnemy()
         {
-            var ai = new AISystem();
+            var ai = new AiRuntimeSystem();
             RegisterDefs(ai);
             ai.SetPlayerPosition(new Vector3(100, 0, 0));
             ai.TrySpawn("grunt", new Vector3(10, 0, 10));
@@ -326,7 +326,7 @@ namespace Contra3D.Core.Tests
         [Fact]
         public void ActiveCount_IncreasesWithSpawn()
         {
-            var ai = new AISystem();
+            var ai = new AiRuntimeSystem();
             RegisterDefs(ai);
             ai.SetPlayerPosition(new Vector3(100, 0, 0));
             int before = ai.ActiveCount;
@@ -337,7 +337,7 @@ namespace Contra3D.Core.Tests
         [Fact]
         public void ActiveCount_DecreasesWithDead()
         {
-            var ai = new AISystem();
+            var ai = new AiRuntimeSystem();
             RegisterDefs(ai);
             ai.SetPlayerPosition(new Vector3(100, 0, 0));
             ai.TrySpawn("grunt", new Vector3(10, 0, 10));
@@ -349,7 +349,7 @@ namespace Contra3D.Core.Tests
         [Fact]
         public void RusherCount_IncreasesWithRusherSpawn()
         {
-            var ai = new AISystem();
+            var ai = new AiRuntimeSystem();
             RegisterDefs(ai);
             ai.SetPlayerPosition(new Vector3(100, 0, 0));
             int before = ai.RusherCount;
@@ -360,7 +360,7 @@ namespace Contra3D.Core.Tests
         [Fact]
         public void RusherCount_DecreasesWithRusherDead()
         {
-            var ai = new AISystem();
+            var ai = new AiRuntimeSystem();
             RegisterDefs(ai);
             ai.SetPlayerPosition(new Vector3(100, 0, 0));
             ai.TrySpawn("rusher", new Vector3(10, 0, 10));
@@ -374,8 +374,8 @@ namespace Contra3D.Core.Tests
         [Fact]
         public void Instances_AreIsolated_RegisterDefinition()
         {
-            var ai1 = new AISystem();
-            var ai2 = new AISystem();
+            var ai1 = new AiRuntimeSystem();
+            var ai2 = new AiRuntimeSystem();
             ai1.RegisterDefinition(new EnemyDefinition("test", "Test", 10f, 1f, AiType.Patrol));
             ai1.SetPlayerPosition(new Vector3(100, 0, 0));
             Assert.True(ai1.TrySpawn("test", new Vector3(10, 0, 10)));
@@ -385,8 +385,8 @@ namespace Contra3D.Core.Tests
         [Fact]
         public void Instances_AreIsolated_State()
         {
-            var ai1 = new AISystem();
-            var ai2 = new AISystem();
+            var ai1 = new AiRuntimeSystem();
+            var ai2 = new AiRuntimeSystem();
             RegisterDefs(ai1);
             RegisterDefs(ai2);
             ai1.SetPlayerPosition(new Vector3(100, 0, 0));
@@ -401,8 +401,8 @@ namespace Contra3D.Core.Tests
         {
             var config1 = AISpawnConfig.LoadFromString("max_normal: 5\nmax_rusher: 2\nanti_door_camping_distance: 3");
             var config2 = AISpawnConfig.LoadFromString("max_normal: 20\nmax_rusher: 10\nanti_door_camping_distance: 10");
-            var ai1 = new AISystem(config1);
-            var ai2 = new AISystem(config2);
+            var ai1 = new AiRuntimeSystem(config1);
+            var ai2 = new AiRuntimeSystem(config2);
             RegisterDefs(ai1);
             RegisterDefs(ai2);
             ai1.SetPlayerPosition(new Vector3(100, 0, 0));
@@ -421,8 +421,8 @@ namespace Contra3D.Core.Tests
         public void Instances_AreIsolated_RandomProvider()
         {
             var fixedRandom = new DeterministicRandomProvider(42);
-            var ai1 = new AISystem(randomProvider: fixedRandom);
-            var ai2 = new AISystem(randomProvider: fixedRandom);
+            var ai1 = new AiRuntimeSystem(randomProvider: fixedRandom);
+            var ai2 = new AiRuntimeSystem(randomProvider: fixedRandom);
             RegisterDefs(ai1);
             RegisterDefs(ai2);
             ai1.SetPlayerPosition(new Vector3(100, 0, 0));
@@ -450,8 +450,8 @@ namespace Contra3D.Core.Tests
         [Fact]
         public void rg_enemy_patrol_alert_combat_chain_FullEncounterChain()
         {
-            // Setup: create AISystem, register grunt_soldier definition, set player near enemy
-            var ai = new AISystem();
+            // Setup: create AiRuntimeSystem, register grunt_soldier definition, set player near enemy
+            var ai = new AiRuntimeSystem();
             ai.RegisterDefinition(new EnemyDefinition("grunt_soldier", "Grunt Soldier", 24f, 2f, AiType.Patrol,
                 visionRange: 15f, attackRange: 3f, alertThreshold: 60f, comprehensionThreshold: 100f,
                 vigilanceGainPerSecond: 20f, vigilanceDecayPerSecond: 10f));
@@ -492,7 +492,7 @@ namespace Contra3D.Core.Tests
             Assert.Equal("grunt_soldier", death.Value.EntityId);
             Assert.Equal("player", death.Value.KillerId);
 
-            // Phase 4: Notify AISystem of death and verify active_count decreases
+            // Phase 4: Notify AiRuntimeSystem of death and verify active_count decreases
             int activeBefore = ai.ActiveCount;
             ai.OnEnemyDead("grunt_soldier");
             Assert.Equal(activeBefore - 1, ai.ActiveCount);
@@ -503,7 +503,7 @@ namespace Contra3D.Core.Tests
         [Fact]
         public void rg_enemy_patrol_alert_combat_chain_StartsInIdleState()
         {
-            var ai = new AISystem();
+            var ai = new AiRuntimeSystem();
             ai.RegisterDefinition(new EnemyDefinition("grunt_soldier", "Grunt", 24f, 2f, AiType.Patrol,
                 visionRange: 15f, alertThreshold: 60f, comprehensionThreshold: 100f,
                 vigilanceGainPerSecond: 20f));
@@ -522,7 +522,7 @@ namespace Contra3D.Core.Tests
         [Fact]
         public void rg_enemy_patrol_alert_combat_chain_VigilanceDecaysOutOfSight()
         {
-            var ai = new AISystem();
+            var ai = new AiRuntimeSystem();
             ai.RegisterDefinition(new EnemyDefinition("grunt_soldier", "Grunt", 24f, 2f, AiType.Patrol,
                 visionRange: 15f, alertThreshold: 60f, comprehensionThreshold: 100f,
                 vigilanceGainPerSecond: 20f, vigilanceDecayPerSecond: 10f));
@@ -549,7 +549,7 @@ namespace Contra3D.Core.Tests
         [Fact]
         public void rg_enemy_patrol_alert_combat_chain_PatrolToAlertToCombat()
         {
-            var ai = new AISystem();
+            var ai = new AiRuntimeSystem();
             ai.RegisterDefinition(new EnemyDefinition("grunt_soldier", "Grunt", 24f, 2f, AiType.Patrol,
                 visionRange: 15f, attackRange: 3f, alertThreshold: 60f, comprehensionThreshold: 100f,
                 vigilanceGainPerSecond: 20f));
@@ -582,7 +582,7 @@ namespace Contra3D.Core.Tests
         [Fact]
         public void rg_enemy_patrol_alert_combat_chain_DeathDecreasesActiveCount()
         {
-            var ai = new AISystem();
+            var ai = new AiRuntimeSystem();
             ai.RegisterDefinition(new EnemyDefinition("grunt_soldier", "Grunt", 24f, 2f, AiType.Patrol,
                 visionRange: 15f, attackRange: 3f, alertThreshold: 60f, comprehensionThreshold: 100f,
                 vigilanceGainPerSecond: 20f));

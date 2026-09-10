@@ -9,7 +9,7 @@ namespace Contra3D.Core
     /// 职责：桥接 Core.AiSystem 与 Unity GameObject，处理刷兵、感知、状态同步。
     /// 实例化设计（推荐用于测试），支持依赖注入。
     /// </summary>
-    public sealed class AISystem
+    public sealed class AiRuntimeSystem
     {
         private readonly Dictionary<string, EnemyDefinition> _definitions = new();
         private readonly Queue<string> _spawnQueue = new();
@@ -34,7 +34,7 @@ namespace Contra3D.Core
         /// </summary>
         /// <param name="config">生成配置（可选，默认使用 <see cref="AISpawnConfig.Default"/>）。</param>
         /// <param name="randomProvider">随机数提供者（可选，默认使用 <see cref="DefaultRandomProvider"/>)。</param>
-        public AISystem(AISpawnConfig config = null, IRandomProvider randomProvider = null)
+        public AiRuntimeSystem(AISpawnConfig config = null, IRandomProvider randomProvider = null)
         {
             _config = config ?? AISpawnConfig.Default;
             _random = randomProvider ?? new DefaultRandomProvider();
