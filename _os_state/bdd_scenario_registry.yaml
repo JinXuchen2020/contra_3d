@@ -9,7 +9,7 @@
 # NOT via headless Startup loader. entity_visible will be an honest skip
 # in headless CI but game_signal / state_changed are real assertions.
 #
-# Last updated: 2026-09-11 S002 — add rg_enemy_patrol_alert_combat_chain to close T-E2E-GAP-ENEMY.
+# Last updated: 2026-09-11 S003 — add rg_combat_ttk_validation to close T-E2E-GAP-COMBAT.
 
 systems:
   projectile_system:
@@ -368,6 +368,31 @@ systems:
           signal: damage_calculator
           field: last_result
           equals: '12'
+
+    - id: rg_combat_ttk_validation
+      description: >-
+        Standard weapon kills a standard minion within expected TTK range
+        (0.1s – 1.0s) and never oneshots. Verifies ttk_standard_minion_full_encounter
+        e2e scenario (T-BDD-ADOPT): rifle_default (damage=12, fire_rate=7/s) against
+        grunt_soldier (health=24) — two hits required; simulated time falls within
+        [0.1, 1.0] seconds. Implements CombatPipelineTests.ShootPipeline_TTKWithinRange
+        and CombatPipelineTests.ShootPipeline_NoOneshotKillOnMinion.
+      setup:
+        - spawn_entity: { type: player, position: [0, 0, 0], weapon: rifle_default }
+        - spawn_entity: { type: enemy, position: [5, 0, 0], health: 24, type_id: grunt_soldier }
+      steps:
+        - step: render_frames
+          count: 5
+        - step: fire_weapon
+          target: enemy
+      expect:
+        - check: state_changed
+          field: enemy_health
+          min_equals: '0'
+          max_equals: '24'
+        - check: not_state_changed
+          field: enemy_health
+          equals: '0'
 
   audio_system:
     - id: rg_audio_sfx_played_on_hit
