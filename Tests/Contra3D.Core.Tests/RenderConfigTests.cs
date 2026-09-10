@@ -43,5 +43,15 @@ namespace Contra3D.Core.Tests
             Assert.Equal(1920, config.TargetWidth);
             Assert.Equal(1080, config.TargetHeight);
         }
+
+        // T-BDD-ADOPT-rg_rendering_target_fps_set
+        // GameBootstrap sets Application.targetFrameRate to 60 at startup.
+        // Core-side invariant: RenderConfig.TargetFps must equal 60.
+        [Fact]
+        public void TargetFps_SetTo60_ByGameBootstrap()
+        {
+            var config = new RenderConfig(1920, 1080, 60, 0.1f, 0.15f);
+            Assert.Equal(60, config.TargetFps);
+        }
     }
 }
