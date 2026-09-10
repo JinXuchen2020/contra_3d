@@ -76,7 +76,8 @@ namespace Contra3D.Core
                 first.SpawnPoints.ToArray(),
                 first.CoverPoints.ToArray(),
                 first.PickupLocations.ToArray(),
-                first.CollisionBoundX);
+                first.CollisionBoundX,
+                first.EncounterZones.ToArray());
             OnSceneLoaded?.Invoke(new SceneLoadedEvent(def));
             return def;
         }
@@ -107,7 +108,8 @@ namespace Contra3D.Core
                 first.SpawnPoints.ToArray(),
                 first.CoverPoints.ToArray(),
                 first.PickupLocations.ToArray(),
-                first.CollisionBoundX);
+                first.CollisionBoundX,
+                first.EncounterZones.ToArray());
             OnSceneLoaded?.Invoke(new SceneLoadedEvent(def));
             return (def, null);
         }
@@ -132,6 +134,7 @@ namespace Contra3D.Core
             public readonly List<CoverPoint> CoverPoints = new List<CoverPoint>();
             public readonly List<PickupLocation> PickupLocations = new List<PickupLocation>();
             public readonly List<PatrolPath> PatrolPaths = new List<PatrolPath>();
+            public readonly List<EncounterZone> EncounterZones = new List<EncounterZone>();
         }
 
         /// <summary>地图加载/校验异常，携带全部验证错误。</summary>

@@ -29,6 +29,9 @@ namespace Contra3D.Core
         /// <summary>碰撞边界 X 半宽（米），默认 25.0。</summary>
         public float CollisionBoundX { get; }
 
+        /// <summary>遭遇区列表，Runtime 层据此触发战斗/封锁逻辑。</summary>
+        public EncounterZone[] EncounterZones { get; }
+
         /// <summary>
         /// 创建地图定义。所有引用均为不可变副本。
         /// </summary>
@@ -38,7 +41,8 @@ namespace Contra3D.Core
             SpawnPoint[] spawnPoints,
             CoverPoint[] coverPoints,
             PickupLocation[] pickupLocations,
-            float collisionBoundX = 25.0f)
+            float collisionBoundX = 25.0f,
+            EncounterZone[] encounterZones = null)
         {
             if (string.IsNullOrWhiteSpace(mapId))
                 throw new ArgumentException("MapId must not be null or whitespace.", nameof(mapId));
@@ -57,6 +61,7 @@ namespace Contra3D.Core
             CoverPoints = (CoverPoint[])coverPoints.Clone();
             PickupLocations = (PickupLocation[])pickupLocations.Clone();
             CollisionBoundX = collisionBoundX;
+            EncounterZones = encounterZones != null ? (EncounterZone[])encounterZones.Clone() : Array.Empty<EncounterZone>();
         }
     }
 }

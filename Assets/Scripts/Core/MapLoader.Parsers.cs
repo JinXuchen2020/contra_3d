@@ -23,11 +23,13 @@ namespace Contra3D.Core
             bool inPickup = false;
             bool inPatrolPath = false;
             bool inWaypoints = false;
+            bool inEncounterZone = false;
             ParsedMap current = null;
             var currentSpawn = new Dictionary<string, string>();
             var currentCover = new Dictionary<string, string>();
             var currentPickup = new Dictionary<string, string>();
             var currentWaypoint = new Dictionary<string, string>();
+            var currentZone = new Dictionary<string, string>();
             string currentPathId = null;
 
             void FlushCurrentSpawn()
@@ -82,6 +84,15 @@ namespace Contra3D.Core
                         current.PatrolPaths.Add(new PatrolPath(currentPathId, updated.ToArray()));
                     }
                     currentWaypoint.Clear();
+                }
+            }
+
+            void FlushCurrentEncounterZone()
+            {
+                if (current != null && currentZone.Count > 0)
+                {
+                    current.EncounterZones.Add(ParseEncounterZone(currentZone));
+                    currentZone.Clear();
                 }
             }
 
@@ -172,7 +183,22 @@ namespace Contra3D.Core
                     inSpawn = false;
                     inCover = false;
                     inPickup = false;
+                    inEncounterZone = false;
                     currentPathId = null;
+                    continue;
+                }
+                if (line == "encounter_zones:")
+                {
+                    FlushCurrentSpawn();
+                    FlushCurrentCover();
+                    FlushCurrentPickup();
+                    FlushCurrentWaypoint();
+                    inEncounterZone = true;
+                    inSpawn = false;
+                    inCover = false;
+                    inPickup = false;
+                    inPatrolPath = false;
+                    inWaypoints = false;
                     continue;
                 }
 
@@ -234,6 +260,12 @@ namespace Contra3D.Core
                     {
                         FlushCurrentWaypoint();
                         ParseInlineObj(line, currentWaypoint);
+                        continue;
+                    }
+                    if (inEncounterZone)
+                    {
+                        FlushCurrentEncounterZone();
+                        ParseInlineObj(line, currentZone);
                         continue;
                     }
                 }
@@ -335,12 +367,38 @@ namespace Contra3D.Core
                     currentWaypoint["speed"] = val;
                     continue;
                 }
+                // Encounter zone keys
+                if (inEncounterZone && (line.StartsWith("zone_id:") || line.StartsWith("  zone_id:")))
+                {
+                    string val = line.Substring(line.IndexOf(':') + 1).Trim().Trim('"').Trim('\'');
+                    currentZone["zone_id"] = val;
+                    continue;
+                }
+                if (inEncounterZone && (line.StartsWith("bounds:") || line.StartsWith("  bounds:")))
+                {
+                    string val = line.Substring(line.IndexOf(':') + 1).Trim().Trim('"').Trim('\'');
+                    currentZone["bounds"] = val;
+                    continue;
+                }
+                if (inEncounterZone && (line.StartsWith("on_enter:") || line.StartsWith("  on_enter:")))
+                {
+                    string val = line.Substring(line.IndexOf(':') + 1).Trim().Trim('"').Trim('\'');
+                    currentZone["on_enter"] = val;
+                    continue;
+                }
+                if (inEncounterZone && (line.StartsWith("lock:") || line.StartsWith("  lock:")))
+                {
+                    string val = line.Substring(line.IndexOf(':') + 1).Trim().ToLower();
+                    currentZone["lock"] = val;
+                    continue;
+                }
             }
 
             FlushCurrentSpawn();
             FlushCurrentCover();
             FlushCurrentPickup();
             FlushCurrentWaypoint();
+            FlushCurrentEncounterZone();
             if (current != null)
                 result.Add(current);
 
@@ -476,6 +534,34 @@ namespace Contra3D.Core
             float waitSeconds = ParseFloat(f, "wait_s", 0f);
             float speed = ParseFloat(f, "speed", 1f);
             return new PatrolWaypoint(x, y, z, waitSeconds, speed);
+        }
+
+        private static EncounterZone ParseEncounterZone(Dictionary<string, string> f)
+        {
+            string zoneId = f.TryGetValue("zone_id", out var zid) ? zid.Trim() : null;
+            string boundsStr = f.TryGetValue("bounds", out var bnd) ? bnd.Trim() : null;
+            string onEnter = f.TryGetValue("on_enter", out var oe) ? oe.Trim() : "";
+            bool lockRetreat = false;
+            if (f.TryGetValue("lock", out var lk))
+            {
+                string lv = lk.Trim().ToLower();
+                lockRetreat = lv == "true" || lv == "1" || lv == "yes";
+            }
+
+            float xMin = 0f, xMax = 0f, zMin = 0f, zMax = 0f;
+            if (!string.IsNullOrWhiteSpace(boundsStr))
+            {
+                var parts = ParseVector3Components(boundsStr);
+                // bounds may be [xMin, xMax, zMin, zMax] (4 values) or [xMin, zMin, xMax, zMax]
+                // For simplicity, support 4-value AABB: [xMin, xMax, zMin, zMax]
+                float[] b = new float[4];
+                string[] bp = boundsStr.Trim('[', ']').Split(',');
+                for (int i = 0; i < 4 && i < bp.Length; i++)
+                    float.TryParse(bp[i].Trim(), out b[i]);
+                xMin = b[0]; xMax = b[1]; zMin = b[2]; zMax = b[3];
+            }
+
+            return new EncounterZone(zoneId, xMin, xMax, zMin, zMax, onEnter, lockRetreat);
         }
 
         #endregion

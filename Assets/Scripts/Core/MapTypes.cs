@@ -186,6 +186,52 @@ namespace Contra3D.Core
         }
     }
 
+    /// <summary>遭遇区封锁类型。</summary>
+    public enum EncounterZoneLockType
+    {
+        /// <summary>不封锁（默认）。</summary>
+        None,
+
+        /// <summary>进入后封锁后退路。</summary>
+        RetreatBlock
+    }
+
+    /// <summary>
+    /// 遭遇区。由 <see cref="MapLoader"/> 加载，Runtime 层使用其数据触发战斗/封锁逻辑。
+    /// </summary>
+    public readonly struct EncounterZone
+    {
+        /// <summary>区域唯一标识（如 "zone_01"）。</summary>
+        public string ZoneId { get; }
+
+        /// <summary>AABB 边界（X/Z 轴米制坐标）。XMin ≤ XMax，ZMin ≤ ZMax。</summary>
+        public (float XMin, float XMax, float ZMin, float ZMax) Bounds { get; }
+
+        /// <summary>进入此区域时触发的事件或 spawn_set ID（如 "spawn_set_01"）。</summary>
+        public string OnEnter { get; }
+
+        /// <summary>进入后是否封锁后退路。</summary>
+        public bool Lock { get; }
+
+        /// <summary>
+        /// 创建遭遇区。失败时抛 <see cref="ArgumentException"/>。
+        /// </summary>
+        public EncounterZone(string zoneId, float xMin, float xMax, float zMin, float zMax, string onEnter, bool lockRetreat = false)
+        {
+            if (string.IsNullOrWhiteSpace(zoneId))
+                throw new ArgumentException("ZoneId must not be null or whitespace.", nameof(zoneId));
+            if (xMin > xMax)
+                throw new ArgumentException($"XMin ({xMin}) must be ≤ XMax ({xMax}).", nameof(xMin));
+            if (zMin > zMax)
+                throw new ArgumentException($"ZMin ({zMin}) must be ≤ ZMax ({zMax}).", nameof(zMin));
+
+            ZoneId = zoneId;
+            Bounds = (xMin, xMax, zMin, zMax);
+            OnEnter = onEnter;
+            Lock = lockRetreat;
+        }
+    }
+
     /// <summary>
     /// 地图验证错误。携带出错字段路径与描述信息。
     /// </summary>

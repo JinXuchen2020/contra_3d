@@ -959,10 +959,38 @@ maps:
         }
 
         // T-BDD-ADOPT-bdd_encounter_zone — encounter_zone_lock_blocks_retreat
-        [Fact(Skip = "Feature not yet implemented: No EncounterZone type in MapTypes or MapDefinition. Contract requires EncounterZone with bounds, on_enter, and lock fields. Gap: EncounterZone model missing.")]
+        [Fact]
         public void Load_EncounterZoneWithLock_FlaggedForRuntime_BDD_encounter_zone_lock_blocks_retreat()
         {
-            Assert.True(true, "SKIPPED: EncounterZone lock support not yet implemented (EncounterZone model missing from MapTypes)");
+            // given: map with an encounter zone that has lock=true
+            string yaml = @"
+maps:
+  - map_id: m_encounter_test
+    name: ""EncounterZone Test""
+    spawn_points:
+      - {x: 0, y: 0, z: 0, team: player}
+      - {x: 10, y: 0, z: 0, team: enemy}
+    cover_points:
+      - {x: 5, y: 0, z: 0}
+    pickup_locations: []
+    encounter_zones:
+      - {zone_id: zone_01, bounds: [0, 10, 0, 10], on_enter: spawn_set_01, lock: true}
+    navmesh: ""
+";
+            // when: TryLoadFromString called
+            var (def, errors) = MapLoader.TryLoadFromString(yaml);
+
+            // then: loads successfully with encounter zone data preserved
+            Assert.NotNull(def);
+            Assert.Null(errors);
+            Assert.NotEmpty(def.EncounterZones);
+            Assert.Equal("zone_01", def.EncounterZones[0].ZoneId);
+            Assert.Equal(0f, def.EncounterZones[0].Bounds.XMin);
+            Assert.Equal(10f, def.EncounterZones[0].Bounds.XMax);
+            Assert.Equal(0f, def.EncounterZones[0].Bounds.ZMin);
+            Assert.Equal(10f, def.EncounterZones[0].Bounds.ZMax);
+            Assert.Equal("spawn_set_01", def.EncounterZones[0].OnEnter);
+            Assert.True(def.EncounterZones[0].Lock, "EncounterZone lock=true must be preserved");
         }
 
         #endregion

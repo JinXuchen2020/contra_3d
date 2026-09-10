@@ -130,6 +130,26 @@ namespace Contra3D.Core
                 }
             }
 
+            for (int i = 0; i < m.EncounterZones.Count; i++)
+            {
+                var zone = m.EncounterZones[i];
+                if (Math.Abs(zone.Bounds.XMin) > bound)
+                    errors.Add(new MapValidationError($"encounter_zones[{i}].bounds.x_min",
+                        $"Coordinate {zone.Bounds.XMin} is outside collision boundary ±{bound}."));
+                if (Math.Abs(zone.Bounds.XMax) > bound)
+                    errors.Add(new MapValidationError($"encounter_zones[{i}].bounds.x_max",
+                        $"Coordinate {zone.Bounds.XMax} is outside collision boundary ±{bound}."));
+                if (Math.Abs(zone.Bounds.ZMin) > bound)
+                    errors.Add(new MapValidationError($"encounter_zones[{i}].bounds.z_min",
+                        $"Coordinate {zone.Bounds.ZMin} is outside collision boundary ±{bound}."));
+                if (Math.Abs(zone.Bounds.ZMax) > bound)
+                    errors.Add(new MapValidationError($"encounter_zones[{i}].bounds.z_max",
+                        $"Coordinate {zone.Bounds.ZMax} is outside collision boundary ±{bound}."));
+                if (string.IsNullOrWhiteSpace(zone.ZoneId))
+                    errors.Add(new MapValidationError($"encounter_zones[{i}].zone_id",
+                        "ZoneId must not be null or whitespace."));
+            }
+
             return errors;
         }
     }
