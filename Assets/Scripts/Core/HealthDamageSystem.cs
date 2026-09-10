@@ -39,11 +39,11 @@ namespace Contra3D.Core
     public class HealthComponent
     {
         public string Id { get; }
-        public float CurrentHealth { get; set; }
-        public float MaxHealth { get; set; }
-        public float Armor { get; set; }
-        public float PartMultiplier { get; set; } // 默认 1.0（躯干）
-        public float InvulnTimer { get; set; }
+        public float CurrentHealth { get; internal set; }
+        public float MaxHealth { get; internal set; }
+        public float Armor { get; internal set; }
+        public float PartMultiplier { get; internal set; } // 默认 1.0（躯干）
+        public float InvulnTimer { get; internal set; }
         public bool IsDead { get; private set; }
 
         public HealthComponent(string id, float maxHealth, float armor = 0f, float partMultiplier = 1.0f)
