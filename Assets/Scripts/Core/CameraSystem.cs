@@ -67,7 +67,7 @@ namespace Contra3D.Core
         {
             Vector3 desiredPos = TargetPosition + new Vector3(OffsetsRight, OffsetsUp, -OffsetsBack);
             float factor = 1f - (float)Math.Exp(-Damping * dt);
-            Position = Vector3Extensions.Lerp(Position, desiredPos, factor);
+            Position = Vector3.Lerp(Position, desiredPos, factor);
             Rotation = ComputeLookAt(TargetPosition);
         }
 
@@ -108,8 +108,8 @@ namespace Contra3D.Core
             _modeTransitionElapsed += dt;
             float t = Math.Min(1f, _modeTransitionElapsed / _modeTransitionDuration);
             float eased = t * t * (3f - 2f * t);
-            Position = Vector3Extensions.Lerp(_modeStartPos, _modeEndPos, eased);
-            Rotation = Vector3Extensions.Lerp(_modeStartRot, _modeEndRot, eased);
+            Position = Vector3.Lerp(_modeStartPos, _modeEndPos, eased);
+            Rotation = Vector3.Lerp(_modeStartRot, _modeEndRot, eased);
             if (t >= 1f) { _modeTransitionActive = false; _modeTransitionElapsed = 0f; }
         }
 
@@ -186,7 +186,6 @@ namespace Contra3D.Core
 
     public static class Vector3Extensions
     {
-        public static Vector3 Lerp(Vector3 a, Vector3 b, float t) => new Vector3(a.X + (b.X - a.X) * t, a.Y + (b.Y - a.Y) * t, a.Z + (b.Z - a.Z) * t);
         public static float Length(this Vector3 v) => (float)Math.Sqrt(v.X * v.X + v.Y * v.Y + v.Z * v.Z);
     }
 }
