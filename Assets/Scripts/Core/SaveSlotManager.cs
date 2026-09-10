@@ -30,6 +30,72 @@ namespace Contra3D.Core
             for (int i = 0; i < maxSlots; i++)
                 _slots.Add(new SaveSlot { SlotId = i, State = SlotState.Empty, Data = null });
         }
+
+        /// <summary>
+        /// Saves game data to the specified slot. Overwrites any existing data.
+        /// Sets slot state to HasSave.
+        /// </summary>
+        /// <param name="slotId">Zero-based slot identifier.</param>
+        /// <param name="data">Save data to store.</param>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown when slotId is out of range.</exception>
+        /// <exception cref="ArgumentNullException">Thrown when data is null.</exception>
+        public void Save(int slotId, SaveData data)
+        {
+            ValidateSlotId(slotId);
+            if (data == null)
+                throw new ArgumentNullException(nameof(data));
+            var slot = _slots[slotId];
+            slot.Data = data;
+            slot.State = SlotState.HasSave;
+        }
+
+        /// <summary>
+        /// Loads save data from the specified slot.
+        /// </summary>
+        /// <param name="slotId">Zero-based slot identifier.</param>
+        /// <returns>The saved SaveData, or null if the slot is empty.</returns>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown when slotId is out of range.</exception>
+        public SaveData Load(int slotId)
+        {
+            ValidateSlotId(slotId);
+            return _slots[slotId].Data;
+        }
+
+        /// <summary>
+        /// Checks whether the specified slot contains valid save data.
+        /// </summary>
+        public bool HasSave(int slotId)
+        {
+            ValidateSlotId(slotId);
+            return _slots[slotId].State == SlotState.HasSave;
+        }
+
+        /// <summary>
+        /// Clears the specified slot, returning it to Empty state.
+        /// </summary>
+        public void Clear(int slotId)
+        {
+            ValidateSlotId(slotId);
+            var slot = _slots[slotId];
+            slot.Data = null;
+            slot.State = SlotState.Empty;
+        }
+
+        /// <summary>
+        /// Returns the raw SaveSlot for the given id, or null if out of range.
+        /// </summary>
+        public SaveSlot GetSlot(int slotId)
+        {
+            if (slotId < 0 || slotId >= _maxSlots)
+                return null;
+            return _slots[slotId];
+        }
+
+        private void ValidateSlotId(int slotId)
+        {
+            if (slotId < 0 || slotId >= _maxSlots)
+                throw new ArgumentOutOfRangeException(nameof(slotId), $"Slot id {slotId} is out of range [0, {_maxSlots - 1}].");
+        }
     }
 
     /// <summary>
