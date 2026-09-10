@@ -1,0 +1,23 @@
+{
+  "generated_ids": [
+    "rg_audio_bgm_transition_on_zone",
+    "rg_audio_sfx_played_on_hit",
+    "rg_camera_collision_correction",
+    "rg_camera_follows_player",
+    "rg_combat_damage_deterministic",
+    "rg_crosshair_rendered",
+    "rg_enemies_loaded",
+    "rg_health_armor_reduction_subtractive",
+    "rg_health_damage_deterministic",
+    "rg_hud_health_displayed",
+    "rg_hud_score_updated",
+    "rg_projectile_faction_avoids_friendly_fire",
+    "rg_projectile_spawn_and_advance",
+    "rg_save_checkpoint_written",
+    "rg_save_load_on_continue",
+    "rg_save_slots_initialized",
+    "rg_weapons_box_pickup",
+    "rg_weapons_dps_balance",
+    "rg_weapons_loaded"
+  ]
+}

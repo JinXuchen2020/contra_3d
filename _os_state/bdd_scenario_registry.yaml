@@ -9,7 +9,7 @@
 # NOT via headless Startup loader. entity_visible will be an honest skip
 # in headless CI but game_signal / state_changed are real assertions.
 #
-# Last updated: 2026-09-06 S001 cycle 4 — add projectile_system and health_damage entries; close T-BDD-REG-b289d4 and T-BDD-REG-5a2f65.
+# Last updated: 2026-09-10 S001 — add weapon_box_pickup and dps_balance entries to close T-E2E-GAP-WEAPON.
 
 systems:
   projectile_system:
@@ -133,6 +133,73 @@ systems:
           signal: weapon_library
           field: weapon_count
           equals: '5'
+
+    - id: rg_weapons_box_pickup
+      description: >-
+        Weapon box pickup triggers instant weapon switch: player starts with
+        rifle_default, picks up spread_shot box, switches primary to spread_shot
+        while preserving rifle_default in secondary slot. Verifies
+        weapon_box_pickup_and_switch e2e scenario (T-BDD-ADOPT-01bf03).
+      setup:
+        - spawn_entity: { type: player, position: [0, 0, 0] }
+      steps:
+        - step: render_frames
+          count: 5
+        - step: switch_weapon
+          from: rifle_default
+          to: spread_shot
+      expect:
+        - check: game_signal
+          signal: weapon_library
+          field: weapon_count
+          equals: '5'
+        - check: state_changed
+          field: primary_weapon
+          equals: 'spread_shot'
+        - check: state_changed
+          field: secondary_weapon
+          equals: 'rifle_default'
+        - check: state_changed
+          field: primary_ammo
+          equals: '8'
+        - check: state_changed
+          field: secondary_ammo
+          equals: '30'
+
+    - id: rg_weapons_dps_balance
+      description: >-
+        All 5 weapons (rifle/spread/laser/homing/machinegun) have theoretical
+        DPS within [0.8x, 1.5x] of rifle_default baseline. Verifies
+        dps_balance_envelope_across_arsenal e2e scenario (T-BDD-ADOPT-3b730f).
+      setup: []
+      steps:
+        - step: render_frames
+          count: 5
+      expect:
+        - check: game_signal
+          signal: weapon_library
+          field: weapon_count
+          equals: '5'
+        - check: state_changed
+          field: dps_rifle_baseline
+          min_equals: '84'
+          max_equals: '84'
+        - check: state_changed
+          field: dps_spread_shot
+          min_equals: '67.2'
+          max_equals: '126'
+        - check: state_changed
+          field: dps_laser_beam
+          min_equals: '67.2'
+          max_equals: '126'
+        - check: state_changed
+          field: dps_homing_missile
+          min_equals: '67.2'
+          max_equals: '126'
+        - check: state_changed
+          field: dps_machinegun
+          min_equals: '67.2'
+          max_equals: '126'
 
   enemy_ai:
     - id: rg_enemies_loaded
