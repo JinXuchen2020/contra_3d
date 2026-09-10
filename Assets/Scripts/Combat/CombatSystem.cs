@@ -29,8 +29,8 @@ namespace Contra3D.Combat
         public int Score { get; private set; }
         public int Kills { get; private set; }
 
-        /// <summary>敌人武器系统（可为 null，向后兼容）。</summary>
-        public EnemyWeaponSystem EnemyWeaponSystem => _enemyWeaponSystem;
+        /// <summary>敌人武器系统（可为 null，向后兼容）。Internal for same-assembly access only.</summary>
+        internal EnemyWeaponSystem EnemyWeaponSystem => _enemyWeaponSystem;
 
         /// <summary>Expose internal HealthDamageSystem for PlaytestSession use.</summary>
         internal HealthDamageSystem GetHealthDamageSystem() => _healthDamageSystem;
