@@ -243,6 +243,12 @@ namespace Contra3D.Core
                     if (inSpawn) currentSpawn["trigger"] = val;
                     continue;
                 }
+                if (line.StartsWith("facing_normal:") || line.StartsWith("  facing_normal:"))
+                {
+                    string val = line.Substring(line.IndexOf(':') + 1).Trim().Trim('"').Trim('\'');
+                    if (inCover) currentCover["facing_normal"] = val;
+                    continue;
+                }
                 if (line.StartsWith("spawn_id:") || line.StartsWith("  spawn_id:"))
                 {
                     string val = line.Substring(line.IndexOf(':') + 1).Trim().Trim('"').Trim('\'');
@@ -270,7 +276,8 @@ namespace Contra3D.Core
                 inner = inner.Substring(0, inner.Length - 1);
             inner = inner.Trim();
 
-            string[] parts = inner.Split(',');
+            // Split respecting bracket nesting so vector literals like [0, 1, 0] stay intact
+            var parts = SplitPreservingBrackets(inner);
             foreach (string part in parts)
             {
                 string p = part.Trim();
@@ -281,6 +288,27 @@ namespace Contra3D.Core
                 string val = p.Substring(ci + 1).Trim().Trim('"').Trim('\'');
                 dict[key] = val;
             }
+        }
+
+        /// <summary>Splits a comma-separated string into parts, respecting [...] and {...} nesting.</summary>
+        private static string[] SplitPreservingBrackets(string inner)
+        {
+            var result = new List<string>();
+            int depth = 0;
+            int start = 0;
+            for (int i = 0; i < inner.Length; i++)
+            {
+                char c = inner[i];
+                if (c == '[' || c == '{') depth++;
+                else if (c == ']' || c == '}') depth--;
+                else if (c == ',' && depth == 0)
+                {
+                    result.Add(inner.Substring(start, i - start));
+                    start = i + 1;
+                }
+            }
+            result.Add(inner.Substring(start));
+            return result.ToArray();
         }
 
         private static SpawnPoint ParseSpawnPoint(Dictionary<string, string> f)
@@ -307,6 +335,11 @@ namespace Contra3D.Core
             float x = ParseFloat(f, "x", 0f);
             float y = ParseFloat(f, "y", 0f);
             float z = ParseFloat(f, "z", 0f);
+            if (f.TryGetValue("facing_normal", out var fn))
+            {
+                var components = ParseVector3Components(fn);
+                return new CoverPoint(x, y, z, components[0], components[1], components[2]);
+            }
             return new CoverPoint(x, y, z);
         }
 
@@ -324,6 +357,26 @@ namespace Contra3D.Core
             };
             f.TryGetValue("spawn_id", out var spawnId);
             return new PickupLocation(x, y, z, type, spawnId);
+        }
+
+        /// <summary>
+        /// 解析 facing_normal 字段，支持 "[0, 1, 0]" 或 "0,1,0" 格式。
+        /// </summary>
+        private static float[] ParseVector3Components(string value)
+        {
+            // Strip optional brackets
+            string inner = value.Trim();
+            if (inner.StartsWith("[")) inner = inner.Substring(1);
+            if (inner.EndsWith("]")) inner = inner.Substring(0, inner.Length - 1);
+            inner = inner.Trim();
+
+            string[] parts = inner.Split(',');
+            var result = new float[3];
+            for (int i = 0; i < 3; i++)
+            {
+                float.TryParse(parts[i].Trim(), out result[i]);
+            }
+            return result;
         }
 
         private static float ParseFloat(Dictionary<string, string> f, string key, float fallback)

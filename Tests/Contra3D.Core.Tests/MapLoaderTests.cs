@@ -813,10 +813,101 @@ maps:
         }
 
         // T-BDD-ADOPT-bdd_cover_normal — cover_point_facing_normal_valid
-        [Fact(Skip = "Feature not yet implemented: CoverPoint has no facing_normal field. Contract requires facing_normal to be a unit vector. Gap: CoverPoint struct needs extension.")]
+        [Fact]
         public void Load_CoverPointWithInvalidFacingNormal_ReturnsValidationError_BDD_cover_point_facing_normal_valid()
         {
-            Assert.True(true, "SKIPPED: CoverPoint facing_normal validation not yet implemented (CoverPoint has no facing_normal)");
+            // given: map with an invalid (non-unit) facing_normal
+            string yaml = @"
+maps:
+  - map_id: m_cover_normal_test
+    name: ""CoverNormal Test""
+    spawn_points:
+      - {x: 0, y: 0, z: 0, team: player}
+      - {x: 10, y: 0, z: 0, team: enemy}
+    cover_points:
+      - {x: 5, y: 0, z: 0, facing_normal: [1, 1, 0]}
+    pickup_locations: []
+    navmesh: ""
+";
+            // when: TryLoadFromString called
+            var (def, errors) = MapLoader.TryLoadFromString(yaml);
+
+            // then: returns null def because facing_normal is not a unit vector
+            Assert.Null(def);
+            Assert.NotNull(errors);
+            Assert.NotEmpty(errors);
+
+            // then: contains error about facing_normal not being unit length
+            bool foundNormalError = false;
+            foreach (var e in errors)
+            {
+                if (e.Path.Contains("cover_points[0]") && e.Path.Contains("facing_normal")
+                    && e.Message.Contains("unit vector"))
+                {
+                    foundNormalError = true;
+                    break;
+                }
+            }
+            Assert.True(foundNormalError, $"Expected facing_normal validation error, got: {string.Join("; ", errors)}");
+        }
+
+        [Fact]
+        public void Load_CoverPointWithValidFacingNormal_LoadsSuccessfully_BDD_cover_point_facing_normal_valid()
+        {
+            // given: map with a valid unit facing_normal
+            string yaml = @"
+maps:
+  - map_id: m_cover_normal_valid
+    name: ""CoverNormal Valid Test""
+    spawn_points:
+      - {x: 0, y: 0, z: 0, team: player}
+      - {x: 10, y: 0, z: 0, team: enemy}
+    cover_points:
+      - {x: 5, y: 0, z: 0, facing_normal: [0, 1, 0]}
+    pickup_locations: []
+    navmesh: ""
+";
+            // when: TryLoadFromString called
+            var (def, errors) = MapLoader.TryLoadFromString(yaml);
+
+            // then: loads successfully
+            Assert.NotNull(def);
+            Assert.Null(errors);
+            Assert.True(def.CoverPoints[0].HasFacingNormal);
+            Assert.Equal(0f, def.CoverPoints[0].FacingNormalX);
+            Assert.Equal(1f, def.CoverPoints[0].FacingNormalY);
+            Assert.Equal(0f, def.CoverPoints[0].FacingNormalZ);
+        }
+
+        [Fact]
+        public void Load_CoverPointWithCompactFacingNormalFormat_LoadsSuccessfully_BDD_cover_point_facing_normal_compact()
+        {
+            // given: map with compact facing_normal format (no brackets, no spaces) via multi-line syntax
+            string yaml = @"
+maps:
+  - map_id: m_cover_normal_compact
+    name: ""CoverNormal Compact Test""
+    spawn_points:
+      - {x: 0, y: 0, z: 0, team: player}
+      - {x: 10, y: 0, z: 0, team: enemy}
+    cover_points:
+      - x: 5
+        y: 0
+        z: 0
+        facing_normal: 1,0,0
+    pickup_locations: []
+    navmesh: ""
+";
+            // when: TryLoadFromString called
+            var (def, errors) = MapLoader.TryLoadFromString(yaml);
+
+            // then: loads successfully
+            Assert.NotNull(def);
+            Assert.Null(errors);
+            Assert.True(def.CoverPoints[0].HasFacingNormal);
+            Assert.Equal(1f, def.CoverPoints[0].FacingNormalX);
+            Assert.Equal(0f, def.CoverPoints[0].FacingNormalY);
+            Assert.Equal(0f, def.CoverPoints[0].FacingNormalZ);
         }
 
         // T-BDD-ADOPT-bdd_patrol_path — patrol_path_waypoint_validation

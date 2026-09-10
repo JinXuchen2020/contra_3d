@@ -69,6 +69,17 @@ namespace Contra3D.Core
                     errors.Add(new MapValidationError($"cover_points[{i}].z",
                         $"Coordinate {cp.Z} is outside collision boundary ±{bound}."));
 
+                if (cp.HasFacingNormal)
+                {
+                    float len = (float)Math.Sqrt(
+                        cp.FacingNormalX * cp.FacingNormalX +
+                        cp.FacingNormalY * cp.FacingNormalY +
+                        cp.FacingNormalZ * cp.FacingNormalZ);
+                    if (Math.Abs(len - 1.0f) >= 0.01f)
+                        errors.Add(new MapValidationError($"cover_points[{i}].facing_normal",
+                            $"Facing normal [{cp.FacingNormalX}, {cp.FacingNormalY}, {cp.FacingNormalZ}] is not a unit vector (length={len:F4}, expected ≈1.0)."));
+                }
+
                 for (int j = 0; j < m.SpawnPoints.Count; j++)
                 {
                     float dist = cp.DistanceTo(m.SpawnPoints[j]);

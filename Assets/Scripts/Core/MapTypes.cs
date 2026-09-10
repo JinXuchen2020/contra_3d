@@ -104,6 +104,18 @@ namespace Contra3D.Core
         /// <summary>Z 坐标（米）。</summary>
         public float Z { get; }
 
+        /// <summary>是否设置了 facing_normal。</summary>
+        public bool HasFacingNormal { get; }
+
+        /// <summary>朝向法线 X 分量（单位向量）；HasFacingNormal 为 false 时无意义。</summary>
+        public float FacingNormalX { get; }
+
+        /// <summary>朝向法线 Y 分量（单位向量）；HasFacingNormal 为 false 时无意义。</summary>
+        public float FacingNormalY { get; }
+
+        /// <summary>朝向法线 Z 分量（单位向量）；HasFacingNormal 为 false 时无意义。</summary>
+        public float FacingNormalZ { get; }
+
         /// <summary>
         /// 创建掩体点。
         /// </summary>
@@ -112,6 +124,24 @@ namespace Contra3D.Core
             X = x;
             Y = y;
             Z = z;
+            HasFacingNormal = false;
+            FacingNormalX = 0f;
+            FacingNormalY = 0f;
+            FacingNormalZ = 0f;
+        }
+
+        /// <summary>
+        /// 创建掩体点（含朝向法线）。
+        /// </summary>
+        public CoverPoint(float x, float y, float z, float facingNormalX, float facingNormalY, float facingNormalZ)
+        {
+            X = x;
+            Y = y;
+            Z = z;
+            HasFacingNormal = true;
+            FacingNormalX = facingNormalX;
+            FacingNormalY = facingNormalY;
+            FacingNormalZ = facingNormalZ;
         }
 
         /// <summary>与另一出生点的水平距离（忽略 Y）。</summary>
