@@ -34,10 +34,10 @@ namespace Contra3D.Core
         private readonly Dictionary<int, float> _layerVolumes;
         private BgmTransitionState _transition;
         private readonly List<AudioResourceEntry> _resources;
-        public int MaxSfxConcurrency { get; private set; } = 8;
+        public int MaxSfxConcurrency { get; internal set; } = 8;
         private readonly List<SfxInstance> _activeSfx;
         private float _dopplerFactor = 1.0f;
-        public float DopplerFactor { get => _dopplerFactor; set => _dopplerFactor = value; }
+        public float DopplerFactor { get => _dopplerFactor; internal set => _dopplerFactor = value; }
 
         public string CurrentBgmId => _currentBgmId;
         public float CurrentBgmVolume => _currentBgmVolume;
