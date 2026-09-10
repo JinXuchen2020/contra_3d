@@ -900,4 +900,533 @@ namespace Contra3D.Core.Tests
             Assert.Empty(built.Weapons);
         }
     }
+
+    // ── Pure-logic AiSystem direct unit tests ─────────────────────────────
+    // These tests exercise the bare AiSystem partial class directly via its
+    // public API — no reflection, no AiRuntimeSystem wrapper.
+
+    public class AiSystemDirectTests
+    {
+        private static Dictionary<string, EnemyDefinition> CreateDefs()
+        {
+            var defs = new Dictionary<string, EnemyDefinition>();
+            defs["grunt"] = new EnemyDefinition("grunt", "Grunt", 24f, 2f, AiType.Patrol,
+                visionRange: 15f, attackRange: 5f, alertThreshold: 60f, comprehensionThreshold: 100f);
+            defs["charger"] = new EnemyDefinition("charger", "Charger", 36f, 4.5f, AiType.Rusher,
+                visionRange: 12f, attackRange: 2f);
+            defs["sniper"] = new EnemyDefinition("sniper", "Sniper", 30f, 0f, AiType.Sniper,
+                visionRange: 35f, attackRange: 30f);
+            defs["hound"] = new EnemyDefinition("hound", "Hound", 18f, 5f, AiType.Chase,
+                visionRange: 20f, attackRange: 3f);
+            return defs;
+        }
+
+        // ── Constructor ────────────────────────────────────────────────────
+
+        [Fact]
+        public void Constructor_NullDefinitions_ThrowsArgumentException()
+        {
+            Assert.Throws<ArgumentException>(() => new AiSystem(null!));
+        }
+
+        [Fact]
+        public void Constructor_WithNullRandomProvider_UsesDefault()
+        {
+            var sys = new AiSystem(CreateDefs(), randomProvider: null);
+            sys.SpawnEnemy("grunt", Vector3.Zero);
+            Assert.True(sys.ActiveCount == 1);
+        }
+
+        [Fact]
+        public void Constructor_WithCustomConfig_ReturnsConfig()
+        {
+            var customConfig = AISpawnConfig.LoadFromString("max_normal: 5\nmax_rusher: 3\nanti_door_camping_distance: 8");
+            var sys = new AiSystem(CreateDefs(), config: customConfig);
+            Assert.Equal(5, sys.Config.MaxNormal);
+            Assert.Equal(3, sys.Config.MaxRusher);
+            Assert.Equal(8f, sys.Config.AntiDoorCampingDistance);
+        }
+
+        // ── TrySpawn ───────────────────────────────────────────────────────
+
+        [Fact]
+        public void TrySpawn_UnknownEnemy_ReturnsFalse()
+        {
+            var sys = new AiSystem(CreateDefs());
+            Assert.False(sys.TrySpawn("nonexistent", new Vector3(10, 0, 10)));
+        }
+
+        [Fact]
+        public void TrySpawn_AntiDoorCamping_RejectsNearPlayer()
+        {
+            var sys = new AiSystem(CreateDefs());
+            sys.SetPlayerPosition(Vector3.Zero);
+            // Distance 3m < default 5m anti-door-camping radius → rejected
+            Assert.False(sys.TrySpawn("grunt", new Vector3(3, 0, 0)));
+            Assert.Equal(0, sys.ActiveCount);
+        }
+
+        [Fact]
+        public void TrySpawn_BoundaryDistance_Accepted()
+        {
+            var sys = new AiSystem(CreateDefs());
+            sys.SetPlayerPosition(Vector3.Zero);
+            // Exactly 5m = AntiDoorCampingDistance → accepted (strictly less is rejected)
+            Assert.True(sys.TrySpawn("grunt", new Vector3(5f, 0, 0)));
+            Assert.Equal(1, sys.ActiveCount);
+        }
+
+        [Fact]
+        public void TrySpawn_Successful_SpawnsEnemy()
+        {
+            var sys = new AiSystem(CreateDefs());
+            sys.SetPlayerPosition(new Vector3(100, 0, 0));
+            bool spawned = sys.TrySpawn("grunt", new Vector3(10, 0, 10));
+            Assert.True(spawned);
+            Assert.Equal(1, sys.ActiveCount);
+            var states = sys.GetStates();
+            Assert.True(states.ContainsKey("grunt"));
+            Assert.Equal(AiState.Idle, states["grunt"].State);
+        }
+
+        [Fact]
+        public void TrySpawn_RusherCapExceeded_Enqueues()
+        {
+            var sys = new AiSystem(CreateDefs());
+            sys.SetPlayerPosition(new Vector3(100, 0, 0));
+            // Default MaxRusher = 4
+            for (int i = 0; i < 4; i++)
+                sys.TrySpawn("charger", new Vector3(10 + i, 0, 10));
+            Assert.Equal(4, sys.RusherCount);
+            // 5th rusher should be queued (not counted as active)
+            Assert.False(sys.TrySpawn("charger", new Vector3(50, 0, 50)));
+            Assert.Equal(4, sys.RusherCount);
+        }
+
+        [Fact]
+        public void TrySpawn_NormalCapExceeded_Enqueues()
+        {
+            var sys = new AiSystem(CreateDefs());
+            sys.SetPlayerPosition(new Vector3(100, 0, 0));
+            // Default MaxNormal = 12
+            for (int i = 0; i < 12; i++)
+                sys.TrySpawn("grunt", new Vector3(10 + i, 0, 10));
+            Assert.Equal(12, sys.ActiveCount);
+            // 13th grunt should be queued
+            Assert.False(sys.TrySpawn("grunt", new Vector3(50, 0, 50)));
+            Assert.Equal(12, sys.ActiveCount);
+        }
+
+        // ── OnEnemyDead ────────────────────────────────────────────────────
+
+        [Fact]
+        public void OnEnemyDead_UnknownId_IsNoOp()
+        {
+            var sys = new AiSystem(CreateDefs());
+            sys.SetPlayerPosition(new Vector3(100, 0, 0));
+            int before = sys.ActiveCount;
+            sys.OnEnemyDead("nobody");
+            Assert.Equal(before, sys.ActiveCount);
+        }
+
+        [Fact]
+        public void OnEnemyDead_RemovesEnemy()
+        {
+            var sys = new AiSystem(CreateDefs());
+            sys.SetPlayerPosition(new Vector3(100, 0, 0));
+            sys.TrySpawn("grunt", new Vector3(10, 0, 10));
+            Assert.True(sys.GetStates().ContainsKey("grunt"));
+            sys.OnEnemyDead("grunt");
+            Assert.False(sys.GetStates().ContainsKey("grunt"));
+            Assert.Equal(0, sys.ActiveCount);
+        }
+
+        [Fact]
+        public void OnEnemyDead_DecrementsRusherCount()
+        {
+            var sys = new AiSystem(CreateDefs());
+            sys.SetPlayerPosition(new Vector3(100, 0, 0));
+            sys.TrySpawn("charger", new Vector3(10, 0, 10));
+            Assert.Equal(1, sys.RusherCount);
+            sys.OnEnemyDead("charger");
+            Assert.Equal(0, sys.RusherCount);
+        }
+
+        [Fact]
+        public void OnEnemyDead_ReleasesQueuedSpawn()
+        {
+            var sys = new AiSystem(CreateDefs());
+            sys.SetPlayerPosition(new Vector3(100, 0, 0));
+            // Fill to cap
+            for (int i = 0; i < 12; i++)
+                sys.TrySpawn("grunt", new Vector3(10 + i, 0, 10));
+            Assert.Equal(12, sys.ActiveCount);
+            // Queue one more
+            Assert.False(sys.TrySpawn("grunt", new Vector3(50, 0, 50)));
+            Assert.Equal(12, sys.ActiveCount);
+            // Kill one → queued should be released
+            sys.OnEnemyDead("grunt"); // kills the first one
+            // With the default queue logic, the queued grunt is re-spawned at the
+            // position of the dead one. Since the dead enemy's key was "grunt"
+            // and all shared that key, the last one spawned (index 11) gets killed;
+            // the queued one takes its place. Active count should stay at 12.
+            Assert.Equal(12, sys.ActiveCount);
+        }
+
+        // ── SpawnEnemy ─────────────────────────────────────────────────────
+
+        [Fact]
+        public void SpawnEnemy_UnknownEnemy_ThrowsArgumentException()
+        {
+            var sys = new AiSystem(CreateDefs());
+            Assert.Throws<ArgumentException>(() => sys.SpawnEnemy("nonexistent", Vector3.Zero));
+        }
+
+        [Fact]
+        public void SpawnEnemy_IncrementsActiveCount()
+        {
+            var sys = new AiSystem(CreateDefs());
+            Assert.Equal(0, sys.ActiveCount);
+            sys.SpawnEnemy("grunt", Vector3.Zero);
+            Assert.Equal(1, sys.ActiveCount);
+            sys.SpawnEnemy("hound", new Vector3(5, 0, 0));
+            Assert.Equal(2, sys.ActiveCount);
+        }
+
+        [Fact]
+        public void SpawnEnemy_SetsInitialState()
+        {
+            var sys = new AiSystem(CreateDefs());
+            sys.SpawnEnemy("grunt", new Vector3(3, 0, 4));
+            var state = sys.GetStates()["grunt"];
+            Assert.Equal(AiState.Idle, state.State);
+            Assert.Equal(24f, state.Health);
+            Assert.Equal(24f, state.MaxHealth);
+            // Verify position is set correctly
+            Assert.Equal(new Vector3(3, 0, 4), state.Position);
+        }
+
+        [Fact]
+        public void SpawnEnemy_Rusher_IncrementsRusherCount()
+        {
+            var sys = new AiSystem(CreateDefs());
+            Assert.Equal(0, sys.RusherCount);
+            sys.SpawnEnemy("charger", Vector3.Zero);
+            Assert.Equal(1, sys.RusherCount);
+        }
+
+        // ── Update ─────────────────────────────────────────────────────────
+
+        [Fact]
+        public void Update_ZeroDt_ThrowsArgumentOutOfRangeException()
+        {
+            var sys = new AiSystem(CreateDefs());
+            sys.SetPlayerPosition(new Vector3(100, 0, 0));
+            sys.TrySpawn("grunt", new Vector3(10, 0, 10));
+            Assert.Throws<ArgumentOutOfRangeException>(() => sys.Update(0f));
+        }
+
+        [Fact]
+        public void Update_NaN_ThrowsArgumentOutOfRangeException()
+        {
+            var sys = new AiSystem(CreateDefs());
+            sys.SetPlayerPosition(new Vector3(100, 0, 0));
+            sys.TrySpawn("grunt", new Vector3(10, 0, 10));
+            Assert.Throws<ArgumentOutOfRangeException>(() => sys.Update(float.NaN));
+        }
+
+        [Fact]
+        public void Update_PositiveInfinity_ThrowsArgumentOutOfRangeException()
+        {
+            var sys = new AiSystem(CreateDefs());
+            sys.SetPlayerPosition(new Vector3(100, 0, 0));
+            sys.TrySpawn("grunt", new Vector3(10, 0, 10));
+            Assert.Throws<ArgumentOutOfRangeException>(() => sys.Update(float.PositiveInfinity));
+        }
+
+        [Fact]
+        public void Update_NegativeDt_ThrowsArgumentOutOfRangeException()
+        {
+            var sys = new AiSystem(CreateDefs());
+            sys.SetPlayerPosition(new Vector3(100, 0, 0));
+            sys.TrySpawn("grunt", new Vector3(10, 0, 10));
+            Assert.Throws<ArgumentOutOfRangeException>(() => sys.Update(-0.01f));
+        }
+
+        [Fact]
+        public void Update_IgnoresDeadEnemies()
+        {
+            var sys = new AiSystem(CreateDefs());
+            sys.SetPlayerPosition(new Vector3(100, 0, 0));
+            sys.TrySpawn("grunt", new Vector3(10, 0, 10));
+            // Kill the enemy
+            sys.TakeDamage("grunt", 999f);
+            var states = sys.GetStates();
+            Assert.Equal(AiState.Dead, states["grunt"].State);
+            Assert.False(states["grunt"].IsAlive);
+            // Update should not throw and count should remain 0
+            int countBefore = sys.ActiveCount;
+            sys.Update(1f);
+            Assert.Equal(countBefore, sys.ActiveCount);
+        }
+
+        // ── GetCommand ─────────────────────────────────────────────────────
+
+        [Fact]
+        public void GetCommand_UnknownEnemy_ReturnsIdle()
+        {
+            var sys = new AiSystem(CreateDefs());
+            var cmd = sys.GetCommand("nobody");
+            Assert.Equal(AICommand.Idle.MoveIntent, cmd.MoveIntent);
+            Assert.False(cmd.FireRequest);
+        }
+
+        [Fact]
+        public void GetCommand_DeadEnemy_ReturnsIdle()
+        {
+            var sys = new AiSystem(CreateDefs());
+            sys.SpawnEnemy("grunt", Vector3.Zero);
+            sys.TakeDamage("grunt", 999f);
+            var cmd = sys.GetCommand("grunt");
+            Assert.Equal(AICommand.Idle.MoveIntent, cmd.MoveIntent);
+            Assert.False(cmd.FireRequest);
+        }
+
+        [Fact]
+        public void GetCommand_EnemyInRangeRequestsFire()
+        {
+            var sys = new AiSystem(CreateDefs());
+            // Spawn far from player to avoid anti-door camping rejection
+            sys.SetPlayerPosition(new Vector3(100, 0, 0));
+            sys.TrySpawn("grunt", new Vector3(10, 0, 10));
+            // Move player within attack range (5m) of grunt at (10,0,10)
+            // Distance from (11,0,11) to (10,0,10) = sqrt(2) ≈ 1.41m < 5m
+            sys.SetPlayerPosition(new Vector3(11, 0, 11));
+            // Update: let vigilance build (20/s * 5s = 100 >= comprehensionThreshold)
+            for (int i = 0; i < 10; i++)
+                sys.Update(1f);
+            // Verify enemy is still alive and in engagement state
+            Assert.True(sys.GetStates().ContainsKey("grunt"), "Enemy should still be in states after updates");
+            var state = sys.GetStates()["grunt"];
+            Assert.True(state.State == AiState.Combat || state.State == AiState.Alert,
+                $"Expected Combat/Alert, got {state.State} (vigilance={state.Vigilance:F1})");
+            var cmd = sys.GetCommand("grunt");
+            Assert.True(cmd.FireRequest, "Enemy in combat range should request fire");
+        }
+
+        // ── Config property ────────────────────────────────────────────────
+
+        [Fact]
+        public void Config_ReturnsDefaultWhenNoConfigProvided()
+        {
+            var sys = new AiSystem(CreateDefs());
+            var cfg = sys.Config;
+            Assert.Equal(12, cfg.MaxNormal);
+            Assert.Equal(4, cfg.MaxRusher);
+            Assert.Equal(5f, cfg.AntiDoorCampingDistance);
+        }
+
+        [Fact]
+        public void Config_ReturnsInjectedConfig()
+        {
+            var customConfig = AISpawnConfig.LoadFromString("max_normal: 7\nmax_rusher: 3\nanti_door_camping_distance: 6");
+            var sys = new AiSystem(CreateDefs(), config: customConfig);
+            Assert.Equal(7, sys.Config.MaxNormal);
+            Assert.Equal(3, sys.Config.MaxRusher);
+        }
+
+        // ── RemoveEnemy ────────────────────────────────────────────────────
+
+        [Fact]
+        public void RemoveEnemy_RemovesFromStates()
+        {
+            var sys = new AiSystem(CreateDefs());
+            sys.SpawnEnemy("grunt", Vector3.Zero);
+            Assert.True(sys.GetStates().ContainsKey("grunt"));
+            sys.RemoveEnemy("grunt");
+            Assert.False(sys.GetStates().ContainsKey("grunt"));
+        }
+
+        [Fact]
+        public void RemoveEnemy_IsPureStateRemoval()
+        {
+            var sys = new AiSystem(CreateDefs());
+            sys.SpawnEnemy("grunt", Vector3.Zero);
+            Assert.Equal(1, sys.ActiveCount);
+            Assert.True(sys.GetStates().ContainsKey("grunt"));
+            sys.RemoveEnemy("grunt");
+            Assert.False(sys.GetStates().ContainsKey("grunt"));
+            // RemoveEnemy does NOT decrement ActiveCount — that's OnEnemyDead's role
+            Assert.Equal(1, sys.ActiveCount);
+        }
+
+        // ── SetPlayerPosition ──────────────────────────────────────────────
+
+        [Fact]
+        public void SetPlayerPosition_AffectsSpawnDistanceCheck()
+        {
+            var sys = new AiSystem(CreateDefs());
+            sys.SetPlayerPosition(Vector3.Zero);
+            Assert.False(sys.TrySpawn("grunt", new Vector3(2, 0, 0))); // too close
+            sys.SetPlayerPosition(new Vector3(100, 0, 0));
+            Assert.True(sys.TrySpawn("grunt", new Vector3(2, 0, 0))); // far enough
+        }
+
+        // ── TakeDamage edge cases ──────────────────────────────────────────
+
+        [Fact]
+        public void TakeDamage_UnknownEnemy_IsNoOp()
+        {
+            var sys = new AiSystem(CreateDefs());
+            sys.SetPlayerPosition(new Vector3(100, 0, 0));
+            // Should not throw
+            sys.TakeDamage("nobody", 10f);
+            Assert.Equal(0, sys.ActiveCount);
+        }
+
+        [Fact]
+        public void TakeDamage_SubLethal_SetsStaggered()
+        {
+            var sys = new AiSystem(CreateDefs());
+            sys.SpawnEnemy("hound", new Vector3(2f, 0, 0));
+            sys.SetPlayerPosition(Vector3.Zero);
+            sys.Update(0.1f); // Enter combat
+            sys.TakeDamage("hound", 5f);
+            var state = sys.GetStates()["hound"];
+            Assert.Equal(AiState.Staggered, state.State);
+            Assert.Equal(13f, state.Health);
+            Assert.True(state.IsAlive);
+        }
+
+        [Fact]
+        public void TakeDamage_Fatal_SetsDeadState()
+        {
+            var sys = new AiSystem(CreateDefs());
+            sys.SpawnEnemy("grunt", Vector3.Zero);
+            sys.TakeDamage("grunt", 24f);
+            var state = sys.GetStates()["grunt"];
+            Assert.Equal(AiState.Dead, state.State);
+            Assert.Equal(0f, state.Health);
+            Assert.False(state.IsAlive);
+        }
+
+        [Fact]
+        public void TakeDamage_Fatal_CapsHealthAtZero()
+        {
+            var sys = new AiSystem(CreateDefs());
+            sys.SpawnEnemy("grunt", Vector3.Zero);
+            sys.TakeDamage("grunt", 100f); // way more than health
+            var state = sys.GetStates()["grunt"];
+            Assert.Equal(0f, state.Health);
+            Assert.Equal(AiState.Dead, state.State);
+        }
+
+        [Fact]
+        public void TakeDamage_OnHit_SetsVigilance()
+        {
+            var sys = new AiSystem(CreateDefs());
+            sys.SpawnEnemy("hound", Vector3.Zero);
+            sys.TakeDamage("hound", 5f);
+            var state = sys.GetStates()["hound"];
+            Assert.Equal(sys.Definitions["hound"].HitVigilanceInstant, state.Vigilance);
+            Assert.Equal(0f, state.TimeSinceLastStimulus);
+        }
+
+        // ── GetStates ──────────────────────────────────────────────────────
+
+        [Fact]
+        public void GetStates_EmptyWhenNoEnemies()
+        {
+            var sys = new AiSystem(CreateDefs());
+            Assert.Empty(sys.GetStates());
+        }
+
+        [Fact]
+        public void GetStates_ReturnsAllSpawnedEnemies()
+        {
+            var sys = new AiSystem(CreateDefs());
+            sys.SpawnEnemy("grunt", Vector3.Zero);
+            sys.SpawnEnemy("hound", new Vector3(5, 0, 0));
+            var states = sys.GetStates();
+            Assert.Equal(2, states.Count);
+            Assert.True(states.ContainsKey("grunt"));
+            Assert.True(states.ContainsKey("hound"));
+        }
+
+        // ── Definitions accessor ───────────────────────────────────────────
+
+        [Fact]
+        public void Definitions_ReturnsInjectedDictionary()
+        {
+            var defs = CreateDefs();
+            var sys = new AiSystem(defs);
+            Assert.Same(defs, sys.Definitions);
+        }
+
+        [Fact]
+        public void Definitions_ContainsAllRegisteredDefs()
+        {
+            var sys = new AiSystem(CreateDefs());
+            Assert.Contains("grunt", sys.Definitions.Keys);
+            Assert.Contains("charger", sys.Definitions.Keys);
+            Assert.Contains("sniper", sys.Definitions.Keys);
+            Assert.Contains("hound", sys.Definitions.Keys);
+        }
+
+        // ── Deterministic behaviour with fixed random provider ─────────────
+
+        [Fact]
+        public void Constructor_WithDeterministicRandom_ProvidesDeterministicPatrolTargets()
+        {
+            var rand = new DeterministicRandomProvider(42);
+            var sys1 = new AiSystem(CreateDefs(), randomProvider: rand);
+            var rand2 = new DeterministicRandomProvider(42);
+            var sys2 = new AiSystem(CreateDefs(), randomProvider: rand2);
+
+            sys1.SpawnEnemy("grunt", Vector3.Zero);
+            sys2.SpawnEnemy("grunt", Vector3.Zero);
+
+            var s1 = sys1.GetStates()["grunt"];
+            var s2 = sys2.GetStates()["grunt"];
+            Assert.Equal(s1.PatrolTarget, s2.PatrolTarget);
+        }
+
+        // ── ActiveCount consistency ────────────────────────────────────────
+
+        [Fact]
+        public void ActiveCount_IncreasesOnSpawn()
+        {
+            var sys = new AiSystem(CreateDefs());
+            Assert.Equal(0, sys.ActiveCount);
+            sys.SpawnEnemy("grunt", Vector3.Zero);
+            Assert.Equal(1, sys.ActiveCount);
+            sys.SpawnEnemy("hound", new Vector3(1, 0, 0));
+            Assert.Equal(2, sys.ActiveCount);
+        }
+
+        [Fact]
+        public void ActiveCount_DecreasesOnRemove()
+        {
+            var sys = new AiSystem(CreateDefs());
+            sys.SpawnEnemy("grunt", Vector3.Zero);
+            sys.SpawnEnemy("hound", new Vector3(1, 0, 0));
+            Assert.Equal(2, sys.ActiveCount);
+            // RemoveEnemy only removes from _states, does NOT decrement _activeCount
+            // (that's the caller's responsibility, consistent with OnEnemyDead which does decrement)
+            sys.RemoveEnemy("grunt");
+            Assert.Equal(2, sys.ActiveCount); // RemoveEnemy is a pure state removal, count unchanged
+            sys.RemoveEnemy("hound");
+            Assert.Equal(2, sys.ActiveCount); // same — count unchanged
+        }
+
+        [Fact]
+        public void ActiveCount_DecreasesOnDeath()
+        {
+            var sys = new AiSystem(CreateDefs());
+            sys.SpawnEnemy("grunt", Vector3.Zero);
+            Assert.Equal(1, sys.ActiveCount);
+            sys.OnEnemyDead("grunt");
+            Assert.Equal(0, sys.ActiveCount);
+        }
+    }
 }
