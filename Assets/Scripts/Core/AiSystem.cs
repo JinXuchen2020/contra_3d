@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Numerics;
 
@@ -12,8 +12,6 @@ namespace Contra3D.Core
         private readonly Dictionary<string, EnemyAIState> _states;
         private Vector3 _playerPosition;
         private readonly IRandomProvider _random;
-        /// <summary>每敌人类的当前武器冷却计时器（秒）。</summary>
-        private readonly Dictionary<string, float> _fireCooldownTimers;
         /// <summary>每敌人的当前武器 ID。</summary>
         private readonly Dictionary<string, string> _currentWeaponIds;
 
@@ -23,7 +21,6 @@ namespace Contra3D.Core
             _states = new Dictionary<string, EnemyAIState>();
             _playerPosition = Vector3.Zero;
             _random = randomProvider ?? new DefaultRandomProvider();
-            _fireCooldownTimers = new Dictionary<string, float>();
             _currentWeaponIds = new Dictionary<string, string>();
         }
 
@@ -35,8 +32,6 @@ namespace Contra3D.Core
                 throw new ArgumentException($"Unknown enemy: {enemyId}");
             _states[enemyId] = new EnemyAIState();
             _states[enemyId].Reset(enemyId, def, position);
-            // Initialize fire cooldown and weapon
-            _fireCooldownTimers[enemyId] = 0f;
             _currentWeaponIds[enemyId] = def.Weapons.Count > 0 ? def.Weapons[0] : "";
         }
 
@@ -78,26 +73,7 @@ namespace Contra3D.Core
             }
         }
 
-        /// <summary>减少指定敌人的武器冷却计时器（供 EnemyWeaponSystem 每帧调用）。</summary>
-        public void DecrementFireCooldown(string enemyId, float dt)
-        {
-            if (_fireCooldownTimers.TryGetValue(enemyId, out var cd) && cd > 0f)
-                _fireCooldownTimers[enemyId] = Math.Max(0f, cd - dt);
-        }
-
-        /// <summary>设置指定敌人的武器冷却计时器（供 EnemyWeaponSystem 射击后调用）。</summary>
-        public void SetFireCooldown(string enemyId, float seconds)
-        {
-            _fireCooldownTimers[enemyId] = seconds;
-        }
-
-        /// <summary>获取指定敌人的武器冷却计时器（供 EnemyWeaponSystem 查询是否可射击）。</summary>
-        public float GetFireCooldown(string enemyId)
-        {
-            return _fireCooldownTimers.TryGetValue(enemyId, out var cd) ? cd : 0f;
-        }
-
-        private void UpdateState(EnemyAIState state, EnemyDefinition def, float dt)
+private void UpdateState(EnemyAIState state, EnemyDefinition def, float dt)
         {
             float distToPlayer = Vector3.Distance(state.Position, _playerPosition);
             bool playerInSight = distToPlayer <= def.VisionRange;
