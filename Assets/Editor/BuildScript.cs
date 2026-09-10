@@ -10,6 +10,8 @@ using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 
+namespace Contra3D.Editor
+{
 /// <summary>
 /// 构建脚本 — 由 OS runtime_verify 协议调用
 /// 位于 Assets/Editor/ 目录确保 Unity 自动编译为 Editor 程序集
@@ -267,4 +269,5 @@ public static class BuildScript
         if (cleaned > 0)
             Debug.Log("[BuildScript] Cleaned " + cleaned + " Bee rsp file(s).");
     }
+}
 }
