@@ -222,6 +222,43 @@ scenarios:
     signal: enemy_library
     field: enemy_count
     equals: '5'
+- id: rg_enemy_patrol_alert_combat_chain
+  description: Full patrol → alert → combat → death encounter chain. Verifies patrol_alert_combat_full_encounter
+    BDD scenario (T-BDD-ADOPT-e4175b): grunt_soldier starts in Idle, vigilance increases
+    when player is within 15 m vision range at +20/s; at vigilance ≥ 60 enters Alert
+    state; at vigilance = 100 enters Combat state and requests fire; on lethal damage
+    transitions to Dead with active_count decreasing.
+  setup:
+  - spawn_entity:
+      type: enemy
+      position:
+      - 0
+      - 0
+      - 0
+      type_id: grunt_soldier
+  - spawn_entity:
+      type: player
+      position:
+      - 5
+      - 0
+      - 0
+  steps:
+  - step: render_frames
+    count: 5
+  expect:
+  - check: state_changed
+    field: active_count
+    min_equals: '1'
+  - check: state_changed
+    field: vigilance
+    min_equals: '60'
+  - check: state_changed
+    field: state
+    equals: 'Combat'
+  - check: not_game_signal
+    signal: enemy_death
+    field: enemy_id
+    equals: 'grunt_soldier'
 - id: rg_save_slots_initialized
   description: The REAL DataLoader / SaveLoadPlugin initialized SaveSlotManager at
     startup (resource registered by SaveLoadPlugin regardless of display). Verifies
