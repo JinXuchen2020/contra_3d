@@ -1,0 +1,15 @@
+{
+    "name": "Contra3D.Core.Tests",
+    "rootNamespace": "Contra3D.Core.Tests",
+    "references": ["Contra3D.Core"],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": false,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": true,
+    "testAssembly": true
+}
