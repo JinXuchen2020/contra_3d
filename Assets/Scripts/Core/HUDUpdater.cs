@@ -16,6 +16,9 @@ namespace Contra3D.Core
         private int _nextThresholdIndex;
         private bool _lowHealthFired;
 
+        /// <summary>
+        /// 当前 HUD 状态快照（readonly struct，返回值为副本，不可被外部修改）。
+        /// </summary>
         public HUDState State => _state;
 
         private readonly List<ExtraLifeEvent> _extraLifeEvents = new();
