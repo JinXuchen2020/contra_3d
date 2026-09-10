@@ -1,0 +1,16 @@
+{
+    "name": "Contra3D.Combat",
+    "rootNamespace": "Contra3D.Combat",
+    "references": [
+        "Contra3D.Core"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": true
+}
