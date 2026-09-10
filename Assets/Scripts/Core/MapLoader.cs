@@ -27,7 +27,7 @@ namespace Contra3D.Core
         public const float DefaultCollisionBoundX = 25.0f;
 
         /// <summary>场景加载完成事件。成功加载地图后触发，携带 <see cref="MapDefinition"/>。</summary>
-        public static event Action<SceneLoadedEvent> OnSceneLoaded;
+        internal static event Action<SceneLoadedEvent> OnSceneLoaded;
 
         /// <summary>SpawnPoint 最小间距（米）。</summary>
         internal const float MinSpawnDistance = 5.0f;

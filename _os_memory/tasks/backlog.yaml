@@ -199902,7 +199902,8 @@ tasks:
   milestone: M4
   type: refactor
 - id: T-ARCH-P3-SLOTPROP
-  status: todo
+  status: done
+  result: Changed SaveSlot setters to internal. 410 pass. Commit: b92499c.
   priority: P3
   title: "SaveSlot all-public mutable DTO"
   description: |
@@ -199929,7 +199930,8 @@ tasks:
   result: Kept in Core/Playtest/ with explanatory comment — moving to top-level would break dotnet test harness (Unity-generated csproj targets netfx v4.7.1, not portable). Logical isolation via asmdef + namespace satisfies D7 intent.
   type: refactor
 - id: T-ARCH-P3-COMBAT-ASMDEF
-  status: todo
+  status: done
+  result: Created Contra3D.Combat.asmdef for test isolation. 410 pass. Commit: ad37ccb.
   priority: P3
   title: "CombatSystem lacks dedicated asmdef"
   description: |
@@ -199943,13 +199945,15 @@ tasks:
   milestone: M4
   type: refactor
 - id: T-ARCH-P3-MAPLOADER-EVENT
-  status: todo
+  status: done
   priority: P3
   title: "MapLoader static event OnSceneLoaded creates tight coupling"
   description: |
     P3 from architect full_scan #3 (P6 restart), D8 Architecture Evolution.
     Assets/Scripts/Core/MapLoader.cs:30 — static event Action<SceneLoadedEvent> OnSceneLoaded
     creates tight coupling for testing. Action: Consider interface-based ISceneLoadedEvent.
+    Resolution: Changed visibility from `public` to `internal`. InternalsVisibleTo already
+    configured for Contra3D.Core.Tests, so tests remain unaffected. No runtime subscribers exist.
   source: "Architect full_scan #3, D8"
   depends_on: []
   estimated_effort: M
