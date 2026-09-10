@@ -115,6 +115,12 @@ private void UpdateState(EnemyAIState state, EnemyDefinition def, float dt)
 
 
 
+        /// <summary>获取所有存活敌人状态。</summary>
+        public IReadOnlyDictionary<string, EnemyAIState> GetStates() => _states;
+
+        /// <summary>移除敌人（用于死亡事件处理）。</summary>
+        public void RemoveEnemy(string enemyId) => _states.Remove(enemyId);
+
         /// <summary>获取敌人的 AI 输出指令。</summary>
         public AICommand GetCommand(string enemyId)
         {
