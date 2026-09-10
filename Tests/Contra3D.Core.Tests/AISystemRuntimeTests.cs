@@ -442,5 +442,160 @@ namespace Contra3D.Core.Tests
             var state2After = ai2.GetStates()["grunt"];
             Assert.Equal(state1After.Position, state2After.Position);
         }
+
+        // ---- BDD: rg_enemy_patrol_alert_combat_chain ----
+
+        // Full patrol → alert → combat → death encounter chain.
+        // Verifies patrol_alert_combat_full_encounter BDD scenario (T-BDD-ADOPT-e4175b).
+        [Fact]
+        public void rg_enemy_patrol_alert_combat_chain_FullEncounterChain()
+        {
+            // Setup: create AISystem, register grunt_soldier definition, set player near enemy
+            var ai = new AISystem();
+            ai.RegisterDefinition(new EnemyDefinition("grunt_soldier", "Grunt Soldier", 24f, 2f, AiType.Patrol,
+                visionRange: 15f, attackRange: 3f, alertThreshold: 60f, comprehensionThreshold: 100f,
+                vigilanceGainPerSecond: 20f, vigilanceDecayPerSecond: 10f));
+
+            // Enemy at [0,0,0], player at [5,0,0] — within 15m vision range
+            ai.SetPlayerPosition(new Vector3(5, 0, 0));
+            bool spawned = ai.TrySpawn("grunt_soldier", Vector3.Zero);
+            Assert.True(spawned, "Enemy should spawn successfully");
+
+            var healthSys = new HealthDamageSystem();
+            healthSys.RegisterEntity("grunt_soldier", 24f);
+
+            // Phase 1: Simulate time until vigilance reaches Alert threshold (60)
+            // Vigilance gain = 20/s, so 60 requires 3 seconds
+            const float dt = 1f;
+            ai.Update(dt); // t=1: vigilance=20, state=Idle
+            ai.Update(dt); // t=2: vigilance=40, state=Idle
+            ai.Update(dt); // t=3: vigilance=60, state=Alert
+
+            var stateAfterAlert = ai.GetStates()["grunt_soldier"];
+            Assert.Equal(AiState.Alert, stateAfterAlert.State);
+            Assert.True(stateAfterAlert.Vigilance >= 60f);
+            Assert.True(ai.ActiveCount >= 1);
+
+            // Phase 2: Simulate time until vigilance reaches Combat threshold (100)
+            // From 60 to 100 at +20/s = 2 more seconds
+            ai.Update(dt); // t=4: vigilance=80, still Alert
+            ai.Update(dt); // t=5: vigilance=100, state=Combat
+
+            var stateAfterCombat = ai.GetStates()["grunt_soldier"];
+            Assert.Equal(AiState.Combat, stateAfterCombat.State);
+            Assert.True(stateAfterCombat.Vigilance >= 100f);
+
+            // Phase 3: Apply lethal damage and verify death
+            var (change, death) = healthSys.ProcessHit("grunt_soldier", 24f, killerId: "player", dropTableId: "grunt_drop");
+            Assert.True(change.IsDead);
+            Assert.True(death.HasValue);
+            Assert.Equal("grunt_soldier", death.Value.EntityId);
+            Assert.Equal("player", death.Value.KillerId);
+
+            // Phase 4: Notify AISystem of death and verify active_count decreases
+            int activeBefore = ai.ActiveCount;
+            ai.OnEnemyDead("grunt_soldier");
+            Assert.Equal(activeBefore - 1, ai.ActiveCount);
+            Assert.False(ai.GetStates().ContainsKey("grunt_soldier"));
+        }
+
+        // Verifies the enemy starts in Idle/Patrol state before any player proximity triggers
+        [Fact]
+        public void rg_enemy_patrol_alert_combat_chain_StartsInIdleState()
+        {
+            var ai = new AISystem();
+            ai.RegisterDefinition(new EnemyDefinition("grunt_soldier", "Grunt", 24f, 2f, AiType.Patrol,
+                visionRange: 15f, alertThreshold: 60f, comprehensionThreshold: 100f,
+                vigilanceGainPerSecond: 20f));
+
+            // Player far away — no detection
+            ai.SetPlayerPosition(new Vector3(100, 0, 0));
+            ai.TrySpawn("grunt_soldier", new Vector3(0, 0, 0));
+
+            var state = ai.GetStates()["grunt_soldier"];
+            Assert.Equal(AiState.Idle, state.State);
+            Assert.Equal(0f, state.Vigilance);
+            Assert.Equal(1, ai.ActiveCount);
+        }
+
+        // Verifies vigilance decay when player moves out of vision range
+        [Fact]
+        public void rg_enemy_patrol_alert_combat_chain_VigilanceDecaysOutOfSight()
+        {
+            var ai = new AISystem();
+            ai.RegisterDefinition(new EnemyDefinition("grunt_soldier", "Grunt", 24f, 2f, AiType.Patrol,
+                visionRange: 15f, alertThreshold: 60f, comprehensionThreshold: 100f,
+                vigilanceGainPerSecond: 20f, vigilanceDecayPerSecond: 10f));
+
+            // Player within vision range
+            ai.SetPlayerPosition(new Vector3(5, 0, 0));
+            ai.TrySpawn("grunt_soldier", new Vector3(0, 0, 0));
+
+            // Build vigilance to Alert
+            ai.Update(3f);
+            var stateAlert = ai.GetStates()["grunt_soldier"];
+            Assert.Equal(AiState.Alert, stateAlert.State);
+
+            // Player moves far away — out of 15m vision range
+            ai.SetPlayerPosition(new Vector3(100, 0, 0));
+            ai.Update(5f); // 5s decay at 10/s = 50 points lost
+
+            var stateDecayed = ai.GetStates()["grunt_soldier"];
+            Assert.True(stateDecayed.Vigilance < 60f, $"vigilance should decay below alert threshold, got {stateDecayed.Vigilance:F2}");
+        }
+
+        // Verifies that a Patrol enemy reaches Alert and then Combat states
+        // as vigilance builds up while the player is visible.
+        [Fact]
+        public void rg_enemy_patrol_alert_combat_chain_PatrolToAlertToCombat()
+        {
+            var ai = new AISystem();
+            ai.RegisterDefinition(new EnemyDefinition("grunt_soldier", "Grunt", 24f, 2f, AiType.Patrol,
+                visionRange: 15f, attackRange: 3f, alertThreshold: 60f, comprehensionThreshold: 100f,
+                vigilanceGainPerSecond: 20f));
+
+            // Spawn enemy at distance > 5m to pass anti-camping check
+            ai.SetPlayerPosition(new Vector3(8, 0, 0));
+            ai.TrySpawn("grunt_soldier", new Vector3(0, 0, 0));
+
+            // Phase 1: Idle -> Alert (vigilance 0 -> 60, needs 3s at +20/s)
+            ai.Update(3f);
+            var alertState = ai.GetStates()["grunt_soldier"];
+            Assert.Equal(AiState.Alert, alertState.State);
+            Assert.True(alertState.Vigilance >= 60f);
+
+            // Phase 2: Alert -> Combat (vigilance 60 -> 100, needs 2 more s)
+            ai.Update(2f);
+            var combatState = ai.GetStates()["grunt_soldier"];
+            Assert.Equal(AiState.Combat, combatState.State);
+            Assert.True(combatState.Vigilance >= 100f);
+
+            // Phase 3: Verify fire request in combat state
+            // Player must be within attack range for GetCommand to return FireRequest
+            ai.SetPlayerPosition(new Vector3(2, 0, 0));
+            ai.Update(0.5f);
+            var cmd = ai.GetCommand("grunt_soldier");
+            Assert.True(cmd.FireRequest);
+        }
+
+        // Full chain with death event and downstream active_count verification
+        [Fact]
+        public void rg_enemy_patrol_alert_combat_chain_DeathDecreasesActiveCount()
+        {
+            var ai = new AISystem();
+            ai.RegisterDefinition(new EnemyDefinition("grunt_soldier", "Grunt", 24f, 2f, AiType.Patrol,
+                visionRange: 15f, attackRange: 3f, alertThreshold: 60f, comprehensionThreshold: 100f,
+                vigilanceGainPerSecond: 20f));
+
+            ai.SetPlayerPosition(new Vector3(5, 0, 0));
+            ai.TrySpawn("grunt_soldier", new Vector3(0, 0, 0));
+            int initialActive = ai.ActiveCount;
+            Assert.True(initialActive >= 1);
+
+            // Kill the enemy directly
+            ai.OnEnemyDead("grunt_soldier");
+            Assert.Equal(initialActive - 1, ai.ActiveCount);
+            Assert.False(ai.GetStates().ContainsKey("grunt_soldier"));
+        }
     }
 }
