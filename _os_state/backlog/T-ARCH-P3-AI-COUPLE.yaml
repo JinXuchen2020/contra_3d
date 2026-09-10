@@ -1,0 +1,14 @@
+id: T-ARCH-P3-AI-COUPLE
+status: done
+priority: p3
+title: AISystem shares state management with AiSystem partial class
+description: |
+  AISystem (runtime) and AiSystem (pure logic partial) both maintain parallel
+  Dictionary<string, EnemyAIState> state collections with duplicated handler logic.
+  This shared-state concern creates coupling between the two classes and makes it
+  unclear which class is the authoritative state manager.
+  Sources: Assets/Scripts/Core/AiSystem.cs:12, Assets/Scripts/Core/AISystemRuntime.cs:14-15
+source: D10
+tags: [coupling, ai, p3]
+created_at: 2026-09-11T12:30:00+08:00
+scan_number: 1

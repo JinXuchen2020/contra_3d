@@ -11,111 +11,70 @@ namespace Contra3D.Core
     /// </summary>
     public sealed class AiRuntimeSystem
     {
-        private readonly Dictionary<string, EnemyDefinition> _definitions = new();
-        private readonly Queue<string> _spawnQueue = new();
-        private Vector3 _playerPosition;
-        private int _activeCount;
-        private int _rusherCount;
-        private readonly AISpawnConfig _config;
-        private readonly IRandomProvider _random;
         private readonly AiSystem _ai;
 
         /// <summary>当前活跃敌人数量。</summary>
-        public int ActiveCount => _activeCount;
+        public int ActiveCount => _ai.ActiveCount;
 
         /// <summary>当前冲锋型敌人数量。</summary>
-        public int RusherCount => _rusherCount;
+        public int RusherCount => _ai.RusherCount;
 
         /// <summary>当前使用的生成配置（只读）。</summary>
-        public AISpawnConfig Config => _config;
+        public AISpawnConfig Config => _ai.Config;
 
         /// <summary>
         /// 创建 AI 系统实例（推荐用于测试，支持依赖注入）。
         /// </summary>
+        /// <param name="definitions">敌人定义字典。</param>
         /// <param name="config">生成配置（可选，默认使用 <see cref="AISpawnConfig.Default"/>）。</param>
         /// <param name="randomProvider">随机数提供者（可选，默认使用 <see cref="DefaultRandomProvider"/>)。</param>
-        public AiRuntimeSystem(AISpawnConfig config = null, IRandomProvider randomProvider = null)
+        public AiRuntimeSystem(Dictionary<string, EnemyDefinition> definitions, AISpawnConfig config = null, IRandomProvider randomProvider = null)
         {
-            _config = config ?? AISpawnConfig.Default;
-            _random = randomProvider ?? new DefaultRandomProvider();
-            _ai = new AiSystem(_definitions, _random);
+            _ai = new AiSystem(definitions, randomProvider, config);
+        }
+
+        /// <summary>
+        /// 创建空 AI 系统实例（支持延迟注册定义，用于测试）。
+        /// </summary>
+        public AiRuntimeSystem() : this(new Dictionary<string, EnemyDefinition>())
+        {
+        }
+
+        /// <summary>
+        /// 创建带配置的 AI 系统实例（用于隔离测试）。
+        /// </summary>
+        public AiRuntimeSystem(AISpawnConfig config) : this(new Dictionary<string, EnemyDefinition>(), config)
+        {
+        }
+
+        /// <summary>
+        /// 创建带随机数提供者的 AI 系统实例（用于隔离测试）。
+        /// </summary>
+        public AiRuntimeSystem(IRandomProvider randomProvider) : this(new Dictionary<string, EnemyDefinition>(), randomProvider: randomProvider)
+        {
         }
 
         /// <summary>注册敌人定义。</summary>
         public void RegisterDefinition(EnemyDefinition def)
         {
             if (def == null) throw new ArgumentNullException(nameof(def));
-            _definitions[def.Id] = def;
+            _ai.Definitions[def.Id] = def;
         }
 
         /// <summary>设置玩家位置。</summary>
-        public void SetPlayerPosition(Vector3 position)
-        {
-            _playerPosition = position;
-            _ai.SetPlayerPosition(position);
-        }
+        public void SetPlayerPosition(Vector3 position) => _ai.SetPlayerPosition(position);
 
-        /// <summary>刷兵请求（排队机制）。</summary>
-        public bool TrySpawn(string enemyId, Vector3 position)
-        {
-            if (!_definitions.TryGetValue(enemyId, out var def))
-                return false;
+        /// <summary>刷兵请求（含排队机制与防门口霸营）。</summary>
+        public bool TrySpawn(string enemyId, Vector3 position) => _ai.TrySpawn(enemyId, position);
 
-            // Anti-door camping: reject if too close to player
-            float distToPlayer = Vector3.Distance(position, _playerPosition);
-            if (distToPlayer < _config.AntiDoorCampingDistance)
-                return false;
-
-            // Check spawn caps
-            if (def.AiType == AiType.Rusher && _rusherCount >= _config.MaxRusher)
-            {
-                _spawnQueue.Enqueue(enemyId);
-                return false;
-            }
-
-            if (_activeCount >= _config.MaxNormal)
-            {
-                _spawnQueue.Enqueue(enemyId);
-                return false;
-            }
-
-            // Spawn via core AiSystem
-            _ai.SpawnEnemy(enemyId, position);
-            _activeCount++;
-            if (def.AiType == AiType.Rusher) _rusherCount++;
-            return true;
-        }
-
-        /// <summary>处理死亡事件。</summary>
-        public void OnEnemyDead(string enemyId)
-        {
-            var states = _ai.GetStates();
-            if (!states.TryGetValue(enemyId, out var state)) return;
-
-            _activeCount--;
-            if (state.AiType == AiType.Rusher) _rusherCount--;
-            var position = state.Position;
-            _ai.RemoveEnemy(enemyId);
-
-            // Release next queued spawn
-            if (_spawnQueue.Count > 0 && _activeCount < _config.MaxNormal)
-            {
-                string nextId = _spawnQueue.Dequeue();
-                if (_definitions.TryGetValue(nextId, out var nextDef))
-                {
-                    _ai.SpawnEnemy(nextId, position);
-                    _activeCount++;
-                    if (nextDef.AiType == AiType.Rusher) _rusherCount++;
-                }
-            }
-        }
+        /// <summary>处理死亡事件并自动释放排队刷兵。</summary>
+        public void OnEnemyDead(string enemyId) => _ai.OnEnemyDead(enemyId);
 
         /// <summary>推进一帧。</summary>
         public void Update(float dt)
         {
             if (dt <= 0f || float.IsNaN(dt) || float.IsInfinity(dt))
                 return;
-
             _ai.Update(dt);
         }
 
