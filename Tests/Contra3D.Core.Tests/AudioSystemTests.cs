@@ -98,8 +98,7 @@ namespace Contra3D.Core.Tests
         public void PlaySFX_BDD_concurrency_limit_priority_eviction()
         {
             // given: 8 low-priority (environment) SFX already playing (at limit)
-            var sys = new AudioSystem();
-            sys.MaxSfxConcurrency = 8;
+            var sys = new AudioSystem(maxSfxConcurrency: 8);
             for (int i = 0; i < 8; i++)
             {
                 sys.PlaySFX($"env_{i}", new Vector3(0f, 0f, (float)i), spatial: false, AudioPriority.Low);

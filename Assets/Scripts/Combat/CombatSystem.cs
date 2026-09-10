@@ -237,7 +237,7 @@ namespace Contra3D.Combat
         // ──────────────────────────────────────────────────────────────────────
 
         /// <summary>默认 hitscan 最大射程（米），可由外部覆盖。</summary>
-        public float HitscanMaxDistance { get; set; } = 200f;
+        public float HitscanMaxDistance { get; private set; } = 200f;
 
         private HitEvent? HitscanShoot(Vector3 origin, Vector3 direction, float damage)
         {

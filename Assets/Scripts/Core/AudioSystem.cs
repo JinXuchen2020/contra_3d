@@ -34,7 +34,7 @@ namespace Contra3D.Core
         private readonly Dictionary<int, float> _layerVolumes;
         private BgmTransitionState _transition;
         private readonly List<AudioResourceEntry> _resources;
-        public int MaxSfxConcurrency { get; set; } = 8;
+        public int MaxSfxConcurrency { get; private set; } = 8;
         private readonly List<SfxInstance> _activeSfx;
         private float _dopplerFactor = 1.0f;
         public float DopplerFactor { get => _dopplerFactor; set => _dopplerFactor = value; }
@@ -45,13 +45,14 @@ namespace Contra3D.Core
         public int ActiveSfxCount => _activeSfx.Count;
         public float GetLayerVolume(int layer) => _layerVolumes.TryGetValue(layer, out var v) ? v : 0f;
 
-        public AudioSystem()
+        public AudioSystem(int maxSfxConcurrency = 8)
         {
             _currentBgmId = null; _currentBgmVolume = 0f;
             _layerVolumes = new Dictionary<int, float>();
             _transition = new BgmTransitionState { IsActive = false };
             _resources = new List<AudioResourceEntry>();
             _activeSfx = new List<SfxInstance>();
+            MaxSfxConcurrency = maxSfxConcurrency;
         }
 
         public void PlayBGM(string bgmId, float volume = 1.0f)
