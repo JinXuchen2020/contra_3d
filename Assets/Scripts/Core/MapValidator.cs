@@ -109,6 +109,27 @@ namespace Contra3D.Core
                         $"Reference '{pl.SpawnId}' is not a known valid pickup ID."));
             }
 
+            for (int i = 0; i < m.PatrolPaths.Count; i++)
+            {
+                var path = m.PatrolPaths[i];
+                for (int j = 0; j < path.Waypoints.Length; j++)
+                {
+                    var wp = path.Waypoints[j];
+                    if (Math.Abs(wp.X) > bound)
+                        errors.Add(new MapValidationError($"patrol_paths[{i}].waypoints[{j}].x",
+                            $"Coordinate {wp.X} is outside collision boundary ±{bound}."));
+                    if (Math.Abs(wp.Z) > bound)
+                        errors.Add(new MapValidationError($"patrol_paths[{i}].waypoints[{j}].z",
+                            $"Coordinate {wp.Z} is outside collision boundary ±{bound}."));
+                    if (wp.WaitSeconds < 0f)
+                        errors.Add(new MapValidationError($"patrol_paths[{i}].waypoints[{j}].wait_s",
+                            $"Wait seconds {wp.WaitSeconds} is negative, must be >= 0."));
+                    if (wp.Speed <= 0f)
+                        errors.Add(new MapValidationError($"patrol_paths[{i}].waypoints[{j}].speed",
+                            $"Speed {wp.Speed} must be > 0."));
+                }
+            }
+
             return errors;
         }
     }

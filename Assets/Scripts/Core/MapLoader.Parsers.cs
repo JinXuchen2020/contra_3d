@@ -21,10 +21,14 @@ namespace Contra3D.Core
             bool inSpawn = false;
             bool inCover = false;
             bool inPickup = false;
+            bool inPatrolPath = false;
+            bool inWaypoints = false;
             ParsedMap current = null;
             var currentSpawn = new Dictionary<string, string>();
             var currentCover = new Dictionary<string, string>();
             var currentPickup = new Dictionary<string, string>();
+            var currentWaypoint = new Dictionary<string, string>();
+            string currentPathId = null;
 
             void FlushCurrentSpawn()
             {
@@ -50,6 +54,34 @@ namespace Contra3D.Core
                 {
                     current.PickupLocations.Add(ParsePickupLocation(currentPickup));
                     currentPickup.Clear();
+                }
+            }
+
+            void FlushCurrentWaypoint()
+            {
+                if (current != null && inWaypoints && currentWaypoint.Count > 0 && currentPathId != null)
+                {
+                    var wp = ParsePatrolWaypoint(currentWaypoint);
+                    // Find or create the current path
+                    PatrolPath path = default;
+                    bool found = false;
+                    foreach (var p in current.PatrolPaths)
+                    {
+                        if (p.PathId == currentPathId) { path = p; found = true; break; }
+                    }
+                    if (!found)
+                    {
+                        var waypoints = new List<PatrolWaypoint> { wp };
+                        current.PatrolPaths.Add(new PatrolPath(currentPathId, waypoints.ToArray()));
+                    }
+                    else
+                    {
+                        var updated = new List<PatrolWaypoint>(path.Waypoints) { wp };
+                        // Remove old and add new with updated waypoints
+                        current.PatrolPaths.RemoveAt(current.PatrolPaths.IndexOf(path));
+                        current.PatrolPaths.Add(new PatrolPath(currentPathId, updated.ToArray()));
+                    }
+                    currentWaypoint.Clear();
                 }
             }
 
@@ -130,6 +162,35 @@ namespace Contra3D.Core
                     inCover = false;
                     continue;
                 }
+                if (line == "patrol_paths:")
+                {
+                    FlushCurrentSpawn();
+                    FlushCurrentCover();
+                    FlushCurrentPickup();
+                    inPatrolPath = true;
+                    inWaypoints = false;
+                    inSpawn = false;
+                    inCover = false;
+                    inPickup = false;
+                    currentPathId = null;
+                    continue;
+                }
+
+                // patrol_paths: path_id marker
+                if (inPatrolPath && line.StartsWith("- path_id:"))
+                {
+                    FlushCurrentWaypoint();
+                    currentPathId = YamlKeyValueParser.ParseValue(line, "- path_id:");
+                    inWaypoints = false;
+                    continue;
+                }
+
+                // waypoints subsection
+                if (inPatrolPath && line.StartsWith("waypoints:"))
+                {
+                    inWaypoints = true;
+                    continue;
+                }
 
                 // Inline map-level keys
                 if (line.StartsWith("name:"))
@@ -167,6 +228,12 @@ namespace Contra3D.Core
                     {
                         StartNewEntry("pickup");
                         ParseInlineObj(line, currentPickup);
+                        continue;
+                    }
+                    if (inPatrolPath && inWaypoints)
+                    {
+                        FlushCurrentWaypoint();
+                        ParseInlineObj(line, currentWaypoint);
                         continue;
                     }
                 }
@@ -255,11 +322,25 @@ namespace Contra3D.Core
                     if (inPickup) currentPickup["spawn_id"] = val;
                     continue;
                 }
+                // Patrol waypoint continuation keys
+                if (inPatrolPath && inWaypoints && (line.StartsWith("wait_s:") || line.StartsWith("  wait_s:")))
+                {
+                    string val = line.Substring(line.IndexOf(':') + 1).Trim();
+                    currentWaypoint["wait_s"] = val;
+                    continue;
+                }
+                if (inPatrolPath && inWaypoints && (line.StartsWith("speed:") || line.StartsWith("  speed:")))
+                {
+                    string val = line.Substring(line.IndexOf(':') + 1).Trim();
+                    currentWaypoint["speed"] = val;
+                    continue;
+                }
             }
 
             FlushCurrentSpawn();
             FlushCurrentCover();
             FlushCurrentPickup();
+            FlushCurrentWaypoint();
             if (current != null)
                 result.Add(current);
 
@@ -385,6 +466,16 @@ namespace Contra3D.Core
                 return fallback;
             float.TryParse(s, out float v);
             return v;
+        }
+
+        private static PatrolWaypoint ParsePatrolWaypoint(Dictionary<string, string> f)
+        {
+            float x = ParseFloat(f, "x", 0f);
+            float y = ParseFloat(f, "y", 0f);
+            float z = ParseFloat(f, "z", 0f);
+            float waitSeconds = ParseFloat(f, "wait_s", 0f);
+            float speed = ParseFloat(f, "speed", 1f);
+            return new PatrolWaypoint(x, y, z, waitSeconds, speed);
         }
 
         #endregion

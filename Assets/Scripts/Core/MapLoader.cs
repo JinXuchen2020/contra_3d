@@ -131,6 +131,7 @@ namespace Contra3D.Core
             public readonly List<SpawnPoint> SpawnPoints = new List<SpawnPoint>();
             public readonly List<CoverPoint> CoverPoints = new List<CoverPoint>();
             public readonly List<PickupLocation> PickupLocations = new List<PickupLocation>();
+            public readonly List<PatrolPath> PatrolPaths = new List<PatrolPath>();
         }
 
         /// <summary>地图加载/校验异常，携带全部验证错误。</summary>

@@ -911,10 +911,51 @@ maps:
         }
 
         // T-BDD-ADOPT-bdd_patrol_path — patrol_path_waypoint_validation
-        [Fact(Skip = "Feature not yet implemented: No PatrolPath type in MapTypes. Contract requires waypoint validation (position/wait_s/speed) and segment collision pre-check. Gap: PatrolPath model missing.")]
+        [Fact]
         public void Load_PatrolPathWithBlockedSegment_ReturnsWarning_BDD_patrol_path_waypoint_validation()
         {
-            Assert.True(true, "SKIPPED: PatrolPath validation not yet implemented (PatrolPath model missing from MapTypes)");
+            // given: map with invalid patrol path waypoints (out-of-bound x, negative wait_s, zero speed)
+            string yaml = @"
+maps:
+  - map_id: m_patrol_test
+    name: ""PatrolPath Test""
+    spawn_points:
+      - {x: 0, y: 0, z: 0, team: player}
+      - {x: 10, y: 0, z: 0, team: enemy}
+    cover_points:
+      - {x: 5, y: 0, z: 0}
+    pickup_locations: []
+    patrol_paths:
+      - path_id: pp_01
+        waypoints:
+          - {x: 0, y: 0, z: 0, wait_s: 1.0, speed: 2.0}
+          - {x: 30, y: 0, z: 5, wait_s: -1.0, speed: 0}
+    navmesh: ""
+";
+            // when: TryLoadFromString called
+            var (def, errors) = MapLoader.TryLoadFromString(yaml);
+
+            // then: returns null def because patrol waypoint validation fails
+            Assert.Null(def);
+            Assert.NotNull(errors);
+            Assert.NotEmpty(errors);
+
+            // then: contains error about x outside boundary
+            bool foundXError = false;
+            bool foundWaitError = false;
+            bool foundSpeedError = false;
+            foreach (var e in errors)
+            {
+                if (e.Path.Contains("patrol_paths[0].waypoints[1].x") && e.Message.Contains("outside collision boundary"))
+                    foundXError = true;
+                if (e.Path.Contains("patrol_paths[0].waypoints[1].wait_s") && e.Message.Contains("negative"))
+                    foundWaitError = true;
+                if (e.Path.Contains("patrol_paths[0].waypoints[1].speed") && e.Message.Contains("> 0"))
+                    foundSpeedError = true;
+            }
+            Assert.True(foundXError, $"Expected x-out-of-boundary error, got: {string.Join("; ", errors)}");
+            Assert.True(foundWaitError, $"Expected negative wait_s error, got: {string.Join("; ", errors)}");
+            Assert.True(foundSpeedError, $"Expected zero speed error, got: {string.Join("; ", errors)}");
         }
 
         // T-BDD-ADOPT-bdd_encounter_zone — encounter_zone_lock_blocks_retreat

@@ -213,6 +213,60 @@ namespace Contra3D.Core
     }
 
     /// <summary>
+    /// 巡逻路径航点。不可变值对象。
+    /// </summary>
+    public readonly struct PatrolWaypoint
+    {
+        /// <summary>X 坐标（米）。</summary>
+        public float X { get; }
+
+        /// <summary>Y 坐标（米，高度）。</summary>
+        public float Y { get; }
+
+        /// <summary>Z 坐标（米）。</summary>
+        public float Z { get; }
+
+        /// <summary>在航点等待时长（秒），≥ 0。</summary>
+        public float WaitSeconds { get; }
+
+        /// <summary>移动速度（米/秒），> 0。</summary>
+        public float Speed { get; }
+
+        /// <summary>
+        /// 创建巡逻航点。
+        /// </summary>
+        public PatrolWaypoint(float x, float y, float z, float waitSeconds, float speed)
+        {
+            X = x;
+            Y = y;
+            Z = z;
+            WaitSeconds = waitSeconds;
+            Speed = speed;
+        }
+    }
+
+    /// <summary>
+    /// 巡逻路径。由多个 <see cref="PatrolWaypoint"/> 组成。不可变值对象。
+    /// </summary>
+    public readonly struct PatrolPath
+    {
+        /// <summary>路径唯一标识（如 "pp_01"）。</summary>
+        public string PathId { get; }
+
+        /// <summary>航点列表。</summary>
+        public PatrolWaypoint[] Waypoints { get; }
+
+        /// <summary>
+        /// 创建巡逻路径。
+        /// </summary>
+        public PatrolPath(string pathId, PatrolWaypoint[] waypoints)
+        {
+            PathId = pathId ?? throw new ArgumentException("PathId must not be null.", nameof(pathId));
+            Waypoints = waypoints ?? throw new ArgumentException("Waypoints must not be null.", nameof(waypoints));
+        }
+    }
+
+    /// <summary>
     /// 场景加载完成事件。由 <see cref="MapLoader"/> 在成功加载地图后广播。
     /// </summary>
     public readonly struct SceneLoadedEvent
