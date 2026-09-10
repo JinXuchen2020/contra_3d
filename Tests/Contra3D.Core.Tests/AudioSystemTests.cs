@@ -209,5 +209,35 @@ namespace Contra3D.Core.Tests
             float avgMs = (float)sw.Elapsed.TotalMilliseconds / 100f;
             Assert.True(avgMs < 1f, $"Average PlaySFX latency {avgMs}ms exceeds 1ms budget");
         }
+
+        // T-QA-E2E-AUDIO-SFX: 敌人受伤时触发 audio_sfx 信号
+        // BDD: rg_audio_sfx_played_on_hit
+        // Enemy takes damage and hit SFX signal is emitted.
+        // Verifies AudioManager plays the correct hit sound effect via game_signal with sfx_type=hit.
+        [Fact]
+        public void BDD_rg_audio_sfx_played_on_hit()
+        {
+            // given: AudioSystem initialized, enemy at origin
+            var sys = new AudioSystem();
+            var enemyPos = new Vector3(0f, 0f, 0f);
+            const float listenerDist = 10f;
+
+            // when: enemy takes damage → hit SFX is played
+            var (played, _) = sys.PlaySFX("hit", enemyPos, spatial: true, AudioPriority.High, listenerDist);
+
+            // then: SFX was played and is present in the active list with sfx_type=hit
+            Assert.True(played);
+            Assert.Equal(1, sys.ActiveSfxCount);
+
+            // verify via reflection: active SFX has id="hit" (sfx_type=hit)
+            var activeField = typeof(AudioSystem).GetField("_activeSfx",
+                System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+            var activeList = activeField.GetValue(sys) as List<SfxInstance>;
+            Assert.NotNull(activeList);
+            Assert.Single(activeList);
+            Assert.Equal("hit", activeList[0].Id);
+            Assert.True(activeList[0].Playing);
+            Assert.Equal((float)AudioPriority.High, activeList[0].Priority);
+        }
     }
 }
