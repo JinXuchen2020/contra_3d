@@ -338,6 +338,31 @@ namespace Contra3D.Core.Tests
             Assert.Equal(35000, cont.Score);
         }
 
+        /// <summary>
+        /// T-BDD-ADOPT (rg_save_slots_initialized): SaveSlotManager initialized at startup.
+        /// Given: SaveSlotManager created with default config
+        /// When: queried for max_slots and initial slot states
+        /// Then: max_slots >= 1 and every slot is Empty
+        /// </summary>
+        [Fact]
+        public void SaveLoad_SlotsInitialized_BDD_Tsave_slots_initialized()
+        {
+            // given: SaveSlotManager initialized at startup
+            var mgr = new SaveSlotManager(maxSlots: 3);
+
+            // then: max_slots >= 1
+            Assert.True(mgr.MaxSlots >= 1, $"Expected max_slots >= 1 but got {mgr.MaxSlots}");
+
+            // and: every slot starts in Empty state
+            var slots = mgr.Slots;
+            Assert.Equal(3, slots.Count);
+            foreach (var slot in slots)
+            {
+                Assert.Equal(SaveSlotManager.SlotState.Empty, slot.State);
+                Assert.Null(slot.Data);
+            }
+        }
+
         [Fact]
         public void SaveLoad_SchemaTemplateDriven_BDD_Tsave_schema_template_driven()
         {
