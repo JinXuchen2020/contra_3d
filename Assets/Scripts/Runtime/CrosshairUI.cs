@@ -18,7 +18,7 @@ namespace Contra3D.Runtime
         /// <summary>
         /// 设置准星屏幕坐标（对齐契约签名 SetScreenPos(Vector2 screenPos)）。
         /// </summary>
-        public void SetScreenPos(Vector2 screenPos)
+        internal void SetScreenPos(Vector2 screenPos)
         {
             if (crosshairRoot == null)
             {
