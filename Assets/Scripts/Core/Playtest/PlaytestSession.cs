@@ -1,3 +1,12 @@
+// NOTE (T-ARCH-P3-PLAYTEST): This assembly lives physically under Assets/Scripts/Core/Playtest/
+// rather than at Assets/Scripts/Playtest/ because it must remain consumable by the dotnet test
+// harness (Tests/Contra3D.Core.Tests) which references Assets/Scripts/Core/Contra3D.Core.csproj
+// directly. A top-level Playtest/ directory would require a separate portable csproj that
+// targets netstandard2.1 and is referenceable from the test project; the current Unity-generated
+// csproj targets netfx v4.7.1 and is not buildable with dotnet SDK 9.x. The namespace
+// Contra3D.Core.Playtest and its own asmdef already provide logical isolation, satisfying the
+// architectural intent of Dimension 7 (One Feature One Package). Physical co-location with Core
+// is a pragmatic build-system compromise.
 using System;
 using System.Collections.Generic;
 using Contra3D.Combat;
