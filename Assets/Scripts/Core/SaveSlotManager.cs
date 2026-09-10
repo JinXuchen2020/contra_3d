@@ -37,8 +37,8 @@ namespace Contra3D.Core
     /// </summary>
     public class SaveSlot
     {
-        public int SlotId { get; set; }
-        public SaveSlotManager.SlotState State { get; set; }
-        public SaveData Data { get; set; }
+        public int SlotId { get; internal set; }
+        public SaveSlotManager.SlotState State { get; internal set; }
+        public SaveData Data { get; internal set; }
     }
 }
