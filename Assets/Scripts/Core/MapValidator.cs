@@ -63,6 +63,14 @@ namespace Contra3D.Core
                 if (Math.Abs(cp.Z) > bound)
                     errors.Add(new MapValidationError($"cover_points[{i}].z",
                         $"Coordinate {cp.Z} is outside collision boundary ±{bound}."));
+
+                for (int j = 0; j < m.SpawnPoints.Count; j++)
+                {
+                    float dist = cp.DistanceTo(m.SpawnPoints[j]);
+                    if (dist < MapLoader.MinCoverSpawnDistance)
+                        errors.Add(new MapValidationError($"cover_points[{i}]↔spawn_points[{j}]",
+                            $"Distance {dist:F2}m is below minimum {MapLoader.MinCoverSpawnDistance}m."));
+                }
             }
 
             if (m.PickupLocations.Count > 20)

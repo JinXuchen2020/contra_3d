@@ -29,6 +29,9 @@ namespace Contra3D.Core
         /// <summary>SpawnPoint 最小间距（米）。</summary>
         internal const float MinSpawnDistance = 5.0f;
 
+        /// <summary>CoverPoint 与 SpawnPoint 最小间距（米）。</summary>
+        internal const float MinCoverSpawnDistance = 2.0f;
+
         /// <summary>
         /// 从 YAML 文件路径加载地图定义。
         /// </summary>

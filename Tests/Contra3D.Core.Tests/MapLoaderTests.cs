@@ -684,10 +684,40 @@ maps:
         }
 
         // T-BDD-ADOPT-bdd_cover_overlap — cover_point_no_overlap_with_spawn
-        [Fact(Skip = "Feature not yet implemented: MapLoader does not check CoverPoint-SpawnPoint distance. Contract requires ≥2m distance. Gap: overlap check missing from ValidateMap.")]
+        [Fact]
         public void Load_CoverPointOverlapsSpawn_ReturnsValidationError_BDD_cover_point_no_overlap_with_spawn()
         {
-            Assert.True(true, "SKIPPED: Cover-spawn overlap validation not yet implemented in MapLoader");
+            // given: map YAML with a cover point overlapping a spawn point (< 2m)
+            string yaml = @"
+maps:
+  - map_id: level_overlap
+    name: ""Overlap""
+    spawn_points:
+      - {x: 0, y: 0, z: 0, team: player}
+      - {x: 10, y: 0, z: 0, team: enemy}
+    cover_points:
+      - {x: 0.5, y: 0, z: 0}
+      - {x: 15, y: 0, z: 0}
+";
+            // when: TryLoadFromString called
+            var (def, errors) = MapLoader.TryLoadFromString(yaml);
+
+            // then: returns null def because cover overlaps spawn
+            Assert.Null(def);
+            Assert.NotEmpty(errors);
+
+            // then: contains error about cover-spawn distance
+            bool foundOverlapError = false;
+            foreach (var e in errors)
+            {
+                if (e.Path.Contains("cover_points[0]") && e.Path.Contains("spawn_points[0]")
+                    && e.Message.Contains("Distance") && e.Message.Contains("minimum"))
+                {
+                    foundOverlapError = true;
+                    break;
+                }
+            }
+            Assert.True(foundOverlapError, $"Expected cover-spawn overlap error, got: {string.Join("; ", errors)}");
         }
 
         // T-BDD-ADOPT-bdd_scene_event — scene_loaded_event_broadcast

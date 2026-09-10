@@ -89,6 +89,14 @@ namespace Contra3D.Core
             Y = y;
             Z = z;
         }
+
+        /// <summary>与另一出生点的水平距离（忽略 Y）。</summary>
+        public float DistanceTo(SpawnPoint other)
+        {
+            float dx = X - other.X;
+            float dz = Z - other.Z;
+            return (float)Math.Sqrt(dx * dx + dz * dz);
+        }
     }
 
     /// <summary>
