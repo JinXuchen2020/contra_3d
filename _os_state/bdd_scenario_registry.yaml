@@ -263,6 +263,42 @@ systems:
           field: max_slots
           min_equals: '1'
 
+    - id: rg_save_load_gameover_continue_flow
+      description: >-
+        Game Over continue flow: player with lives=1 and score=35000 reaches
+        game over, then consumes a continue credit (c-- → c=1). Verifies
+        game_over_continue_flow BDD scenario (T-BDD-ADOPT): lives reset to
+        3, checkpoint position restored, score preserved, current weapon
+        carried over. Implements SaveLoadTests.SaveLoad_GameOverContinueFlow_BDD.
+      setup:
+        - spawn_entity: { type: player, position: [100, 0, 50], health: 0, lives: 1, score: 35000, weapon: spread_shot }
+      steps:
+        - step: render_frames
+          count: 5
+        - step: trigger_game_over
+          credits_remaining: 2
+        - step: continue_game
+          slot_index: 0
+      expect:
+        - check: state_changed
+          field: lives
+          equals: '3'
+        - check: state_changed
+          field: position_x
+          equals: '100'
+        - check: state_changed
+          field: position_z
+          equals: '50'
+        - check: state_changed
+          field: score
+          equals: '35000'
+        - check: state_changed
+          field: current_weapon
+          equals: 'spread_shot'
+        - check: state_changed
+          field: credits_remaining
+          equals: '1'
+
   ui_system:
     - id: rg_crosshair_rendered
       description: >-
