@@ -323,15 +323,42 @@ namespace Contra3D.Core.Tests
             Assert.Equal(2, r.Lives - 1);
         }
 
+        /// <summary>
+        /// T-BDD-ADOPT (rg_save_load_gameover_continue_flow): Game Over continue flow.
+        /// Given: player with lives=1 and score=35000 reaches game over
+        /// When: continue credit consumed (c-- → c=1)
+        /// Then: lives reset to 3, checkpoint position restored, score preserved, current weapon carried over, credits_remaining decremented to 1.
+        /// </summary>
         [Fact]
         public void SaveLoad_GameOverContinueFlow_BDD_Tgame_over_continue_flow()
         {
-            var g = new SaveData { Position = new Vector3(100f, 0f, 50f), Health = 0f, MaxHealth = 100f, Score = 35000, Lives = 1, CurrentWeapon = "spread_shot", CheckpointPosition = new Vector3(100f, 0f, 50f), CurrentArea = "level_2", Version = 3 };
+            // given: player at game over — lives=1, score=35000, weapon=spread_shot, credits_remaining=2
+            var g = new SaveData
+            {
+                Position = new Vector3(100f, 0f, 50f),
+                Health = 0f, MaxHealth = 100f,
+                Score = 35000, Lives = 1,
+                CurrentWeapon = "spread_shot",
+                CheckpointPosition = new Vector3(100f, 0f, 50f),
+                CurrentArea = "level_2", Version = 3,
+                CreditsRemaining = 2,
+            };
             g.Crc32 = g.ComputeCrc32();
-            int c = 2; c--;
-            var cont = new SaveData { Position = g.CheckpointPosition, Health = 3f, MaxHealth = 100f, Score = g.Score, Lives = 3, CurrentWeapon = g.CurrentWeapon, CurrentArea = "level_2", Version = 3 };
+
+            // when: continue consumed one credit (c-- → c=1) and state restored
+            var cont = new SaveData
+            {
+                Position = g.CheckpointPosition,
+                Health = 3f, MaxHealth = 100f,
+                Score = g.Score, Lives = 3,
+                CurrentWeapon = g.CurrentWeapon,
+                CurrentArea = "level_2", Version = 3,
+                CreditsRemaining = g.CreditsRemaining - 1,
+            };
             cont.Crc32 = cont.ComputeCrc32();
-            Assert.Equal(1, c);
+
+            // then: credits_remaining decremented from 2 to 1
+            Assert.Equal(1, cont.CreditsRemaining);
             Assert.Equal(3, cont.Lives);
             Assert.Equal(new Vector3(100f, 0f, 50f), cont.Position);
             Assert.Equal("spread_shot", cont.CurrentWeapon);

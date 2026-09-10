@@ -86,6 +86,9 @@ namespace Contra3D.Core
         [JsonPropertyName("old_ammo_count")]
         public int? OldAmmoCount { get; set; }
 
+        [JsonPropertyName("credits_remaining")]
+        public int CreditsRemaining { get; set; } = 3;
+
         public uint ComputeCrc32()
         {
             var opts = new JsonSerializerOptions { WriteIndented = false };
