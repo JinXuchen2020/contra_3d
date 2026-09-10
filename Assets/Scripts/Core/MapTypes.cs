@@ -157,4 +157,21 @@ namespace Contra3D.Core
             return $"[{Path}] {Message}";
         }
     }
+
+    /// <summary>
+    /// 场景加载完成事件。由 <see cref="MapLoader"/> 在成功加载地图后广播。
+    /// </summary>
+    public readonly struct SceneLoadedEvent
+    {
+        /// <summary>成功加载的地图定义。</summary>
+        public MapDefinition MapDefinition { get; }
+
+        /// <summary>
+        /// 创建场景加载完成事件。
+        /// </summary>
+        public SceneLoadedEvent(MapDefinition mapDefinition)
+        {
+            MapDefinition = mapDefinition ?? throw new ArgumentException("MapDefinition must not be null.", nameof(mapDefinition));
+        }
+    }
 }

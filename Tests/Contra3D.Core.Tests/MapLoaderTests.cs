@@ -721,11 +721,37 @@ maps:
         }
 
         // T-BDD-ADOPT-bdd_scene_event — scene_loaded_event_broadcast
-        [Fact(Skip = "Feature not yet implemented: No SceneLoadedEvent or MapManager in Core layer. Contract requires MapManager to broadcast SceneLoadedEvent after MapLoader returns MapDefinition. Gap: event system missing.")]
+        [Fact]
         public void Load_SuccessfulMap_BroadcastsSceneLoadedEvent_BDD_scene_loaded_event_broadcast()
         {
-            Assert.True(true, "SKIPPED: SceneLoadedEvent broadcast not yet implemented (no event system in Core)");
+            // given: valid YAML map
+            string yaml = @"
+maps:
+  - map_id: m_test01
+    name: ""测试地图""
+    spawn_points:
+      - {x: 0, y: 0, z: 0, team: player}
+      - {x: 10, y: 0, z: 0, team: enemy}
+    cover_points:
+      - {x: 5, y: 0, z: 0}
+    pickup_locations: []
+    navmesh: ""
+";
+            // when: subscribe to event then load
+            SceneLoadedEvent receivedEvent = default;
+            MapLoader.OnSceneLoaded += Handler;
+            MapLoader.LoadFromString(yaml);
+            MapLoader.OnSceneLoaded -= Handler;
+
+            void Handler(SceneLoadedEvent @event) => receivedEvent = @event;
+
+            // then: event must be received with correct MapDefinition
+            Assert.NotEqual(default(SceneLoadedEvent), receivedEvent);
+            Assert.Equal("m_test01", receivedEvent.MapDefinition.MapId);
+            Assert.Equal("测试地图", receivedEvent.MapDefinition.Name);
         }
+
+        private static void MapLoader_OnSceneLoaded_Handler(SceneLoadedEvent @event) { }
 
         // T-BDD-ADOPT-bdd_spawn_type — spawn_point_type_classification
         [Fact(Skip = "Feature not yet implemented: SpawnPoint has no 'type' field (patrol/ambush/trigger/reinforce) and no 'trigger' field. Contract requires type enum validation and trigger non-null for non-patrol types. Gap: SpawnPoint struct needs extension.")]

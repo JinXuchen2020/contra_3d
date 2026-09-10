@@ -26,6 +26,9 @@ namespace Contra3D.Core
         /// <summary>默认碰撞边界 X 半宽（米）。</summary>
         public const float DefaultCollisionBoundX = 25.0f;
 
+        /// <summary>场景加载完成事件。成功加载地图后触发，携带 <see cref="MapDefinition"/>。</summary>
+        public static event Action<SceneLoadedEvent> OnSceneLoaded;
+
         /// <summary>SpawnPoint 最小间距（米）。</summary>
         internal const float MinSpawnDistance = 5.0f;
 
@@ -67,13 +70,15 @@ namespace Contra3D.Core
             if (errors.Count > 0)
                 throw new MapLoadException(errors);
 
-            return new MapDefinition(
+            var def = new MapDefinition(
                 first.MapId,
                 first.Name,
                 first.SpawnPoints.ToArray(),
                 first.CoverPoints.ToArray(),
                 first.PickupLocations.ToArray(),
                 first.CollisionBoundX);
+            OnSceneLoaded?.Invoke(new SceneLoadedEvent(def));
+            return def;
         }
 
         /// <summary>
@@ -103,6 +108,7 @@ namespace Contra3D.Core
                 first.CoverPoints.ToArray(),
                 first.PickupLocations.ToArray(),
                 first.CollisionBoundX);
+            OnSceneLoaded?.Invoke(new SceneLoadedEvent(def));
             return (def, null);
         }
 
