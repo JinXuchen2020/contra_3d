@@ -6478,7 +6478,8 @@ tasks:
   note: Deferred â€” requires player HealthComponent + lives + checkpoint system in headless context
 
 - id: T-QA-E2E-WPN
-  status: in_progress
+  status: done
+  result: Added BDD_rg_weapons_loaded test. 316 pass. Commit: 080c501.
   priority: P1
   title: "Add missing BDD test for weapon_system.rg_weapons_loaded"
   description: |
@@ -6493,7 +6494,8 @@ tasks:
   type: test
 
 - id: T-QA-E2E-ENM
-  status: in_progress
+  status: done
+  result: Added BDD_rg_enemies_loaded test. 317 pass. Commit: 9b030d1.
   priority: P1
   title: "Add missing BDD test for enemy_ai.rg_enemies_loaded"
   description: |
@@ -6523,7 +6525,8 @@ tasks:
   type: test
 
 - id: T-QA-E2E-UI
-  status: todo
+  status: done
+  result: Added BDD_rg_crosshair_rendered tests. 323 pass. Commit: 2496199.
   priority: P1
   title: "Add missing BDD test for ui_system.rg_crosshair_rendered"
   description: |
@@ -6538,7 +6541,8 @@ tasks:
   type: test
 
 - id: T-QA-E2E-RND
-  status: todo
+  status: done
+  result: Added BDD_rg_rendering_target_fps_set test. 324 pass. Commit: 67973db.
   priority: P2
   title: "Add missing BDD test for rendering.rg_rendering_target_fps_set"
   description: |
@@ -6551,3 +6555,81 @@ tasks:
   estimated_effort: S
   milestone: M4
   type: test
+
+- id: T-E2E-GAP-ENEMY-PATROL
+  status: done
+  result: Added 5 e2e tests for patrol->alert->combat->death chain. 329 pass. Commit: bc03fef.
+  priority: P1
+  title: "Add missing e2e test for enemy_ai.rg_enemy_patrol_alert_combat_chain (qa_e2e gap)"
+  description: |
+    P1 from qa_e2e_verify P6 restart.
+    System: enemy_ai, Scenario: rg_enemy_patrol_alert_combat_chain
+    Full patrolâ†’alertâ†’combatâ†’death chain not tested as single e2e scenario. AISystemRuntimeTests covers state transitions in isolation but not the full chain.
+    Action: Add/improve e2e test covering this scenario.
+  source: qa_e2e_verify (P6 restart, 2026-09-10)
+  depends_on: []
+  estimated_effort: M
+  milestone: M4
+  type: test
+
+- id: T-E2E-GAP-SAVE-CREDIT
+  status: done
+  result: Added credits_remaining assertion. 329 pass. Commit: eb33342.
+  priority: P1
+  title: "Add missing e2e test for save_load.rg_save_load_gameover_continue_flow (qa_e2e gap)"
+  description: |
+    P1 from qa_e2e_verify P6 restart.
+    System: save_load, Scenario: rg_save_load_gameover_continue_flow
+    credits_remaining decrement (c-- â†’ c=1) not asserted in continue flow test.
+    Action: Add/improve e2e test covering this scenario.
+  source: qa_e2e_verify (P6 restart, 2026-09-10)
+  depends_on: []
+  estimated_effort: M
+  milestone: M4
+  type: test
+
+- id: T-E2E-GAP-UI-CROSSHAIR
+  status: done
+  result: Added CrosshairUI component existence test. 329 pass. Commit: 05c6e9f.
+  priority: P1
+  title: "Add missing e2e test for ui_system.rg_crosshair_rendered (qa_e2e gap)"
+  description: |
+    P1 from qa_e2e_verify P6 restart.
+    System: ui_system, Scenario: rg_crosshair_rendered
+    entity_visible is an honest headless skip; component existence not verified.
+    Action: Add/improve e2e test covering this scenario.
+  source: qa_e2e_verify (P6 restart, 2026-09-10)
+  depends_on: []
+  estimated_effort: M
+  milestone: M4
+  type: test
+
+
+- id: T-ARCH-D1-MAPLOADER-REGR
+  status: open
+  priority: P1
+  title: "MapLoader.Parsers.cs regressed to 526L ¡ª exceeds 500L global max and 300L module threshold"
+  description: |
+    P1 from architect full_scan #1 (P6 restart).
+    MapLoader.Parsers.cs grew from 285L (scan #4) to 526L, exceeding both the 300L per-module
+    and 500L global max thresholds defined in project.yaml.
+    Action: Re-split parser logic into additional partial class files or extract helpers.
+  source: architect_agent (P6 restart, scan #1, 2026-09-10)
+  depends_on: []
+  estimated_effort: M
+  milestone: M3
+  type: architecture
+
+- id: T-FUNC-P3-VIEWSYNC
+  status: open
+  priority: P3
+  title: "ViewSyncSystem.Despawn() empty stub ¡ª incomplete implementation"
+  description: |
+    P3 from architect full_scan #1 (P6 restart).
+    Assets/Scripts/Runtime/ViewSyncSystem.cs:31 ¡ª GameObjectPool.Despawn() has empty body
+    with only a comment stub. Either implement pool recycling logic or remove the stub.
+  source: architect_agent (P6 restart, scan #1, 2026-09-10)
+  depends_on: []
+  estimated_effort: S
+  milestone: M4
+  type: architecture
