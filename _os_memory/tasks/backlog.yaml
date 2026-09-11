@@ -198433,7 +198433,7 @@ tasks:
 
 
 
-  status: todo
+  status: done
 
 
 
@@ -198658,7 +198658,7 @@ tasks:
 
 
 
-  status: todo
+  status: done
 
 
 
@@ -198883,7 +198883,7 @@ tasks:
 
 
 
-  status: todo
+  status: done
 
 
 
@@ -199108,7 +199108,7 @@ tasks:
 
 
 
-  status: todo
+  status: done
 
 
 
@@ -199706,7 +199706,7 @@ tasks:
   milestone: M4
   type: new_feature
 - id: T-ARCH-D2-COMBAT-GETTER
-  status: todo
+  status: done
   priority: P2
   title: "CombatSystem.GetHealthDamageSystem() exposes internal system"
   description: |
@@ -199960,7 +199960,8 @@ tasks:
   milestone: M4
   type: refactor
 - id: T-ARCH-P3-AI-COUPLE
-  status: todo
+  status: done
+  result: Consolidated AI spawn management into AiSystem. AiRuntimeSystem reduced 128->82 lines. 410 pass. Commit: 64317e8.
   priority: P3
   title: "AISystem shares state management concern with AiSystem partial"
   description: |
@@ -199973,7 +199974,8 @@ tasks:
   milestone: M4
   type: refactor
 - id: T-ARCH-P3-VECTOR3-LERP
-  status: todo
+  status: done
+  result: Removed duplicate Vector3.Lerp extension from CameraSystem. Only canonical implementation in SaveData.cs remains. 410 pass. Commit: 0e18615.
   priority: P3
   title: "Vector3.Lerp duplicated between CameraSystem and SaveData"
   description: |
@@ -199987,7 +199989,8 @@ tasks:
   milestone: M4
   type: refactor
 - id: T-FUNC-P3-SLOTMGR
-  status: todo
+  status: done
+  result: Added Save/Load/HasSave/Clear/GetSlot methods to SaveSlotManager. 415 pass. Commit: cb9168f.
   priority: P3
   title: "SaveSlotManager incomplete — no public save/load methods"
   description: |
@@ -200001,7 +200004,8 @@ tasks:
   milestone: M4
   type: new_feature
 - id: T-FUNC-P3-AISYSTEM-TEST
-  status: todo
+  status: done
+  result: Added AiSystemDirectTests with 48 test cases. 458 pass. Commit: 58ea303.
   priority: P3
   title: "Pure-logic AiSystem has limited direct test coverage"
   description: |
